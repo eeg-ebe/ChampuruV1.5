@@ -11,8 +11,67 @@ Std.__name__ = true;
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
 };
+var haxe_ds_List = function() {
+	this.length = 0;
+};
+haxe_ds_List.__name__ = true;
+haxe_ds_List.prototype = {
+	add: function(item) {
+		var x = new haxe_ds__$List_ListNode(item,null);
+		if(this.h == null) {
+			this.h = x;
+		} else {
+			this.q.next = x;
+		}
+		this.q = x;
+		this.length++;
+	}
+	,clear: function() {
+		this.h = null;
+		this.q = null;
+		this.length = 0;
+	}
+	,join: function(sep) {
+		var s_b = "";
+		var first = true;
+		var l = this.h;
+		while(l != null) {
+			if(first) {
+				first = false;
+			} else {
+				s_b += sep == null ? "null" : "" + sep;
+			}
+			s_b += Std.string(l.item);
+			l = l.next;
+		}
+		return s_b;
+	}
+	,__class__: haxe_ds_List
+};
 var champuru_Worker = function() { };
 champuru_Worker.__name__ = true;
+champuru_Worker.out = function(s) {
+	champuru_Worker.mMsgs.add(s);
+};
+champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,jOffset,useThisOffsets) {
+	champuru_Worker.mMsgs.clear();
+	champuru_Worker.out("<fieldset>");
+	champuru_Worker.out("<legend>Input</legend>");
+	champuru_Worker.out("<p>Forward sequence of length " + fwd.length + ": <span class='sequence'>");
+	champuru_Worker.out(fwd);
+	champuru_Worker.out("</p><p>Reverse sequence of length " + rev.length + ": <span class='sequence'>");
+	champuru_Worker.out(rev);
+	champuru_Worker.out("</p>");
+	champuru_Worker.out("<p>Score calculation method: " + scoreCalculationMethod + "</p>");
+	if(useThisOffsets) {
+		champuru_Worker.out("<p>Offsets to use: " + iOffset + " and " + jOffset + ".</p>");
+	} else {
+		champuru_Worker.out("<p>Calculate offsets and use best offsets.</p>");
+	}
+	champuru_Worker.out("</fieldset>");
+	champuru_Worker.out("<br>");
+	return { result : champuru_Worker.mMsgs.join("")};
+};
 champuru_Worker.onMessage = function(e) {
 	try {
 		var fwd = js_Boot.__cast(e.data.fwd , String);
@@ -21,7 +80,7 @@ champuru_Worker.onMessage = function(e) {
 		var i = js_Boot.__cast(e.data.i , Int);
 		var j = js_Boot.__cast(e.data.j , Int);
 		var use = js_Boot.__cast(e.data.useOffsets , Bool);
-		var result = "";
+		var result = champuru_Worker.generateHtml(fwd,rev,scoreCalculationMethod,i,j,use);
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g).unwrap();
@@ -543,38 +602,6 @@ haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
 haxe_ds_IntMap.prototype = {
 	__class__: haxe_ds_IntMap
 };
-var haxe_ds_List = function() {
-	this.length = 0;
-};
-haxe_ds_List.__name__ = true;
-haxe_ds_List.prototype = {
-	add: function(item) {
-		var x = new haxe_ds__$List_ListNode(item,null);
-		if(this.h == null) {
-			this.h = x;
-		} else {
-			this.q.next = x;
-		}
-		this.q = x;
-		this.length++;
-	}
-	,join: function(sep) {
-		var s_b = "";
-		var first = true;
-		var l = this.h;
-		while(l != null) {
-			if(first) {
-				first = false;
-			} else {
-				s_b += sep == null ? "null" : "" + sep;
-			}
-			s_b += Std.string(l.item);
-			l = l.next;
-		}
-		return s_b;
-	}
-	,__class__: haxe_ds_List
-};
 var haxe_ds__$List_ListNode = function(item,next) {
 	this.item = item;
 	this.next = next;
@@ -802,5 +829,6 @@ var Bool = Boolean;
 var Class = { };
 var Enum = { };
 js_Boot.__toStr = ({ }).toString;
+champuru_Worker.mMsgs = new haxe_ds_List();
 champuru_Worker.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
