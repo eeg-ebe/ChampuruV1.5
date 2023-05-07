@@ -1,0 +1,351 @@
+<!Doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Champuru</title>
+        <link rel="stylesheet" href="style.css"/>
+    </head>
+    <body>
+        <a href="https://github.com/eeg-ebe/Champuru">
+            <svg width="80" height="80" viewBox="0 0 250 250" style="fill:white; color:black; z-index: 51; position: absolute; top: 0; right: 0; border: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+            </svg>
+        </a>
+        <div class="contentdiv">
+            <h1>Champuru v1.1</h1>
+            <p id="cite">Flot (2007) <strong>Champuru 1.0: a computer software for unraveling mixtures of two DNA sequences of unequal lengths.</strong> <em>Molecular Ecology Notes</em> <strong>7</strong> (6), 974-977 [<a href="http://dx.doi.org/10.1111/j.1471-8286.2007.01857.x">link</a>]</p>
+            <div class="navigation">
+                <a href="index.html">Back to startpage</a>
+                <a href="faq.html">FAQ</a>
+                <a href="tutorial.html">Tutorial</a>
+                <a href="mailto: jflot@ulb.ac.be">E-Mail the author</a>
+            </div>
+            <h2></h2>
+            <div class="importanttips">
+                Champuru makes it possible to determine the haplotypes of heterozygous individuals without cloning, simply by analyzing the patterns of double peaks in the forward and reverse chromatograms.
+            </div>
+            <br>
+            <table style="margin: 0 auto;">
+                <tr class="option">
+                    <td>Forward sequence:</td>
+                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td><input id="forward" type="text" name="forward" style="width: 400px" autocomplete="off"/></td>
+                </tr>
+                <tr class="description">
+                    <td colspan="3">
+                        <p>The forward sequence (IUPAC one-letter code) of the heterozygous individual.</p>
+                    </td>
+                </tr>
+                <tr class="option">
+                    <td>Reverse sequence:</td>
+                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td><input id="reverse" type="text" name="reverse" style="width: 400px" autocomplete="off"/></td>
+                </tr>
+                <tr class="description">
+                    <td colspan="3">
+                        <p>The reverse sequence (IUPAC one-letter code) of the heterozygous individual.<br>
+                        <button onclick="reverse()">Reverse-complement</button>
+                        </p>
+                    </td>
+                </tr>
+                <tr class="option">
+                    <td>Score calculation:</td>
+                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td>
+                        <select id="score" autocomplete="off">
+                            <option value="0">Paper</option>
+                            <option value="1" selected="selected">Ambiguity correction</option>
+                            <option value="2">Longest length</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr class="description">
+                    <td colspan="3">
+                        <p>Which score calculation method to use. Currently the following methods are implemented:</p>
+                        <table class="descTable">
+                            <tr class="even">
+                                <td valign="top">Paper</td><td valign="top">The score correction method described in the Champuru 1.0 paper.</td>
+                            </tr>
+                            <tr class="odd">
+                                <td valign="top">Ambiguity correction</td><td valign="top">A modification of the score correction method described in the Champuru 1.0 paper.
+The score will get corrected for the fact that ambiguous characters (e.g. W) can match multiple other characters (e.g. A, T).
+Preliminary results suggests that this score calculation method works better when the reconstructed consensus sequences contain a lot of ambiguities.
+However this score correction method seems to work less good on short input sequences.
+</td>
+                            </tr>
+                            <tr class="even">
+                                <td valign="top">Longest Length</td><td valign="top">Take the longest number of consecutive matching nucleotides as score.</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <span class="middle">
+                <button onclick="calculate()">Calculate</button>
+                <button onclick="resetForm()">Reset form</button>
+            </span>
+            <p><br></p>
+            <div id="resultArea" style="display: none">
+            </div>
+            <p><br></p>
+            <div id="exampleSection">
+                <div class="noindent">
+                    To get a quick feeling of how Champuru works, use the following data:<br>
+                    Forward sequence: <span class="sequence" id="example1forward">ATSYKRMKY</span><br>
+                    Reverse sequence: <span class="sequence" id="example1reverse">WWKCTGAST</span><br>
+                    <button href="#" onclick="load(1)">Copy data to input fields</button><br>
+                </div>
+                <br>
+                <div class="noindent">
+                    This example may be used in order to explain how Champuru can resolve ambiguities in the consensus sequences (Step 3):<br>
+                    Forward sequence: <span class="sequence" id="example2forward">CTRAATTCAAATCACACTCGCGAAAWYMWKRAA</span><br>
+                    Reverse sequence: <span class="sequence" id="example2reverse">YWRAWTYMAAWYMMMMYYSSSRAAATCATGAA</span><br>
+                    <button href="#" onclick="load(2)">Copy data to input fields</button><br>
+                </div>
+                <br>
+                <div class="noindent">
+                    A more complex example with lots of ambiguities in the consensus sequence:<br>
+                    Forward sequence: <span class="sequence" id="example3forward">AAATSSYKRWTYMMMMMRSSRMSGSCCYWRSMWWMCCSRRGGRWYSGRARR</span><br>
+                    Reverse sequence: <span class="sequence" id="example3reverse">MRMTGMTKMWYMMMRCRRCGRCSSYMSYAKMMYMSMSGRRKSRKMRGRRKA</span><br>
+                    <button href="#" onclick="load(3)">Copy data to input fields</button><br>
+                </div>                
+                <br>
+                <div class="noindent">
+                    And here is a 'real-life' example (original chromatograms: <a href="ExampleForward.ab1">Forward</a> and <a href="ExampleReverse.ab1">Reverse</a>):<br>
+                    Forward sequence: <span class="sequence" id="example4forward">ATCGTGGGCGGCCGGCCCTGCCACAGACGGGGTTGTCACCCTCTGCGACGTGCCGTTCCAAGCAACTTAGGCAGGGCCCCTCCGCCTAGAAAGTGCTTCTCGCAACTACAACTCGCCGATGCAGGCATCGGAGATTTCAAATTTGAGCTCTTCCCGCTTCACTCGCCGTTACTGGGGGAATCCTTGTTAGTTTCTTTTCCTCCGCTTATTAATATGCTTAAATTCAGCGGGTAGCCTTGCCTGATCTGAGGTCTGGAAGGCGATTCCTTTTTTCCTTTGAGATGCCGCCACCGCTACCCGGCGGCAGCAGAAAAAAGAATCGAATGGAGAAAGATTTGTTCCGTCAAAGCGATAGAGCCGTGGCCGTTTGGGGTACATTGTTCTATGATCCCCGCGCGACACCGGATGTCGCTTGGCGGATCTTTCTCCCTGAATTTCAAGGGACGCGGTAAACCGACCGGTCGGGCCGAGCAGCACCAGGGCTGGCTAGCTAGCGCACGACCGGTCATCTCGACCGCGACCCTCAACGCCGCACGAACCCGTTCACGGCGGGCGCGYSYCSSSSCCMYMYSCKMYASASRSGGRSMMSRSGSRSRCGCGCRCRCGSRKWYKCRCRMKRKRKRTKTKWRWAKASACWCWSASASASAYRYKCYYSKGRGARMMCMMRAGMGCSMYWTKYGYKYWMARAKWYKMKRWKWYWCWSWRWWYTCYGCWWYTCACWCTWYWTMTCRSMMTCKMKCTGA</span><br>
+                    Reverse sequence: <span class="sequence" id="example4reverse">GTGCRMTMTCAACACMCSASTCTCGMRACRCATMKYGKGSGSSSSSSSCYSYSMCASASRSGGKKKTSWCMCYCTSYGMSRYGYSSYKYYMMRMRMMWYWKRSRSRGSSCCYCYSCSYMKARARWGYKYYTCKCRMMWMYAMMWCKCSSMKRYRSRSRYMKSRGAKWTYWMAWWTKWGMKCTYYYCSCKYYWCWCKCSSYKWYWSKGGGRRWMYYYKTKWKWKTYTYTTYYYCYSCKYWTWWWWATRYKYWWAWWYWSMGSGKRKMSYYKYSYSWKMTSWGRKSTSKRRRRSGMKWYYYYTTTTYYYYTKWGAKRYSSCSMCMSCKMYMCSSSGSSRSMRSARAAAARARWMKMRWRKRGARARAKWTKTKYYSYSWMARMGMKAKAGMSSYGKSSSYKTKKGGKRYAYWKTKYTMTRWKMYCCSCGCGMSACMSSRKRTSKCKYKKSGSRKMTYTYTCYCYSWRWWTYWMRRGRSRCGSKRWAMMSMSMSSKSKSGSSSMGMRSMRCMMSRGSKSKSKMKMKMKMGCRCRMSMSSKSWYMTCKMSMSCGMSMCYCWMMRCSSCRCRMRMMCSYKYWCRSSGSGSGCGCGTCCCGGCCCCATCCGCTACAGACGGGGACCAGGCGGACGCGCGCACGCGGATTCGCACGATGGATGTTTGAATAGACACTCAGACAGACATGCTCCTGGGAGAACCCAAGAGCGCCATTTGCGTTCAAAGATTCGATGATTCACTGAAT</span><br>
+                    <button href="#" onclick="load(4)">Copy data to input fields</button><br>
+                </div>
+                <br>
+            </div>
+            <div id="hiddenDiv" style="display: none"></div>
+            <div class="navigation">
+                <a href="index.html">Back to startpage</a>
+                <a href="faq.html">FAQ</a>
+                <a href="tutorial.html">Tutorial</a>
+                <a href="mailto: jflot@ulb.ac.be">E-Mail the author</a>
+            </div>
+        </div>
+        <script>
+
+var reverseLookup = {
+    'A' : 'T', 'T' : 'A', 'G' : 'C', 'C' : 'G',
+    'R' : 'Y', 'Y' : 'R', 'M' : 'K', 'K' : 'M',
+    'W' : 'W', 'S' : 'S', 'V' : 'B', 'B' : 'V',
+    'H' : 'D', 'D' : 'H', 'N' : 'N'
+};
+
+function checkInput(s) {
+    for (var i = 0; i < s.length; i++) {
+        var character = s[i];
+        var lookup = reverseLookup[character];
+        if (lookup == "" || lookup == undefined) {
+            return character;
+        }
+    }
+    return null;
+}
+
+function calculate() {
+    var fwd = document.getElementById('forward').value.trim().toUpperCase();
+    var rev = document.getElementById('reverse').value.trim().toUpperCase();
+    var score = parseInt(document.getElementById('score').value);
+
+    if (fwd == "") {
+        alert("Missing forward sequence input!");
+        return;
+    }
+    if (rev == "") {
+        alert("Missing reverse sequence input!");
+        return;
+    }
+    if (fwd.length + rev.length <= 3) {
+        alert("Sequences to short!");
+        return;
+    }
+    var unknown1 = checkInput(fwd);
+    if (unknown1 != null) {
+        alert("Unknown base (" + unknown1 + ") in forward sequence!");
+        return;
+    }
+    var unknown2 = checkInput(rev);
+    if (unknown2 != null) {
+        alert("Unknown base (" + unknown2 + ") in reverse sequence!");
+        return;
+    }
+
+    var resultArea = document.getElementById("resultArea");
+    resultArea.innerText = "Calculating ... Please wait ... Results will appear here!";
+    resultArea.style.display = "block";
+    document.getElementById('exampleSection').style.display = "none";
+
+    var worker = new Worker("champuru.js");
+    worker.addEventListener("message", function(e) {
+        data = e.data;
+        resultArea.innerHTML = data.result;
+        worker.terminate();
+    });
+    worker.postMessage({"fwd" : fwd, "rev" : rev, "score" : score, "i" : 0, "j" : 0, "useOffsets" : false});
+}
+
+function askForOffset(title, fwd, rev) {
+    var input = prompt(title);
+    if (input == null || input == undefined) return NaN; // Cancel button
+    var i = parseInt(input.trim());
+    if (i == NaN) {
+        alert("Invalid input!");
+        return NaN;
+    }
+    if (!(-fwd.length + 1 <= i && i < rev.length)) {
+        alert("Invalid offset for input sequences!");
+        return NaN;
+    }
+    return i;
+}
+function rerunAnalysisWithDifferentOffsets(fwd, rev, method) {
+    var i = askForOffset("Please enter first offset:", fwd, rev);
+    if (isNaN(i)) return;
+    var j = askForOffset("Please enter second offset:", fwd, rev);
+    if (isNaN(j)) return;
+
+    var worker = new Worker("champuru.js");
+    worker.addEventListener("message", function(e) {
+        data = e.data;
+        resultArea.innerHTML = data.result;
+        worker.terminate();
+    });
+    worker.postMessage({"fwd" : fwd, "rev" : rev, "score" : method, "i" : i, "j" : j, "useOffsets" : true});
+}
+
+function resetForm() {
+    document.getElementById('forward').value = '';
+    document.getElementById('reverse').value = '';
+    document.getElementById('score').value = 1;
+    document.getElementById('resultArea').style.display = "none";
+    document.getElementById('exampleSection').style.display = "block";
+}
+
+function load(i) {
+    document.getElementById('forward').value = document.getElementById('example' + i + 'forward').innerText;
+    document.getElementById('reverse').value = document.getElementById('example' + i + 'reverse').innerText;
+}
+
+function reverse() {
+    var s = document.getElementById('reverse').value;
+    s = s.trim().toUpperCase();
+    if (s == "") {
+        alert("Please specify the sequence to reverse in the 'Reverse sequence' field.");
+        return;
+    }
+    var result = s.split("").reverse();
+    for (var i = 0; i < result.length; i++) {
+        var character = result[i];
+        result[i] = reverseLookup[character];
+        if (result[i] == "" || result[i] == undefined) {
+            alert("Illegal character '" + character + "' detected in 'Reverse sequence'!");
+            return;
+        }
+    }
+    result = result.join("");
+    document.getElementById('reverse').value = result;
+}
+
+function addColorsIfUnderscore(s) {
+    var result = []
+    for (var i = 0; i < s.length; i++) {
+        if (s[i] == "_") {
+            result.push("<span class='bgred'>_</span>");
+        } else {
+            result.push(s[i]);
+        }
+    }
+    return result.join("");
+}
+function colorConsensusByIncompatiblePositions() {
+    var txt1 = document.getElementById('consensus1').innerText;
+    var txt2 = document.getElementById('consensus2').innerText;
+    document.getElementById('consensus1').innerHTML = addColorsIfUnderscore(txt1);
+    document.getElementById('consensus2').innerHTML = addColorsIfUnderscore(txt2);
+}
+function addColorsIfAmb(s) {
+    var result = []
+    for (var i = 0; i < s.length; i++) {
+        if (s[i] == "_" || s[i] == "A" || s[i] == "C" || s[i] == "T" || s[i] == "G") {
+            result.push(s[i]);
+        } else {
+            result.push("<span class='bgred'>" + s[i] + "</span>");
+        }
+    }
+    return result.join("");
+}
+function colorConsensusByAmbPositions() {
+    var txt1 = document.getElementById('consensus1').innerText;
+    var txt2 = document.getElementById('consensus2').innerText;
+    document.getElementById('consensus1').innerHTML = addColorsIfAmb(txt1);
+    document.getElementById('consensus2').innerHTML = addColorsIfAmb(txt2);
+}
+function removeColor() {
+    var txt1 = document.getElementById('consensus1').innerText.trim();
+    var txt2 = document.getElementById('consensus2').innerText.trim();
+    document.getElementById('consensus1').innerText = txt1;
+    document.getElementById('consensus2').innerText = txt2;
+}
+function colorProblems() {
+    var txt1 = document.getElementById('reconstructed1').innerText;
+    var txt2 = document.getElementById('reconstructed2').innerText;
+    document.getElementById('reconstructed1').innerHTML = addColorsIfUnderscore(txt1);
+    document.getElementById('reconstructed2').innerHTML = addColorsIfUnderscore(txt2);
+}
+function colorAmbPos() {
+    var txt1 = document.getElementById('reconstructed1').innerText;
+    var txt2 = document.getElementById('reconstructed2').innerText;
+    document.getElementById('reconstructed1').innerHTML = addColorsIfAmb(txt1);
+    document.getElementById('reconstructed2').innerHTML = addColorsIfAmb(txt2);
+}
+function removeColorFinal() {
+    var txt1 = document.getElementById('reconstructed1').innerText.trim();
+    var txt2 = document.getElementById('reconstructed2').innerText.trim();
+    document.getElementById('reconstructed1').innerText = txt1;
+    document.getElementById('reconstructed2').innerText = txt2;
+}
+function download() {
+    var txt1 = document.getElementById('reconstructed1').innerText;
+    var txt2 = document.getElementById('reconstructed2').innerText;
+    var content = []
+    content.push(">first")
+    content.push(txt1);
+    content.push(">second")
+    content.push(txt2);
+    var b64 = window.btoa(content.join('\n'));
+    var link = "<a id='downloadLink' href-lang='text/fasta' href='data:text/fasta;base64,\n" + b64 + "' title='result.fasta' style='display:none' download='result.fasta'>Download</a>";
+    document.getElementById("hiddenDiv").innerHTML = link;
+    document.getElementById('downloadLink').click();
+}
+function highlight(id) {
+    var circle = document.getElementById(id);
+    var x = circle.getAttribute("cx");
+    var y = circle.getAttribute("cy");
+    var svg = document.getElementById("scorePlot");
+    var newElement = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    newElement.setAttribute("id", "addedCircle");
+    newElement.setAttribute("cx", x);
+    newElement.setAttribute("cy", y);
+    newElement.setAttribute("stroke", "red");
+    newElement.setAttribute("stroke-width", "2");
+    newElement.setAttribute("fill", "none");
+    newElement.setAttribute("r", "5");
+    svg.appendChild(newElement);
+}
+function removeHighlight(id) {
+    var svg = document.getElementById("scorePlot");
+    var circle = document.getElementById("addedCircle");
+    svg.removeChild(circle);
+}
+function toClipboard(id) {
+    var text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text);
+    return false;
+}
+
+        </script>
+    </body>
+</html>

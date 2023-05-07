@@ -1,0 +1,189 @@
+* {
+    font-family: Deja Vu;
+    font-size: 14px;
+    margin: 0px;
+    padding: 0px;
+}
+
+p {
+    margin: 10px;
+}
+
+.contentdiv {
+    margin: 10px;
+    margin: 0 auto;
+    width: 750px;
+}
+
+.contentdiv ol {
+    margin-left: 35px;
+}
+
+.contentdiv h1 {
+    font-size: 32px;
+    margin: 10px 5px 20px 5px;
+}
+
+.contentdiv h2 {
+    font-size: 28px;
+    margin: 10px 5px 20px 5px;
+}
+.contentdiv h5 {
+    font-size: 17px;
+    margin: 10px 5px 20px 5px;
+}
+.contentdiv table {
+    margin: 5px;
+}
+.contentdiv table .option {
+    font-weight: bold;
+}
+.contentdiv table .option a {
+    color: blue;
+    text-decoration: underline;
+}
+.contentdiv table .description {
+    font-style: italic;
+}
+.contentdiv .middle {
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+}
+.contentdiv button {
+    width: 250px;
+}
+
+.contentdiv .navigation {
+    margin-bottom: 15px;
+    display: block;
+    text-align: center;
+}
+.contentdiv .navigation a {
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+.faq {
+    margin-bottom: 25px;
+}
+.faqs .question {
+    font-weight: bold;
+    font-size: 17px;    
+    margin-bottom: 10px;
+}
+.faqs .answer {
+    margin-bottom: 20px;
+}
+
+.box {
+    color: black;
+    background-color: #EEEEEE;
+    border: 1.5px solid grey;
+    z-index: 10;
+    position: relative;
+    width: 200px;
+    height: 200px;
+    overflow: auto;
+    margin: 10px;
+    padding: 10px;
+    font-size: 14px;
+    box-shadow: 0 10px 10px 2px rgba(0,0,0,0.3);
+    border-radius: 4px;
+    float: left;
+}
+.box .logo {
+    margin: 0 auto;
+    width: 100px;
+    margin-top: 7px;
+}
+.box .title {
+    font-size: 15px;
+    font-weight: bold;
+    margin: 3px;
+    margin-top: 8px;
+}
+.box .description {
+    position: absolute;
+    font-size: 13px;
+    color: #434343;
+    margin: 3px;
+}
+
+.sequence {
+    font-family: monospace, monospace;
+    word-break: break-all;
+}
+
+.noindent {
+    text-indent: 0;
+}
+
+.right {
+    float: right;
+}
+
+fieldset {
+    background-color: #eeeeee;
+    padding: 7px;
+    padding-bottom: 25px;
+}
+legend {
+    background-color: gray;
+    color: white;
+    padding: 5px 10px;
+}
+
+.scoreTable {
+    margin: 0 auto;
+    background-color: white;
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+.scoreTable .header {
+    background-color: #ddd;
+}
+.scoreTable td {
+    padding: 2px 6px;
+    text-align: right;
+    border: 0px solid #000;
+}
+.scoreTable .odd:hover {
+    background-color: yellow;
+}
+.scoreTable .even:hover {
+    background-color: yellow;
+}
+.descTable {
+    border-collapse: collapse;
+}
+.descTable td {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+.descTable .even {
+    background-color: white;
+}
+.descTable .odd {
+    background-color: white;
+}
+.scoreTable .even {
+    background-color: #eee;
+}
+.scoreTable .odd {
+    background-color: #white;
+}
+.center {
+    margin: 0 auto !important;
+}
+.bgred {
+    font-family: monospace, monospace;
+    background-color: red;
+}
+.plot {
+    border: 1px solid black;
+}
+
+.greyout {
+    color: #999;
+}
