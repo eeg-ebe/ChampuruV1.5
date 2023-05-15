@@ -48,14 +48,21 @@ class SingleAmbiguousNucleotide
     private var mQuality:Bool = true;
     
     /**
+     * Whether this is no real SingleAmbiguousNucleotide but represents a
+     * space instead.
+     */
+    private var mSpace:Bool = true;
+    
+    /**
      * Create a new SingleAmbiguousNucleotide object.
      */
-    public function new(adenine:Bool, cythosine:Bool, thymine:Bool, guanine:Bool, quality:Bool) {
+    public function new(adenine:Bool, cythosine:Bool, thymine:Bool, guanine:Bool, quality:Bool, ?space=false) {
         mAdenine = adenine;
         mCytosine = cythosine;
         mThymine = thymine;
         mGuanine = guanine;
         mQuality = quality;
+        mSpace = false;
     }
 
     /**
@@ -100,38 +107,45 @@ class SingleAmbiguousNucleotide
         throw "Unknown character " + code + ". Cannot convert it into a nucleotide!";
     }
     
-	public static function union(l:List<SingleAmbiguousNucleotide>):SingleAmbiguousNucleotide {
-		var containsA:Bool = false;
-		for (aa in l) {
-			if (aa.canStandForAdenine()) {
-				containsA = true;
-				break;
-			}
-		}
-		var containsC:Bool = false;
-		for (aa in l) {
-			if (aa.canStandForCythosine()) {
-				containsC = true;
-				break;
-			}
-		}
-		var containsT:Bool = false;
-		for (aa in l) {
-			if (aa.canStandForThymine()) {
-				containsT = true;
-				break;
-			}
-		}
-		var containsG:Bool = false;
-		for (aa in l) {
-			if (aa.canStandForGuanine()) {
-				containsG = true;
-				break;
-			}
-		}
-		return new SingleAmbiguousNucleotide(containsA, containsC, containsT, containsG, true);
-	}
-	
+    public static function union(l:List<SingleAmbiguousNucleotide>):SingleAmbiguousNucleotide {
+        var containsA:Bool = false;
+        for (aa in l) {
+            if (aa.canStandForAdenine()) {
+                containsA = true;
+                break;
+            }
+        }
+        var containsC:Bool = false;
+        for (aa in l) {
+            if (aa.canStandForCythosine()) {
+                containsC = true;
+                break;
+            }
+        }
+        var containsT:Bool = false;
+        for (aa in l) {
+            if (aa.canStandForThymine()) {
+                containsT = true;
+                break;
+            }
+        }
+        var containsG:Bool = false;
+        for (aa in l) {
+            if (aa.canStandForGuanine()) {
+                containsG = true;
+                break;
+            }
+        }
+        return new SingleAmbiguousNucleotide(containsA, containsC, containsT, containsG, true);
+    }
+    
+    /**
+     * Check whether this is a space.
+     */
+    public inline function isSpace():Bool {
+        return mSpace;
+    }
+    
     /**
      * Check whether this SingleAmbiguousNucleotide can stand for adenine.
      */
@@ -187,7 +201,9 @@ class SingleAmbiguousNucleotide
      */
     public function toIUPACCode():String {
         var result:String = "-";
-        if (mAdenine && mCytosine && mGuanine && mThymine) {
+        if (mSpace) {
+            result = " ";
+        } else if (mAdenine && mCytosine && mGuanine && mThymine) {
             result = "N";
         } else if (mAdenine && mCytosine && mGuanine) {
             result = "V";
