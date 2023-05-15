@@ -25,11 +25,13 @@ import haxe.ds.Vector;
 class ScoreListVisualizer
 {
 	var scores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>;
+	var sortedScores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>;
 	var high:Float;
 	var low:Float;
 
-	public function new(sortedScores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>) {
-		scores = sortedScores;
+	public function new(scores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>, sortedScores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>) {
+		this.scores = scores;
+		this.sortedScores = sortedScores;
 		high = sortedScores[0].score;
 		var lowScore = sortedScores.pop();
 		sortedScores.push(lowScore);
@@ -73,7 +75,7 @@ class ScoreListVisualizer
         for (i in 0...28) {
             v[i] = 0;
         }
-        for (score in scores) {
+        for (score in sortedScores) {
             var scoreP:Float = ((score.score - low) / d);
             var b:Float = scoreP * 28;
             var i:Int = Math.floor(b);
@@ -97,7 +99,7 @@ class ScoreListVisualizer
             var y:Float = 365 - h;
             var from:Float = Math.round((i * hd + low) * 10) / 10.0;
             var to:Float = Math.round(((i + 1) * hd + low) * 10) / 10.0;
-            var percentage:Float = (Math.round(v[i] / scores.length * 1000) / 10.0);
+            var percentage:Float = (Math.round(v[i] / sortedScores.length * 1000) / 10.0);
             var alertMsg:String = "From: " + from + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)";
             result.add("<rect x='" + x + "' y='" + y + "' width='20' height='" + h + "' onclick='alert(\"" + alertMsg + "\");' />");
         }
