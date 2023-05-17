@@ -29,11 +29,11 @@ class ScoreCalculatorList
      */
     var mLst:Vector<AScoreCalculator>;
     
-	/**
-	 * An instance of this object.
-	 */
-	private static var sInstance:ScoreCalculatorList;
-	
+    /**
+     * An instance of this object.
+     */
+    private static var sInstance:ScoreCalculatorList;
+    
     /**
      * Create the ScoreCalculatorList.
      */
@@ -76,14 +76,14 @@ class ScoreCalculatorList
         }
         return result;
     }
-	
-	/**
-	 * Get an instance of this class.
-	 */
-	public static function instance():ScoreCalculatorList {
-		if (sInstance == null) {
-			sInstance = new ScoreCalculatorList();
-		}
-		return sInstance;
-	}
+    
+    /**
+     * Get an instance of this class.
+     */
+    public static function instance():ScoreCalculatorList {
+        if (sInstance == null) {
+            sInstance = new ScoreCalculatorList();
+        }
+        return sInstance;
+    }
 }

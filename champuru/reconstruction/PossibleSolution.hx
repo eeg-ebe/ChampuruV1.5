@@ -28,32 +28,32 @@ class PossibleSolution
      * The first sequence connected to this solution.
      */
     var mSeq1:AmbiguousNucleotideSequence;
-	
-	/**
-	 * The second sequence connected to this solution.
-	 */
+    
+    /**
+     * The second sequence connected to this solution.
+     */
     var mSeq2:AmbiguousNucleotideSequence;
-	
-	/**
-	 * The quality connected to this solution.
-	 */
-	var mQuality:Int;
-	
-	public function new(seq1:AmbiguousNucleotideSequence, seq2:AmbiguousNucleotideSequence, quality:Int) {
-		mSeq1 = seq1;
-		mSeq2 = seq2;
-		mQuality = quality;
-	}
-	
-	public function getSeq1():AmbiguousNucleotideSequence {
-		return mSeq1;
-	}
-	
-	public function getSeq2():AmbiguousNucleotideSequence {
-		return mSeq2;
-	}
-	
-	public function getQuality():Int {
-		return mQuality;
-	}
+    
+    /**
+     * The quality connected to this solution.
+     */
+    var mQuality:Int;
+    
+    public function new(seq1:AmbiguousNucleotideSequence, seq2:AmbiguousNucleotideSequence, quality:Int) {
+        mSeq1 = seq1;
+        mSeq2 = seq2;
+        mQuality = quality;
+    }
+    
+    public function getSeq1():AmbiguousNucleotideSequence {
+        return mSeq1;
+    }
+    
+    public function getSeq2():AmbiguousNucleotideSequence {
+        return mSeq2;
+    }
+    
+    public function getQuality():Int {
+        return mQuality;
+    }
 }

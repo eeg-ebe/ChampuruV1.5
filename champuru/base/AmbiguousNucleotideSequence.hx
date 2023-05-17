@@ -208,9 +208,9 @@ class AmbiguousNucleotideSequence
         }
         return new AmbiguousNucleotideSequence(seq);
     }
-	
-	/**
-	 * Main function.
-	 */
-	public static function main() {}
+    
+    /**
+     * Main function.
+     */
+    public static function main() {}
 }

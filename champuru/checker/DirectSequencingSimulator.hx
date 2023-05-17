@@ -93,13 +93,13 @@ class DirectSequencingSimulator
         
         return new AmbiguousNucleotideSequence(result);
     }
-	
-	public static inline function main():Void {
-		var s1:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString("cTAAATTCAAATCACACTCGCGAAAATCATGAA");
-		var s2:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString("CTRAATTCAAATCACACTCGCGAAATCATGAAa");
-		var r = simulateDirectSequencing(false, -1, s1, s2);
-		var orig:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString("YWRAWTYMAAWYMMMMYYSSSRAAATCRTGAA");
-		trace(r.toString());
-		trace(orig.isWithin(r));
-	}
+    
+    public static inline function main():Void {
+        var s1:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString("cTAAATTCAAATCACACTCGCGAAAATCATGAA");
+        var s2:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString("CTRAATTCAAATCACACTCGCGAAATCATGAAa");
+        var r = simulateDirectSequencing(false, -1, s1, s2);
+        var orig:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString("YWRAWTYMAAWYMMMMYYSSSRAAATCRTGAA");
+        trace(r.toString());
+        trace(orig.isWithin(r));
+    }
 }

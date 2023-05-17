@@ -24,19 +24,19 @@ import haxe.ds.Vector;
  */
 class ScoreListVisualizer
 {
-	var scores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>;
-	var sortedScores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>;
-	var high:Float;
-	var low:Float;
+    var scores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>;
+    var sortedScores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>;
+    var high:Float;
+    var low:Float;
 
-	public function new(scores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>, sortedScores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>) {
-		this.scores = scores;
-		this.sortedScores = sortedScores;
-		high = sortedScores[0].score;
-		var lowScore = sortedScores.pop();
-		sortedScores.push(lowScore);
-		low = lowScore.score;
-	}
+    public function new(scores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>, sortedScores:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>) {
+        this.scores = scores;
+        this.sortedScores = sortedScores;
+        high = sortedScores[0].score;
+        var lowScore = sortedScores.pop();
+        sortedScores.push(lowScore);
+        low = lowScore.score;
+    }
 
     public function genScorePlot():String {
         var result:List<String> = new List<String>();
