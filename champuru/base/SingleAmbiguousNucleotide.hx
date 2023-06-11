@@ -22,25 +22,15 @@ package champuru.base;
  */
 class SingleAmbiguousNucleotide
 {
+    @:final private static var sAdenine:Int = 1;
+    @:final private static var sCythosine:Int = 2;
+    @:final private static var sThymine:Int = 4;
+    @:final private static var sGuanine:Int = 8;
+
     /**
-     * Whether this (maybe ambiguous) nucleotide can stand for adenine.
+     * A code.
      */
-    private var mAdenine:Bool = false;
-    
-    /**
-     * Whether this (maybe ambiguous) nucleotide can stand for cythosine.
-     */
-    private var mCytosine:Bool = false;
-    
-    /**
-     * Whether this (maybe ambiguous) nucleotide can stand for thymine.
-     */
-    private var mThymine:Bool = false;
-    
-    /**
-     * Whether this (maybe ambiguous) nucleotide can stand for guanine.
-     */
-    private var mGuanine:Bool = false;
+    private var mCode:Int = 0;
     
     /**
      * Quality nucleotide.
@@ -57,10 +47,7 @@ class SingleAmbiguousNucleotide
      * Create a new SingleAmbiguousNucleotide object.
      */
     public function new(adenine:Bool, cythosine:Bool, thymine:Bool, guanine:Bool, quality:Bool, ?space=false) {
-        mAdenine = adenine;
-        mCytosine = cythosine;
-        mThymine = thymine;
-        mGuanine = guanine;
+        mCode = ((adenine) ? sAdenine : 0) + ((cythosine) ? sCythosine : 0) + ((thymine) ? sThymine : 0) + ((guanine) ? sGuanine : 0);
         mQuality = quality;
         mSpace = false;
     }
@@ -117,7 +104,7 @@ class SingleAmbiguousNucleotide
         }
         var containsC:Bool = false;
         for (aa in l) {
-            if (aa.canStandForCythosine()) {
+            if (aa.canStandForCytosine()) {
                 containsC = true;
                 break;
             }
@@ -150,28 +137,28 @@ class SingleAmbiguousNucleotide
      * Check whether this SingleAmbiguousNucleotide can stand for adenine.
      */
     public inline function canStandForAdenine():Bool {
-        return mAdenine;
+        return mCode & sAdenine != 0;
     }
     
     /**
      * Check whether this SingleAmbiguousNucleotide can stand for cythosine.
      */
-    public inline function canStandForCythosine():Bool {
-        return mCytosine;
+    public inline function canStandForCytosine():Bool {
+        return mCode & sCythosine != 0;
     }
     
     /**
      * Check whether this SingleAmbiguousNucleotide can stand for thymine.
      */
     public inline function canStandForThymine():Bool {
-        return mThymine;
+        return mCode & sThymine != 0;
     }
     
     /**
      * Check whether this SingleAmbiguousNucleotide can stand for guanine.
      */
     public inline function canStandForGuanine():Bool {
-        return mGuanine;
+        return mCode & sGuanine != 0;
     }
     
     /**
@@ -186,14 +173,14 @@ class SingleAmbiguousNucleotide
      * thus is standing for a gap.
      */
     public inline function isGap():Bool {
-        return !mAdenine && !mCytosine && !mGuanine && !mThymine;
+        return !canStandForAdenine() && !canStandForCytosine() && !canStandForGuanine() && !canStandForThymine();
     }
     
     /**
      * Check whether this SingleAmbiguousNucleotide is standing for all possibilities.
      */
     public inline function isN():Bool {
-        return mAdenine && mCytosine && mGuanine && mThymine;
+        return canStandForAdenine() && canStandForCytosine() && canStandForGuanine() && canStandForThymine();
     }
     
     /**
@@ -203,35 +190,35 @@ class SingleAmbiguousNucleotide
         var result:String = "-";
         if (mSpace) {
             result = " ";
-        } else if (mAdenine && mCytosine && mGuanine && mThymine) {
+        } else if (canStandForAdenine() && canStandForCytosine() && canStandForGuanine() && canStandForThymine()) {
             result = "N";
-        } else if (mAdenine && mCytosine && mGuanine) {
+        } else if (canStandForAdenine() && canStandForCytosine() && canStandForGuanine()) {
             result = "V";
-        } else if (mAdenine && mCytosine && mThymine) {
+        } else if (canStandForAdenine() && canStandForCytosine() && canStandForThymine()) {
             result = "H";
-        } else if (mAdenine && mGuanine && mThymine) {
+        } else if (canStandForAdenine() && canStandForGuanine() && canStandForThymine()) {
             result = "D";
-        } else if (mCytosine && mGuanine && mThymine) {
+        } else if (canStandForCytosine() && canStandForGuanine() && canStandForThymine()) {
             result = "B";
-        } else if (mAdenine && mCytosine) {
+        } else if (canStandForAdenine() && canStandForCytosine()) {
             result = "M";
-        } else if (mAdenine && mThymine) {
+        } else if (canStandForAdenine() && canStandForThymine()) {
             result = "W";
-        } else if (mAdenine && mGuanine) {
+        } else if (canStandForAdenine() && canStandForGuanine()) {
             result = "R";
-        } else if (mCytosine && mThymine) {
+        } else if (canStandForCytosine() && canStandForThymine()) {
             result = "Y";
-        } else if (mCytosine && mGuanine) {
+        } else if (canStandForCytosine() && canStandForGuanine()) {
             result = "S";
-        } else if (mThymine && mGuanine) {
+        } else if (canStandForThymine() && canStandForGuanine()) {
             result = "K";
-        } else if (mAdenine) {
+        } else if (canStandForAdenine()) {
             result = "A";
-        } else if (mCytosine) {
+        } else if (canStandForCytosine()) {
             result = "C";
-        } else if (mThymine) {
+        } else if (canStandForThymine()) {
             result = "T";
-        } else if (mGuanine) {
+        } else if (canStandForGuanine()) {
             result = "G";
         }
         if (!mQuality) {
@@ -245,16 +232,16 @@ class SingleAmbiguousNucleotide
      */
     public function countPossibleNucleotides():Int {
         var i:Int = 0;
-        if (mAdenine) {
+        if (canStandForAdenine()) {
             i++;
         }
-        if (mCytosine) {
+        if (canStandForCytosine()) {
             i++;
         }
-        if (mThymine) {
+        if (canStandForThymine()) {
             i++;
         }
-        if (mGuanine) {
+        if (canStandForGuanine()) {
             i++;
         }
         return i;
@@ -273,16 +260,16 @@ class SingleAmbiguousNucleotide
      * and the another SingleAmbiguousNucleotide.
      */
     public function matches(o:SingleAmbiguousNucleotide):Bool {
-        if (mAdenine && o.mAdenine) {
+        if (canStandForAdenine() && o.canStandForAdenine()) {
             return true;
         }
-        if (mCytosine && o.mCytosine) {
+        if (canStandForCytosine() && o.canStandForCytosine()) {
             return true;
         }
-        if (mThymine && o.mThymine) {
+        if (canStandForThymine() && o.canStandForThymine()) {
             return true;
         }
-        if (mGuanine && o.mGuanine) {
+        if (canStandForGuanine() && o.canStandForGuanine()) {
             return true;
         }
         return false;
@@ -292,16 +279,16 @@ class SingleAmbiguousNucleotide
      * Check whether this nucleotide is within another one.
      */
     public function isWithin(o:SingleAmbiguousNucleotide):Bool {
-        if (!mAdenine && o.mAdenine) {
+        if (!canStandForAdenine() && o.canStandForAdenine()) {
             return false;
         }
-        if (!mCytosine && o.mCytosine) {
+        if (!canStandForCytosine() && o.canStandForCytosine()) {
             return false;
         }
-        if (!mThymine && o.mThymine) {
+        if (!canStandForThymine() && o.canStandForThymine()) {
             return false;
         }
-        if (!mGuanine && o.mGuanine) {
+        if (!canStandForGuanine() && o.canStandForGuanine()) {
             return false;
         }
         return true;
@@ -311,16 +298,16 @@ class SingleAmbiguousNucleotide
      * Check whether this nucleotide equals another one.
      */
     public function equals(o:SingleAmbiguousNucleotide, alsoEq:Bool):Bool {
-        if (mAdenine != o.mAdenine) {
+        if (canStandForAdenine() != o.canStandForAdenine()) {
             return false;
         }
-        if (mCytosine != o.mCytosine) {
+        if (canStandForCytosine() != o.canStandForCytosine()) {
             return false;
         }
-        if (mThymine != o.mThymine) {
+        if (canStandForThymine() != o.canStandForThymine()) {
             return false;
         }
-        if (mGuanine != o.mGuanine) {
+        if (canStandForGuanine() != o.canStandForGuanine()) {
             return false;
         }
         if (alsoEq) {
@@ -335,10 +322,10 @@ class SingleAmbiguousNucleotide
      * Get the reverse nucleotide.
      */
     public function reverse():SingleAmbiguousNucleotide {
-        var adenine:Bool = mThymine;
-        var cythosine:Bool = mGuanine;
-        var thymine:Bool = mAdenine;
-        var guanine:Bool = mCytosine;
+        var adenine:Bool = canStandForThymine();
+        var cythosine:Bool = canStandForGuanine();
+        var thymine:Bool = canStandForAdenine();
+        var guanine:Bool = canStandForCytosine();
         return new SingleAmbiguousNucleotide(adenine, cythosine, thymine, guanine, mQuality);
     }
     
@@ -346,13 +333,13 @@ class SingleAmbiguousNucleotide
      * Clone this sequence.
      */
     public inline function clone():SingleAmbiguousNucleotide {
-        return new SingleAmbiguousNucleotide(mAdenine, mCytosine, mThymine, mGuanine, mQuality);
+        return new SingleAmbiguousNucleotide(canStandForAdenine(), canStandForCytosine(), canStandForThymine(), canStandForGuanine(), mQuality);
     }
     /**
      * Clone this sequence without quality.
      */
     public inline function cloneWithQual(quality:Bool):SingleAmbiguousNucleotide {
-        return new SingleAmbiguousNucleotide(mAdenine, mCytosine, mThymine, mGuanine, quality);
+        return new SingleAmbiguousNucleotide(canStandForAdenine(), canStandForCytosine(), canStandForThymine(), canStandForGuanine(), quality);
     }
     
     public static function main() {

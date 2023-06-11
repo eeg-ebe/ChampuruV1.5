@@ -60,11 +60,11 @@ class DirectSequencingSimulator
             var b:SingleAmbiguousNucleotide = rev.get(pos + revCorr);
             
             var adenine:Bool   = a.canStandForAdenine() || b.canStandForAdenine();
-            var cythosine:Bool = a.canStandForCythosine() || b.canStandForCythosine();
+            var cytosine:Bool = a.canStandForCytosine() || b.canStandForCytosine();
             var thymine:Bool   = a.canStandForThymine() || b.canStandForThymine();
             var guanine:Bool   = a.canStandForGuanine() || b.canStandForGuanine();
             
-            var copy:SingleAmbiguousNucleotide = new SingleAmbiguousNucleotide(adenine, cythosine, thymine, guanine, true);
+            var copy:SingleAmbiguousNucleotide = new SingleAmbiguousNucleotide(adenine, cytosine, thymine, guanine, true);
             result.add(copy);
         }
         

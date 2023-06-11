@@ -29,12 +29,12 @@ class OverlapSolver
      * The position.
      */
     var mPos:Int;
-    
+
     /**
      * The forward sequence.
      */
     var mFwd:AmbiguousNucleotideSequence;
-    
+
     /**
      * The reverse sequence.
      */
@@ -48,48 +48,48 @@ class OverlapSolver
         mFwd = fwd;
         mRev = rev;
     }
-    
+
     /**
      * Solve a particular overlap.
      */
     public function solve():AmbiguousNucleotideSequence {
-        var l:List<SingleAmbiguousNucleotide> = new List<SingleAmbiguousNucleotide>();
-        
+        var explained:List<SingleAmbiguousNucleotide> = new List<SingleAmbiguousNucleotide>();
+
         // prev
         if (mPos > 0) {
             for (i in 0...mPos) {
                 var c:SingleAmbiguousNucleotide = mRev.get(i);
                 var copy:SingleAmbiguousNucleotide = c.cloneWithQual(false);
-                l.add(copy);
+                explained.add(copy);
             }
         } else if (mPos < 0) {
             for (i in 0...-mPos) {
                 var c:SingleAmbiguousNucleotide = mFwd.get(i);
                 var copy:SingleAmbiguousNucleotide = c.cloneWithQual(false);
-                l.add(copy);
+                explained.add(copy);
             }
         } // ignore 0
-        
+
         // mid
         var fwdCorr:Int = (mPos < 0) ? -mPos : 0;
         var revCorr:Int = (mPos > 0) ?  mPos : 0;
         var fwdL:Int = fwdCorr + mRev.length();
         var revL:Int = revCorr + mFwd.length();
         var overlap:Int = ((fwdL < revL) ? fwdL : revL) - (fwdCorr + revCorr);
-        
+
         for (pos in 0...overlap) {
             var a:SingleAmbiguousNucleotide = mFwd.get(pos + fwdCorr);
             var b:SingleAmbiguousNucleotide = mRev.get(pos + revCorr);
-            
+
             var adenine:Bool   = a.canStandForAdenine() && b.canStandForAdenine();
-            var cythosine:Bool = a.canStandForCythosine() && b.canStandForCythosine();
+            var cytosine:Bool = a.canStandForCytosine() && b.canStandForCytosine();
             var thymine:Bool   = a.canStandForThymine() && b.canStandForThymine();
             var guanine:Bool   = a.canStandForGuanine() && b.canStandForGuanine();
-            
-            var copy:SingleAmbiguousNucleotide = new SingleAmbiguousNucleotide(adenine, cythosine, thymine, guanine, true);
-            l.add(copy);
+
+            var copy:SingleAmbiguousNucleotide = new SingleAmbiguousNucleotide(adenine, cytosine, thymine, guanine, a.isQuality() && b.isQuality());
+            explained.add(copy);
         }
-        
+
         // end
         var lenFwd:Int = mFwd.length() + ((mPos > 0) ? mPos : 0);
         var lenRev:Int = mRev.length() + ((mPos < 0) ? -mPos : 0);
@@ -99,7 +99,7 @@ class OverlapSolver
             for (i in 0...len) {
                 var c:SingleAmbiguousNucleotide = mFwd.get(posStart + i);
                 var copy:SingleAmbiguousNucleotide = c.cloneWithQual(false);
-                l.add(copy);
+                explained.add(copy);
             }
         } else if (lenRev > lenFwd) {
             var len:Int = lenRev - lenFwd;
@@ -107,10 +107,10 @@ class OverlapSolver
             for (i in 0...len) {
                 var c:SingleAmbiguousNucleotide = mRev.get(posStart + i);
                 var copy:SingleAmbiguousNucleotide = c.cloneWithQual(false);
-                l.add(copy);
+                explained.add(copy);
             }
         }
-        
-        return new AmbiguousNucleotideSequence(l);
+
+        return new AmbiguousNucleotideSequence(explained);
     }
 }

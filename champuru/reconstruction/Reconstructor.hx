@@ -16,6 +16,7 @@
 package champuru.reconstruction;
 
 import champuru.base.AmbiguousNucleotideSequence;
+import champuru.base.SingleAmbiguousNucleotide;
 
 /**
  * Class to reconstruct a particular Champuru situation.
@@ -60,12 +61,97 @@ class Reconstructor
     }
 
     /**
+     * Get the unexplained part of an overlap.
+     */
+    public function resolve(orig:AmbiguousNucleotideSequence, neg:AmbiguousNucleotideSequence):AmbiguousNucleotideSequence {
+        var l:List<SingleAmbiguousNucleotide> = new List<SingleAmbiguousNucleotide>();
+
+        var pointer1:Int = 0;
+        var pointer2:Int = 0;
+        
+        // begin
+        for (i in 0...orig.length()) {
+            var c:SingleAmbiguousNucleotide = orig.get(i);
+            if (c.isQuality()) {
+                break;
+            }
+            l.add(c);
+            pointer1 = i;
+        }
+        for (i in 0...neg.length()) {
+            var c:SingleAmbiguousNucleotide = neg.get(i);
+            if (c.isQuality()) {
+                break;
+            }
+            pointer2 = i;
+        }
+        
+        // mid
+        while(pointer1 < orig.length() && pointer2 < neg.length()) {
+            var a:SingleAmbiguousNucleotide = orig.get(pointer1);
+            pointer1++;
+            var b:SingleAmbiguousNucleotide = neg.get(pointer2);
+            pointer2++;
+            
+            if (!a.isQuality() || !b.isQuality()) {
+                break;
+            }
+            
+            var adenine:Bool   = a.canStandForAdenine() && b.canStandForAdenine();
+            var cytosine:Bool  = a.canStandForCytosine() && b.canStandForCytosine();
+            var thymine:Bool   = a.canStandForThymine() && b.canStandForThymine();
+            var guanine:Bool   = a.canStandForGuanine() && b.canStandForGuanine();
+            
+            var m:SingleAmbiguousNucleotide = new SingleAmbiguousNucleotide(adenine, cytosine, thymine, guanine, true);
+            if (m.countPossibleNucleotides() == 0) {
+                //m = a;
+            }
+            
+            l.add(m);
+        }
+        
+        // end
+        while (pointer1 < orig.length()) {
+            var c:SingleAmbiguousNucleotide = orig.get(pointer1);
+            pointer1++;
+            l.add(c);
+        }
+
+        var result:AmbiguousNucleotideSequence = new AmbiguousNucleotideSequence(l);
+        return result;
+    }
+
+    /**
      * Solve a particular situation.
      */
-    public function solve(overlap1:AmbiguousNucleotideSequence, overlap2:AmbiguousNucleotideSequence):List<PossibleSolution> {
+    public function solve(overlap1:AmbiguousNucleotideSequence, overlap2:AmbiguousNucleotideSequence):{ newOverlap1:AmbiguousNucleotideSequence, newOverlap2:AmbiguousNucleotideSequence, changed:Bool, problems:Bool } {
         var cpy1:AmbiguousNucleotideSequence = overlap1.clone();
         var cpy2:AmbiguousNucleotideSequence = overlap2.clone();
         
-        return null; // _solve(cpy1, cpy2); // TODO
+        var changed:Bool = false;
+        var problems:Bool = false;
+        
+        
+        
+        return {
+            newOverlap1 : cpy1,
+            newOverlap2 : cpy2,
+            changed: changed,
+            problems: problems
+        }
+    }
+    
+    /**
+     * Solve a particular situation.
+     */
+    private function _solve(overlap1:AmbiguousNucleotideSequence, overlap2:AmbiguousNucleotideSequence, r1:AmbiguousNucleotideSequence, r2:AmbiguousNucleotideSequence):List<PossibleSolution> {
+        var l:List<PossibleSolution> = new List<PossibleSolution>();
+        
+        var s1:AmbiguousNucleotideSequence = resolve(overlap1, r2);
+        var s2:AmbiguousNucleotideSequence = resolve(overlap2, r1);
+        
+        var p:PossibleSolution = new PossibleSolution(s1, s2, 1);
+        l.add(p);
+        return l;
     }
 }
