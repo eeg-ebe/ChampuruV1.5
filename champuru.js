@@ -11,6 +11,54 @@ Std.__name__ = true;
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
 };
+var StringTools = function() { };
+StringTools.__name__ = true;
+StringTools.htmlEscape = function(s,quotes) {
+	var buf_b = "";
+	var _g_offset = 0;
+	var _g_s = s;
+	while(_g_offset < _g_s.length) {
+		var s = _g_s;
+		var index = _g_offset++;
+		var c = s.charCodeAt(index);
+		if(c >= 55296 && c <= 56319) {
+			c = c - 55232 << 10 | s.charCodeAt(index + 1) & 1023;
+		}
+		var c1 = c;
+		if(c1 >= 65536) {
+			++_g_offset;
+		}
+		var code = c1;
+		switch(code) {
+		case 34:
+			if(quotes) {
+				buf_b += "&quot;";
+			} else {
+				buf_b += String.fromCodePoint(code);
+			}
+			break;
+		case 38:
+			buf_b += "&amp;";
+			break;
+		case 39:
+			if(quotes) {
+				buf_b += "&#039;";
+			} else {
+				buf_b += String.fromCodePoint(code);
+			}
+			break;
+		case 60:
+			buf_b += "&lt;";
+			break;
+		case 62:
+			buf_b += "&gt;";
+			break;
+		default:
+			buf_b += String.fromCodePoint(code);
+		}
+	}
+	return buf_b;
+};
 var haxe_ds_List = function() {
 	this.length = 0;
 };
@@ -25,6 +73,21 @@ haxe_ds_List.prototype = {
 		}
 		this.q = x;
 		this.length++;
+	}
+	,push: function(item) {
+		var x = new haxe_ds__$List_ListNode(item,this.h);
+		this.h = x;
+		if(this.q == null) {
+			this.q = x;
+		}
+		this.length++;
+	}
+	,last: function() {
+		if(this.q == null) {
+			return null;
+		} else {
+			return this.q.item;
+		}
 	}
 	,clear: function() {
 		this.h = null;
@@ -70,6 +133,15 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	}
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	champuru_Worker.out("<fieldset>");
+	champuru_Worker.out("<legend>Output of &quot;old&quot; Champuru program</legend>");
+	champuru_Worker.out("<pre>");
+	var output = champuru_perl_PerlChampuruReimplementation.runChampuru(fwd,rev,false).getOutput();
+	output = StringTools.htmlEscape(output);
+	champuru_Worker.out(output);
+	champuru_Worker.out("</pre>");
+	champuru_Worker.out("</fieldset>");
+	champuru_Worker.out("<br>");
 	return { result : champuru_Worker.mMsgs.join("")};
 };
 champuru_Worker.onMessage = function(e) {
@@ -91,457 +163,405 @@ champuru_Worker.main = function() {
 	champuru_Worker.workerScope = self;
 	champuru_Worker.workerScope.onmessage = champuru_Worker.onMessage;
 };
-var champuru_base_AmbiguousNucleotideSequence = function(seq) {
-	if(seq == null) {
-		this.mSequence = new haxe_ds_IntMap();
-		this.mLength = 0;
-	} else {
-		this.mSequence = new haxe_ds_IntMap();
-		var i = 0;
-		var _g_head = seq.h;
-		while(_g_head != null) {
-			var val = _g_head.item;
-			_g_head = _g_head.next;
-			var c = val;
-			this.mSequence.h[i] = c;
-			++i;
+var champuru_perl_PerlChampuruReimplementation = function() { };
+champuru_perl_PerlChampuruReimplementation.__name__ = true;
+champuru_perl_PerlChampuruReimplementation.stringifyIntMap = function(o) {
+	var result = new haxe_ds_List();
+	var minVal = 0;
+	var maxVal = 0;
+	var init = true;
+	var key = o.keys();
+	while(key.hasNext()) {
+		var key1 = key.next();
+		if(init) {
+			minVal = key1;
+			maxVal = key1;
+			init = false;
 		}
-		this.mLength = seq.length;
+		if(key1 < minVal) {
+			minVal = key1;
+		}
+		if(key1 > maxVal) {
+			maxVal = key1;
+		}
 	}
+	var _g = minVal;
+	var _g1 = maxVal + 1;
+	while(_g < _g1) {
+		var key = _g++;
+		if(o.h.hasOwnProperty(key)) {
+			var v = o.h[key];
+			result.add(v);
+		}
+	}
+	return result.join("");
 };
-champuru_base_AmbiguousNucleotideSequence.__name__ = true;
-champuru_base_AmbiguousNucleotideSequence.fromString = function(str) {
-	var list = new haxe_ds_List();
+champuru_perl_PerlChampuruReimplementation.replaceCharInString = function(s,i,c) {
+	var prev = s.substring(0,i);
+	var end = s.substring(i + 1,s.length);
+	return prev + c + end;
+};
+champuru_perl_PerlChampuruReimplementation.splice = function(s,i,l) {
+	var start = s.substring(0,i);
+	var end = s.substring(i + l);
+	return start + end;
+};
+champuru_perl_PerlChampuruReimplementation.reverseString = function(s) {
+	var result = new haxe_ds_List();
 	var _g = 0;
-	var _g1 = str.length;
+	var _g1 = s.length;
 	while(_g < _g1) {
 		var i = _g++;
-		var ch = str.charAt(i);
-		var nucleotide = champuru_base_SingleAmbiguousNucleotide.getNucleotideByIUPACCode(ch);
-		list.add(nucleotide);
+		var c = s.charAt(i);
+		result.push(c);
 	}
-	return new champuru_base_AmbiguousNucleotideSequence(list);
+	return result.join("");
 };
-champuru_base_AmbiguousNucleotideSequence.main = function() {
+champuru_perl_PerlChampuruReimplementation.comp = function(a,b) {
+	var intersection = champuru_perl_PerlChampuruReimplementation.code.h[a] & champuru_perl_PerlChampuruReimplementation.code.h[b];
+	if(intersection == 0) {
+		return 0;
+	} else {
+		return 1;
+	}
 };
-champuru_base_AmbiguousNucleotideSequence.prototype = {
-	length: function() {
-		return this.mLength;
+champuru_perl_PerlChampuruReimplementation.inter = function(a,b) {
+	var intersection = champuru_perl_PerlChampuruReimplementation.code.h[a] & champuru_perl_PerlChampuruReimplementation.code.h[b];
+	if(intersection == 0) {
+		return "_";
+	} else {
+		return champuru_perl_PerlChampuruReimplementation.rev_code.h[intersection];
 	}
-	,iterator: function() {
-		var seq = new haxe_ds_List();
-		var _g = 0;
-		var _g1 = this.mLength;
-		while(_g < _g1) {
-			var i = _g++;
-			var c = this.mSequence.h[i];
-			seq.add(c);
-		}
-		return new haxe_ds__$List_ListIterator(seq.h);
+};
+champuru_perl_PerlChampuruReimplementation.max = function(a,b) {
+	if(a > b) {
+		return a;
+	} else {
+		return b;
 	}
-	,get: function(i) {
-		if(!(0 <= i && i < this.mLength)) {
-			throw haxe_Exception.thrown("Position " + i + " out of range [0," + this.mLength + "(");
-		}
-		return this.mSequence.h[i];
+};
+champuru_perl_PerlChampuruReimplementation.min = function(a,b) {
+	if(a < b) {
+		return a;
+	} else {
+		return b;
 	}
-	,replace: function(i,c) {
-		if(c == null) {
-			throw haxe_Exception.thrown("c must not be null!");
+};
+champuru_perl_PerlChampuruReimplementation.runChampuru = function(forward,reverse,opt_c) {
+	var result = new champuru_perl_PerlChampuruResult();
+	result.print("\n");
+	result.print("Champuru (command-line version)\n\n");
+	result.print("Reference:\nFlot, J.-F. (2007) Champuru 1.0: a computer software for unraveling mixtures of two DNA sequences of unequal lengths. Molecular Ecology Notes 7 (6): 974-977\n\n");
+	result.print("Usage: perl champuru.pl -f <forward sequence> -r <reverse sequence> -o <FASTA output> -n <sample name> -c\nThe forward and reverse sequences should be provided as text files (with the whole sequence on a single line).\nPlease use the switch -c if the reverse sequence has to be reverse-complemented (this switch should not be used if the sequence has already been reverse-complemented, for instance because it is copied from a contig editor).\nIf an output file name is specified and no problem is detected in the input data, the two reconstructed sequences will be appended to the output file in FASTA format using the specified sample name followed by 'a' and 'b'.\n\n");
+	var _g = 0;
+	var _g1 = forward.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var r = forward.charAt(i);
+		if(champuru_perl_PerlChampuruReimplementation.bases.indexOf(r) == -1) {
+			result.print("Unknown base (" + r + ") in forward sequence!");
+			return result;
 		}
-		if(!(0 <= i && i < this.mLength)) {
-			throw haxe_Exception.thrown("Position " + i + " out of range [0," + this.mLength + "(");
-		}
-		this.mSequence.h[i] = c;
 	}
-	,reverse: function() {
-		var seq = new haxe_ds_List();
-		var i = this.mLength - 1;
-		while(i <= 0) {
-			var c = this.mSequence.h[i];
-			seq.add(c);
+	var _g = 0;
+	var _g1 = reverse.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var r = reverse.charAt(i);
+		if(champuru_perl_PerlChampuruReimplementation.bases.indexOf(r) == -1) {
+			result.print("Unknown base ($r) in reverse sequence!");
+			return result;
+		}
+	}
+	result.print("Length of forward sequence: " + forward.length + " bases\n");
+	result.print("Length of reverse sequence: " + reverse.length + " bases\n");
+	if(opt_c) {
+		var sb = new haxe_ds_List();
+		var i = reverse.length - 1;
+		while(i >= 0) {
+			var c = reverse.charAt(i);
+			var rev = champuru_perl_PerlChampuruReimplementation.complement.h[c];
+			sb.add(rev);
 			--i;
 		}
-		var result = new champuru_base_AmbiguousNucleotideSequence(seq);
+		reverse = sb.join("");
+	}
+	var scoremax1 = 0;
+	var scoremax2 = 0;
+	var scoremax3 = 0;
+	var imax1 = 0;
+	var imax2 = 0;
+	var imax3 = 0;
+	var i = -(forward.length - 1);
+	while(i < reverse.length) {
+		var score = 0;
+		if(i < 0) {
+			var _g = 0;
+			var a = forward.length + i;
+			var b = reverse.length;
+			var _g1 = a < b ? a : b;
+			while(_g < _g1) {
+				var j = _g++;
+				score += champuru_perl_PerlChampuruReimplementation.comp(forward.charAt(j - i),reverse.charAt(j));
+			}
+			score -= (forward.length + i) / 4;
+		} else if(i > 0) {
+			var _g2 = 0;
+			var a1 = forward.length;
+			var b1 = reverse.length - i;
+			var _g3 = a1 < b1 ? a1 : b1;
+			while(_g2 < _g3) {
+				var j1 = _g2++;
+				score += champuru_perl_PerlChampuruReimplementation.comp(forward.charAt(j1),reverse.charAt(j1 + i));
+			}
+			score -= (forward.length + i) / 4;
+		} else if(i == 0) {
+			var _g4 = 0;
+			var a2 = forward.length;
+			var b2 = reverse.length;
+			var _g5 = a2 < b2 ? a2 : b2;
+			while(_g4 < _g5) {
+				var j2 = _g4++;
+				score += champuru_perl_PerlChampuruReimplementation.comp(forward.charAt(j2),reverse.charAt(j2));
+			}
+			score -= (forward.length + i) / 4;
+		}
+		if(score > scoremax1) {
+			imax3 = imax2;
+			imax2 = imax1;
+			imax1 = i;
+			scoremax3 = scoremax2;
+			scoremax2 = scoremax1;
+			scoremax1 = score;
+		} else if(score > scoremax2) {
+			imax3 = imax2;
+			imax2 = i;
+			scoremax3 = scoremax2;
+			scoremax2 = score;
+		} else if(score > scoremax3) {
+			imax3 = i;
+			scoremax3 = score;
+		}
+		++i;
+	}
+	result.print("Best compatibility score: " + scoremax1 + " (offset: " + imax1 + ")\n");
+	result.print("Second best compatibility score: " + scoremax2 + " (offset: " + imax2 + ")\n");
+	result.print("Third best compatibility score: " + scoremax3 + " (offset: " + imax3 + ")\n\n");
+	var seq1_ = new haxe_ds_IntMap();
+	var seq2_ = new haxe_ds_IntMap();
+	var j = -(imax1 < 0 ? imax1 : 0);
+	while(true) {
+		var a = forward.length;
+		var b = reverse.length - imax1;
+		if(!(j < (a < b ? a : b))) {
+			break;
+		}
+		var value = champuru_perl_PerlChampuruReimplementation.inter(forward.charAt(j),reverse.charAt(j + (imax1 < 0 ? imax1 : 0) + (imax1 > 0 ? imax1 : 0)));
+		seq1_.h[j + (imax1 < 0 ? imax1 : 0)] = value;
+		++j;
+	}
+	j = -(imax2 < 0 ? imax2 : 0);
+	while(true) {
+		var a = forward.length;
+		var b = reverse.length - imax2;
+		if(!(j < (a < b ? a : b))) {
+			break;
+		}
+		var value = champuru_perl_PerlChampuruReimplementation.inter(forward.charAt(j),reverse.charAt(j + (imax2 < 0 ? imax2 : 0) + (imax2 > 0 ? imax2 : 0)));
+		seq2_.h[j + (imax2 < 0 ? imax2 : 0)] = value;
+		++j;
+	}
+	var incomp = 0;
+	var k = seq1_.keys();
+	while(k.hasNext()) {
+		var k1 = k.next();
+		var r = seq1_.h[k1];
+		if(r == "_") {
+			++incomp;
+		}
+	}
+	var k = seq2_.keys();
+	while(k.hasNext()) {
+		var k1 = k.next();
+		var r = seq2_.h[k1];
+		if(r == "_") {
+			++incomp;
+		}
+	}
+	var seq1 = champuru_perl_PerlChampuruReimplementation.stringifyIntMap(seq1_);
+	var seq2 = champuru_perl_PerlChampuruReimplementation.stringifyIntMap(seq2_);
+	if(incomp > 0) {
+		result.print("First reconstructed sequence: ");
+		result.print(seq1);
+		result.print("\n");
+		result.print("Second reconstructed sequence: ");
+		result.print(seq2);
+		result.print("\n");
+	}
+	if(incomp == 1) {
+		result.print("There is 1 incompatible position (indicated with an underscore), please check the input sequences.\n");
 		return result;
 	}
-	,toString: function() {
-		var result = new haxe_ds_List();
-		var _g = 0;
-		var _g1 = this.mLength;
-		while(_g < _g1) {
-			var i = _g++;
-			var c = this.mSequence.h[i];
-			var s = c.toIUPACCode();
-			result.add(s);
-		}
-		return result.join("");
-	}
-	,countAmbigiuous: function() {
-		var result = 0;
-		var _g = 0;
-		var _g1 = this.mLength;
-		while(_g < _g1) {
-			var i = _g++;
-			var c = this.mSequence.h[i];
-			var count = c.countPossibleNucleotides();
-			if(count >= 2) {
-				++result;
-			}
-		}
+	if(incomp > 1) {
+		result.print("There are " + incomp + " incompatible positions (indicated with underscores), please check the input sequences.\n");
 		return result;
 	}
-	,countGaps: function() {
-		var result = 0;
-		var _g = 0;
-		var _g1 = this.mLength;
-		while(_g < _g1) {
-			var i = _g++;
-			var c = this.mSequence.h[i];
-			if(!c.mAdenine && !c.mCytosine && !c.mGuanine && !c.mThymine) {
-				++result;
-			}
-		}
-		return result;
-	}
-	,matches: function(s) {
-		if(this.mLength != s.mLength) {
-			return false;
-		}
-		var _g = 0;
-		var _g1 = this.mLength;
-		while(_g < _g1) {
-			var i = _g++;
-			if(!(0 <= i && i < this.mLength)) {
-				throw haxe_Exception.thrown("Position " + i + " out of range [0," + this.mLength + "(");
-			}
-			var c1 = this.mSequence.h[i];
-			if(!(0 <= i && i < s.mLength)) {
-				throw haxe_Exception.thrown("Position " + i + " out of range [0," + s.mLength + "(");
-			}
-			var c2 = s.mSequence.h[i];
-			if(!c1.matches(c2)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	,isWithin: function(s) {
-		if(this.mLength != s.mLength) {
-			return false;
-		}
-		var _g = 0;
-		var _g1 = this.mLength;
-		while(_g < _g1) {
-			var i = _g++;
-			if(!(0 <= i && i < this.mLength)) {
-				throw haxe_Exception.thrown("Position " + i + " out of range [0," + this.mLength + "(");
-			}
-			var c1 = this.mSequence.h[i];
-			if(!(0 <= i && i < s.mLength)) {
-				throw haxe_Exception.thrown("Position " + i + " out of range [0," + s.mLength + "(");
-			}
-			var c2 = s.mSequence.h[i];
-			if(!c1.isWithin(c2)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	,clone: function() {
-		var seq = new haxe_ds_List();
-		var _g = 0;
-		var _g1 = this.mLength;
-		while(_g < _g1) {
-			var i = _g++;
-			if(!(0 <= i && i < this.mLength)) {
-				throw haxe_Exception.thrown("Position " + i + " out of range [0," + this.mLength + "(");
-			}
-			var c = this.mSequence.h[i];
-			seq.add(c);
-		}
-		return new champuru_base_AmbiguousNucleotideSequence(seq);
-	}
-	,__class__: champuru_base_AmbiguousNucleotideSequence
-};
-var champuru_base_SingleAmbiguousNucleotide = function(adenine,cythosine,thymine,guanine,quality) {
-	this.mQuality = true;
-	this.mGuanine = false;
-	this.mThymine = false;
-	this.mCytosine = false;
-	this.mAdenine = false;
-	this.mAdenine = adenine;
-	this.mCytosine = cythosine;
-	this.mThymine = thymine;
-	this.mGuanine = guanine;
-	this.mQuality = quality;
-};
-champuru_base_SingleAmbiguousNucleotide.__name__ = true;
-champuru_base_SingleAmbiguousNucleotide.getNucleotideByIUPACCode = function(ocode) {
-	var code = ocode.toUpperCase();
-	var quality = code == ocode;
-	if(code == "." || code == "-") {
-		return new champuru_base_SingleAmbiguousNucleotide(false,false,false,false,quality);
-	} else if(code == "A") {
-		return new champuru_base_SingleAmbiguousNucleotide(true,false,false,false,quality);
-	} else if(code == "C") {
-		return new champuru_base_SingleAmbiguousNucleotide(false,true,false,false,quality);
-	} else if(code == "T") {
-		return new champuru_base_SingleAmbiguousNucleotide(false,false,true,false,quality);
-	} else if(code == "G") {
-		return new champuru_base_SingleAmbiguousNucleotide(false,false,false,true,quality);
-	} else if(code == "K") {
-		return new champuru_base_SingleAmbiguousNucleotide(false,false,true,true,quality);
-	} else if(code == "S") {
-		return new champuru_base_SingleAmbiguousNucleotide(false,true,false,true,quality);
-	} else if(code == "R") {
-		return new champuru_base_SingleAmbiguousNucleotide(true,false,false,true,quality);
-	} else if(code == "Y") {
-		return new champuru_base_SingleAmbiguousNucleotide(false,true,true,false,quality);
-	} else if(code == "W") {
-		return new champuru_base_SingleAmbiguousNucleotide(true,false,true,false,quality);
-	} else if(code == "M") {
-		return new champuru_base_SingleAmbiguousNucleotide(true,true,false,false,quality);
-	} else if(code == "B") {
-		return new champuru_base_SingleAmbiguousNucleotide(false,true,true,true,quality);
-	} else if(code == "D") {
-		return new champuru_base_SingleAmbiguousNucleotide(true,false,true,true,quality);
-	} else if(code == "V") {
-		return new champuru_base_SingleAmbiguousNucleotide(true,true,false,true,quality);
-	} else if(code == "H") {
-		return new champuru_base_SingleAmbiguousNucleotide(true,true,true,false,quality);
-	} else if(code == "N") {
-		return new champuru_base_SingleAmbiguousNucleotide(true,true,true,true,quality);
-	}
-	throw haxe_Exception.thrown("Unknown character " + code + ". Cannot convert it into a nucleotide!");
-};
-champuru_base_SingleAmbiguousNucleotide.union = function(l) {
-	var containsA = false;
-	var _g_head = l.h;
-	while(_g_head != null) {
-		var val = _g_head.item;
-		_g_head = _g_head.next;
-		var aa = val;
-		if(aa.mAdenine) {
-			containsA = true;
-			break;
-		}
-	}
-	var containsC = false;
-	var _g1_head = l.h;
-	while(_g1_head != null) {
-		var val = _g1_head.item;
-		_g1_head = _g1_head.next;
-		var aa = val;
-		if(aa.mCytosine) {
-			containsC = true;
-			break;
-		}
-	}
-	var containsT = false;
-	var _g2_head = l.h;
-	while(_g2_head != null) {
-		var val = _g2_head.item;
-		_g2_head = _g2_head.next;
-		var aa = val;
-		if(aa.mThymine) {
-			containsT = true;
-			break;
-		}
-	}
-	var containsG = false;
-	var _g3_head = l.h;
-	while(_g3_head != null) {
-		var val = _g3_head.item;
-		_g3_head = _g3_head.next;
-		var aa = val;
-		if(aa.mGuanine) {
-			containsG = true;
-			break;
-		}
-	}
-	return new champuru_base_SingleAmbiguousNucleotide(containsA,containsC,containsT,containsG,true);
-};
-champuru_base_SingleAmbiguousNucleotide.main = function() {
-	var seq = "CTRAATTCAAATCACACTCGCGAAAWYMWKRAA";
-	var seq2 = "YWRAWTYMAAWYMMMMYYSSSRAAATCATGAA";
-	console.log("champuru/base/SingleAmbiguousNucleotide.hx:345:","  " + seq);
+	var seq1rev = champuru_perl_PerlChampuruReimplementation.reverseString(seq1);
+	var seq2rev = champuru_perl_PerlChampuruReimplementation.reverseString(seq2);
+	var reverserev = champuru_perl_PerlChampuruReimplementation.reverseString(reverse);
+	var a = forward.length - 1 - (reverse.length - 1) + imax1;
+	var a1 = forward.length - 1 - (reverse.length - 1) + imax2;
+	var a2 = (a < 0 ? a : 0) - (a1 < 0 ? a1 : 0);
+	seq1rev = champuru_perl_PerlChampuruReimplementation.splice(seq1rev,0,a2 > 0 ? a2 : 0);
+	var a = forward.length - 1 - (reverse.length - 1) + imax2;
+	var a1 = forward.length - 1 - (reverse.length - 1) + imax1;
+	var a2 = (a < 0 ? a : 0) - (a1 < 0 ? a1 : 0);
+	seq2rev = champuru_perl_PerlChampuruReimplementation.splice(seq2rev,0,a2 > 0 ? a2 : 0);
+	var a = forward.length - 1 - (reverse.length - 1) + (imax1 < imax2 ? imax1 : imax2);
+	var cutreverserev = -(a < 0 ? a : 0);
+	reverserev = champuru_perl_PerlChampuruReimplementation.splice(reverserev,0,cutreverserev);
+	seq1 = champuru_perl_PerlChampuruReimplementation.reverseString(seq1rev);
+	seq2 = champuru_perl_PerlChampuruReimplementation.reverseString(seq2rev);
+	reverse = champuru_perl_PerlChampuruReimplementation.reverseString(reverserev);
+	var a = (imax1 < 0 ? imax1 : 0) - (imax2 < 0 ? imax2 : 0);
+	seq1 = champuru_perl_PerlChampuruReimplementation.splice(seq1,0,a > 0 ? a : 0);
+	var a = (imax2 < 0 ? imax2 : 0) - (imax1 < 0 ? imax1 : 0);
+	seq2 = champuru_perl_PerlChampuruReimplementation.splice(seq2,0,a > 0 ? a : 0);
+	var a = imax1 < imax2 ? imax1 : imax2;
+	var cutforward = -(a < 0 ? a : 0);
+	forward = champuru_perl_PerlChampuruReimplementation.splice(forward,0,cutforward);
 	var _g = 0;
-	var _g1 = seq2.length;
+	while(_g < 3) {
+		var i = _g++;
+		var _g1 = 0;
+		var a = seq1.length;
+		var b = seq2.length;
+		var _g2 = a < b ? a : b;
+		while(_g1 < _g2) {
+			var j = _g1++;
+			if(seq1.charAt(j) != seq2.charAt(j)) {
+				if(champuru_perl_PerlChampuruReimplementation.comp(seq1.charAt(j),seq2.charAt(j)) == 1) {
+					if(champuru_perl_PerlChampuruReimplementation.code.h[seq1.charAt(j)] > champuru_perl_PerlChampuruReimplementation.code.h[seq2.charAt(j)]) {
+						seq1 = champuru_perl_PerlChampuruReimplementation.replaceCharInString(seq1,j,champuru_perl_PerlChampuruReimplementation.rev_code.h[champuru_perl_PerlChampuruReimplementation.code.h[seq1.charAt(j)] - champuru_perl_PerlChampuruReimplementation.code.h[seq2.charAt(j)]]);
+					} else {
+						seq2 = champuru_perl_PerlChampuruReimplementation.replaceCharInString(seq2,j,champuru_perl_PerlChampuruReimplementation.rev_code.h[champuru_perl_PerlChampuruReimplementation.code.h[seq2.charAt(j)] - champuru_perl_PerlChampuruReimplementation.code.h[seq1.charAt(j)]]);
+					}
+				}
+			}
+			if(seq1.charAt(seq1.length - 1 - j) != seq2.charAt(seq2.length - 1 - j)) {
+				if(champuru_perl_PerlChampuruReimplementation.comp(seq1.charAt(seq1.length - 1 - j),seq2.charAt(seq2.length - 1 - j)) == 1) {
+					if(champuru_perl_PerlChampuruReimplementation.code.h[seq1.charAt(seq1.length - 1 - j)] > champuru_perl_PerlChampuruReimplementation.code.h[seq2.charAt(seq2.length - 1 - j)]) {
+						seq1 = champuru_perl_PerlChampuruReimplementation.replaceCharInString(seq1,seq1.length - 1 - j,champuru_perl_PerlChampuruReimplementation.rev_code.h[champuru_perl_PerlChampuruReimplementation.code.h[seq1.charAt(seq1.length - 1 - j)] - champuru_perl_PerlChampuruReimplementation.code.h[seq2.charAt(seq2.length - 1 - j)]]);
+					} else {
+						seq2 = champuru_perl_PerlChampuruReimplementation.replaceCharInString(seq2,seq2.length - 1 - j,champuru_perl_PerlChampuruReimplementation.rev_code.h[champuru_perl_PerlChampuruReimplementation.code.h[seq2.charAt(seq2.length - 1 - j)] - champuru_perl_PerlChampuruReimplementation.code.h[seq1.charAt(seq1.length - 1 - j)]]);
+					}
+				}
+			}
+		}
+	}
+	result.print("First reconstructed sequence: ");
+	result.print(seq1);
+	result.print("\n");
+	result.print("Second reconstructed sequence: ");
+	result.print(seq2);
+	result.print("\n");
+	var tocheck = new haxe_ds_List();
+	tocheck.add("s");
+	var _g = 0;
+	var a = seq1.length;
+	var b = seq2.length;
+	var _g1 = a < b ? a : b;
 	while(_g < _g1) {
 		var j = _g++;
-		var oc = seq2.charAt(j);
-		var result = [];
-		result.push(oc);
-		result.push(" ");
-		var _g2 = 0;
-		var _g3 = seq.length;
-		while(_g2 < _g3) {
-			var i = _g2++;
-			var c = seq.charAt(i);
-			var other = champuru_base_SingleAmbiguousNucleotide.getNucleotideByIUPACCode(oc);
-			var x = champuru_base_SingleAmbiguousNucleotide.getNucleotideByIUPACCode(c).matches(other);
-			if(x) {
-				result.push("#");
+		if(champuru_perl_PerlChampuruReimplementation.code.h[forward.charAt(j)] != (champuru_perl_PerlChampuruReimplementation.code.h[seq1.charAt(j)] | champuru_perl_PerlChampuruReimplementation.code.h[seq2.charAt(j)])) {
+			tocheck.add("" + (j + cutforward + 1));
+		}
+	}
+	var ftocheck = tocheck.length - 1;
+	if(tocheck.length - 1 > 0) {
+		result.print("Check position");
+		if(tocheck.length - 1 == 1) {
+			result.print(" " + tocheck.last() + " ");
+		} else {
+			var _g7_head = tocheck.h;
+			while(_g7_head != null) {
+				var val = _g7_head.item;
+				_g7_head = _g7_head.next;
+				var r = val;
+				result.print(r + " ");
+			}
+		}
+		result.print("on the forward chromatogram.\n");
+	}
+	tocheck.clear();
+	tocheck.add("s");
+	var _g = 0;
+	var a = seq1.length;
+	var b = seq2.length;
+	var _g1 = a < b ? a : b;
+	while(_g < _g1) {
+		var j = _g++;
+		if(champuru_perl_PerlChampuruReimplementation.code.h[reverse.charAt(reverse.length - 1 - j)] != (champuru_perl_PerlChampuruReimplementation.code.h[seq1.charAt(seq1.length - 1 - j)] | champuru_perl_PerlChampuruReimplementation.code.h[seq2.charAt(seq2.length - 1 - j)])) {
+			if(!opt_c) {
+				tocheck.add("" + (1 + reverse.length - 1 - j));
 			} else {
-				result.push(" ");
+				tocheck.add("" + (j + cutreverserev + 1));
 			}
 		}
-		console.log("champuru/base/SingleAmbiguousNucleotide.hx:361:",result.join(""));
 	}
+	var rtocheck = tocheck.length - 1;
+	if(tocheck.length - 1 > 0) {
+		result.print("Check position");
+		if(tocheck.length - 1 == 1) {
+			result.print(" " + tocheck.last() + " ");
+		} else {
+			if(!opt_c) {
+				var tocheck_ = new haxe_ds_List();
+				var _g9_head = tocheck.h;
+				while(_g9_head != null) {
+					var val = _g9_head.item;
+					_g9_head = _g9_head.next;
+					var e = val;
+					if(e == "s") {
+						continue;
+					}
+					tocheck_.push(e);
+				}
+				tocheck_.push("s");
+				tocheck = tocheck_;
+			}
+			var _g9_head = tocheck.h;
+			while(_g9_head != null) {
+				var val = _g9_head.item;
+				_g9_head = _g9_head.next;
+				var r = val;
+				result.print(r + " ");
+			}
+		}
+		result.print("on the reverse chromatogram.\n");
+	}
+	if(ftocheck + rtocheck < 1) {
+		result.print("The two sequences that were mixed in the forward and reverse chromatograms have been successfully deconvoluted.\n");
+	}
+	result.index1 = imax1;
+	result.index2 = imax2;
+	result.index3 = imax3;
+	result.sequence1 = seq1;
+	result.sequence2 = seq2;
+	return result;
 };
-champuru_base_SingleAmbiguousNucleotide.prototype = {
-	canStandForAdenine: function() {
-		return this.mAdenine;
+var champuru_perl_PerlChampuruResult = function() {
+	this.mOutput = new haxe_ds_List();
+};
+champuru_perl_PerlChampuruResult.__name__ = true;
+champuru_perl_PerlChampuruResult.prototype = {
+	print: function(s) {
+		this.mOutput.add(s);
 	}
-	,canStandForCythosine: function() {
-		return this.mCytosine;
+	,getOutput: function() {
+		return this.mOutput.join("");
 	}
-	,canStandForThymine: function() {
-		return this.mThymine;
-	}
-	,canStandForGuanine: function() {
-		return this.mGuanine;
-	}
-	,isQuality: function() {
-		return this.mQuality;
-	}
-	,isGap: function() {
-		if(!this.mAdenine && !this.mCytosine && !this.mGuanine) {
-			return !this.mThymine;
-		} else {
-			return false;
-		}
-	}
-	,isN: function() {
-		if(this.mAdenine && this.mCytosine && this.mGuanine) {
-			return this.mThymine;
-		} else {
-			return false;
-		}
-	}
-	,toIUPACCode: function() {
-		var result = "-";
-		if(this.mAdenine && this.mCytosine && this.mGuanine && this.mThymine) {
-			result = "N";
-		} else if(this.mAdenine && this.mCytosine && this.mGuanine) {
-			result = "V";
-		} else if(this.mAdenine && this.mCytosine && this.mThymine) {
-			result = "H";
-		} else if(this.mAdenine && this.mGuanine && this.mThymine) {
-			result = "D";
-		} else if(this.mCytosine && this.mGuanine && this.mThymine) {
-			result = "B";
-		} else if(this.mAdenine && this.mCytosine) {
-			result = "M";
-		} else if(this.mAdenine && this.mThymine) {
-			result = "W";
-		} else if(this.mAdenine && this.mGuanine) {
-			result = "R";
-		} else if(this.mCytosine && this.mThymine) {
-			result = "Y";
-		} else if(this.mCytosine && this.mGuanine) {
-			result = "S";
-		} else if(this.mThymine && this.mGuanine) {
-			result = "K";
-		} else if(this.mAdenine) {
-			result = "A";
-		} else if(this.mCytosine) {
-			result = "C";
-		} else if(this.mThymine) {
-			result = "T";
-		} else if(this.mGuanine) {
-			result = "G";
-		}
-		if(!this.mQuality) {
-			result = result.toLowerCase();
-		}
-		return result;
-	}
-	,countPossibleNucleotides: function() {
-		var i = 0;
-		if(this.mAdenine) {
-			++i;
-		}
-		if(this.mCytosine) {
-			++i;
-		}
-		if(this.mThymine) {
-			++i;
-		}
-		if(this.mGuanine) {
-			++i;
-		}
-		return i;
-	}
-	,isAmbiguous: function() {
-		var count = this.countPossibleNucleotides();
-		return count >= 2;
-	}
-	,matches: function(o) {
-		if(this.mAdenine && o.mAdenine) {
-			return true;
-		}
-		if(this.mCytosine && o.mCytosine) {
-			return true;
-		}
-		if(this.mThymine && o.mThymine) {
-			return true;
-		}
-		if(this.mGuanine && o.mGuanine) {
-			return true;
-		}
-		return false;
-	}
-	,isWithin: function(o) {
-		if(!this.mAdenine && o.mAdenine) {
-			return false;
-		}
-		if(!this.mCytosine && o.mCytosine) {
-			return false;
-		}
-		if(!this.mThymine && o.mThymine) {
-			return false;
-		}
-		if(!this.mGuanine && o.mGuanine) {
-			return false;
-		}
-		return true;
-	}
-	,equals: function(o,alsoEq) {
-		if(this.mAdenine != o.mAdenine) {
-			return false;
-		}
-		if(this.mCytosine != o.mCytosine) {
-			return false;
-		}
-		if(this.mThymine != o.mThymine) {
-			return false;
-		}
-		if(this.mGuanine != o.mGuanine) {
-			return false;
-		}
-		if(alsoEq) {
-			if(this.mQuality != o.mQuality) {
-				return false;
-			}
-		}
-		return true;
-	}
-	,reverse: function() {
-		var adenine = this.mThymine;
-		var cythosine = this.mGuanine;
-		var thymine = this.mAdenine;
-		var guanine = this.mCytosine;
-		return new champuru_base_SingleAmbiguousNucleotide(adenine,cythosine,thymine,guanine,this.mQuality);
-	}
-	,clone: function() {
-		return new champuru_base_SingleAmbiguousNucleotide(this.mAdenine,this.mCytosine,this.mThymine,this.mGuanine,this.mQuality);
-	}
-	,cloneWithQual: function(quality) {
-		return new champuru_base_SingleAmbiguousNucleotide(this.mAdenine,this.mCytosine,this.mThymine,this.mGuanine,quality);
-	}
-	,__class__: champuru_base_SingleAmbiguousNucleotide
+	,__class__: champuru_perl_PerlChampuruResult
 };
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
@@ -600,7 +620,12 @@ var haxe_ds_IntMap = function() {
 haxe_ds_IntMap.__name__ = true;
 haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
 haxe_ds_IntMap.prototype = {
-	__class__: haxe_ds_IntMap
+	keys: function() {
+		var a = [];
+		for( var key in this.h ) if(this.h.hasOwnProperty(key)) a.push(+key);
+		return new haxe_iterators_ArrayIterator(a);
+	}
+	,__class__: haxe_ds_IntMap
 };
 var haxe_ds__$List_ListNode = function(item,next) {
 	this.item = item;
@@ -610,20 +635,13 @@ haxe_ds__$List_ListNode.__name__ = true;
 haxe_ds__$List_ListNode.prototype = {
 	__class__: haxe_ds__$List_ListNode
 };
-var haxe_ds__$List_ListIterator = function(head) {
-	this.head = head;
+var haxe_ds_StringMap = function() {
+	this.h = Object.create(null);
 };
-haxe_ds__$List_ListIterator.__name__ = true;
-haxe_ds__$List_ListIterator.prototype = {
-	hasNext: function() {
-		return this.head != null;
-	}
-	,next: function() {
-		var val = this.head.item;
-		this.head = this.head.next;
-		return val;
-	}
-	,__class__: haxe_ds__$List_ListIterator
+haxe_ds_StringMap.__name__ = true;
+haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.prototype = {
+	__class__: haxe_ds_StringMap
 };
 var haxe_iterators_ArrayIterator = function(array) {
 	this.current = 0;
@@ -819,6 +837,7 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
+if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.prototype.__class__ = String;
 String.__name__ = true;
 Array.__name__ = true;
@@ -830,5 +849,69 @@ var Class = { };
 var Enum = { };
 js_Boot.__toStr = ({ }).toString;
 champuru_Worker.mMsgs = new haxe_ds_List();
+champuru_perl_PerlChampuruReimplementation.bases = ["A","T","G","C","R","Y","M","K","W","S","V","B","H","D","N"];
+champuru_perl_PerlChampuruReimplementation.complement = (function($this) {
+	var $r;
+	var _g = new haxe_ds_StringMap();
+	_g.h["A"] = "T";
+	_g.h["T"] = "A";
+	_g.h["G"] = "C";
+	_g.h["C"] = "G";
+	_g.h["R"] = "Y";
+	_g.h["Y"] = "R";
+	_g.h["M"] = "K";
+	_g.h["K"] = "M";
+	_g.h["W"] = "W";
+	_g.h["S"] = "S";
+	_g.h["V"] = "B";
+	_g.h["B"] = "V";
+	_g.h["H"] = "D";
+	_g.h["D"] = "H";
+	_g.h["N"] = "N";
+	$r = _g;
+	return $r;
+}(this));
+champuru_perl_PerlChampuruReimplementation.code = (function($this) {
+	var $r;
+	var _g = new haxe_ds_StringMap();
+	_g.h["A"] = 1;
+	_g.h["T"] = 2;
+	_g.h["G"] = 4;
+	_g.h["C"] = 8;
+	_g.h["R"] = 5;
+	_g.h["Y"] = 10;
+	_g.h["M"] = 9;
+	_g.h["K"] = 6;
+	_g.h["W"] = 3;
+	_g.h["S"] = 12;
+	_g.h["V"] = 13;
+	_g.h["B"] = 14;
+	_g.h["H"] = 11;
+	_g.h["D"] = 7;
+	_g.h["N"] = 15;
+	$r = _g;
+	return $r;
+}(this));
+champuru_perl_PerlChampuruReimplementation.rev_code = (function($this) {
+	var $r;
+	var _g = new haxe_ds_IntMap();
+	_g.h[1] = "A";
+	_g.h[2] = "T";
+	_g.h[4] = "G";
+	_g.h[8] = "C";
+	_g.h[5] = "R";
+	_g.h[10] = "Y";
+	_g.h[9] = "M";
+	_g.h[3] = "W";
+	_g.h[12] = "S";
+	_g.h[6] = "K";
+	_g.h[13] = "V";
+	_g.h[14] = "B";
+	_g.h[11] = "H";
+	_g.h[7] = "D";
+	_g.h[15] = "N";
+	$r = _g;
+	return $r;
+}(this));
 champuru_Worker.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

@@ -47,4 +47,8 @@ class PerlChampuruResult
     public function print(s:String) {
         mOutput.add(s);
     }
+    
+    public function getOutput():String {
+        return mOutput.join("");
+    }
 }
