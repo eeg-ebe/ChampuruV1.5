@@ -15,8 +15,8 @@
  */
 package champuru.consensus;
 
-import champuru.base.AmbiguousNucleotideSequence;
-import champuru.base.SingleAmbiguousNucleotide;
+import champuru.base.NucleotideSequence;
+import champuru.base.SingleNucleotide;
 
 /**
  * Solver for a particular overlap.
@@ -33,17 +33,17 @@ class OverlapSolver
     /**
      * The forward sequence.
      */
-    var mFwd:AmbiguousNucleotideSequence;
+    var mFwd:NucleotideSequence;
 
     /**
      * The reverse sequence.
      */
-    var mRev:AmbiguousNucleotideSequence;
+    var mRev:NucleotideSequence;
 
     /**
      * Create a new Overlap Solver.
      */
-    public function new(pos:Int, fwd:AmbiguousNucleotideSequence, rev:AmbiguousNucleotideSequence) {
+    public function new(pos:Int, fwd:NucleotideSequence, rev:NucleotideSequence) {
         mPos = pos;
         mFwd = fwd;
         mRev = rev;
@@ -52,20 +52,20 @@ class OverlapSolver
     /**
      * Solve a particular overlap.
      */
-    public function solve():AmbiguousNucleotideSequence {
-        var explained:List<SingleAmbiguousNucleotide> = new List<SingleAmbiguousNucleotide>();
+    public function solve():NucleotideSequence {
+        var explained:List<SingleNucleotide> = new List<SingleNucleotide>();
 
         // prev
         if (mPos > 0) {
             for (i in 0...mPos) {
-                var c:SingleAmbiguousNucleotide = mRev.get(i);
-                var copy:SingleAmbiguousNucleotide = c.cloneWithQual(false);
+                var c:SingleNucleotide = mRev.get(i);
+                var copy:SingleNucleotide = c.clone(0.5);
                 explained.add(copy);
             }
         } else if (mPos < 0) {
             for (i in 0...-mPos) {
-                var c:SingleAmbiguousNucleotide = mFwd.get(i);
-                var copy:SingleAmbiguousNucleotide = c.cloneWithQual(false);
+                var c:SingleNucleotide = mFwd.get(i);
+                var copy:SingleNucleotide = c.clone(0.5);
                 explained.add(copy);
             }
         } // ignore 0
@@ -78,15 +78,15 @@ class OverlapSolver
         var overlap:Int = ((fwdL < revL) ? fwdL : revL) - (fwdCorr + revCorr);
 
         for (pos in 0...overlap) {
-            var a:SingleAmbiguousNucleotide = mFwd.get(pos + fwdCorr);
-            var b:SingleAmbiguousNucleotide = mRev.get(pos + revCorr);
+            var a:SingleNucleotide = mFwd.get(pos + fwdCorr);
+            var b:SingleNucleotide = mRev.get(pos + revCorr);
 
             var adenine:Bool   = a.canStandForAdenine() && b.canStandForAdenine();
             var cytosine:Bool = a.canStandForCytosine() && b.canStandForCytosine();
             var thymine:Bool   = a.canStandForThymine() && b.canStandForThymine();
             var guanine:Bool   = a.canStandForGuanine() && b.canStandForGuanine();
 
-            var copy:SingleAmbiguousNucleotide = new SingleAmbiguousNucleotide(adenine, cytosine, thymine, guanine, a.isQuality() && b.isQuality());
+            var copy:SingleNucleotide = a.union(b);
             explained.add(copy);
         }
 
@@ -97,20 +97,20 @@ class OverlapSolver
             var len:Int = lenFwd - lenRev;
             var posStart:Int = mFwd.length() - len;
             for (i in 0...len) {
-                var c:SingleAmbiguousNucleotide = mFwd.get(posStart + i);
-                var copy:SingleAmbiguousNucleotide = c.cloneWithQual(false);
+                var c:SingleNucleotide = mFwd.get(posStart + i);
+                var copy:SingleNucleotide = c.clone(0.5);
                 explained.add(copy);
             }
         } else if (lenRev > lenFwd) {
             var len:Int = lenRev - lenFwd;
             var posStart:Int = mRev.length() - len;
             for (i in 0...len) {
-                var c:SingleAmbiguousNucleotide = mRev.get(posStart + i);
-                var copy:SingleAmbiguousNucleotide = c.cloneWithQual(false);
+                var c:SingleNucleotide = mRev.get(posStart + i);
+                var copy:SingleNucleotide = c.clone(0.5);
                 explained.add(copy);
             }
         }
 
-        return new AmbiguousNucleotideSequence(explained);
+        return new NucleotideSequence(explained);
     }
 }

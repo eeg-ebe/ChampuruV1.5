@@ -208,6 +208,36 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button></span>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	var o1 = new champuru_consensus_OverlapSolver(score1,s1,s2).solve();
+	var o2 = new champuru_consensus_OverlapSolver(score2,s1,s2).solve();
+	champuru_Worker.out("<fieldset>");
+	champuru_Worker.out("<legend>2. Step - Calculate consensus sequences</legend>");
+	champuru_Worker.out("<p>First consensus sequence: <span id='consensus1' class='sequence'>");
+	var result = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = o1.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = o1.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result.add(s);
+	}
+	champuru_Worker.out(result.join(""));
+	champuru_Worker.out("</span></p>");
+	champuru_Worker.out("<p>Second consensus sequence: <span id='consensus2' class='sequence'>");
+	var result = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = o2.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = o2.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result.add(s);
+	}
+	champuru_Worker.out(result.join(""));
+	champuru_Worker.out("</span></p>");
+	champuru_Worker.out("</fieldset>");
+	champuru_Worker.out("<br>");
 	return { result : champuru_Worker.mMsgs.join("")};
 };
 champuru_Worker.onMessage = function(e) {
@@ -600,6 +630,127 @@ champuru_base_SingleNucleotide.prototype = {
 		return true;
 	}
 	,__class__: champuru_base_SingleNucleotide
+};
+var champuru_consensus_OverlapSolver = function(pos,fwd,rev) {
+	this.mPos = pos;
+	this.mFwd = fwd;
+	this.mRev = rev;
+};
+champuru_consensus_OverlapSolver.__name__ = true;
+champuru_consensus_OverlapSolver.prototype = {
+	solve: function() {
+		var explained = new haxe_ds_List();
+		if(this.mPos > 0) {
+			var _g = 0;
+			var _g1 = this.mPos;
+			while(_g < _g1) {
+				var i = _g++;
+				var _this = this.mRev;
+				if(!(0 <= i && i < _this.mLength)) {
+					throw haxe_Exception.thrown("Position " + i + " out of range [0," + _this.mLength + "(");
+				}
+				var c = _this.mSequence.h[i];
+				var newQuality = 0.5;
+				if(newQuality == null) {
+					newQuality = -1;
+				}
+				var copy = new champuru_base_SingleNucleotide(c.mCode,newQuality == -1 ? c.mQuality : newQuality);
+				explained.add(copy);
+			}
+		} else if(this.mPos < 0) {
+			var _g = 0;
+			var _g1 = -this.mPos;
+			while(_g < _g1) {
+				var i = _g++;
+				var _this = this.mFwd;
+				if(!(0 <= i && i < _this.mLength)) {
+					throw haxe_Exception.thrown("Position " + i + " out of range [0," + _this.mLength + "(");
+				}
+				var c = _this.mSequence.h[i];
+				var newQuality = 0.5;
+				if(newQuality == null) {
+					newQuality = -1;
+				}
+				var copy = new champuru_base_SingleNucleotide(c.mCode,newQuality == -1 ? c.mQuality : newQuality);
+				explained.add(copy);
+			}
+		}
+		var fwdCorr = this.mPos < 0 ? -this.mPos : 0;
+		var revCorr = this.mPos > 0 ? this.mPos : 0;
+		var fwdL = fwdCorr + this.mRev.mLength;
+		var revL = revCorr + this.mFwd.mLength;
+		var overlap = (fwdL < revL ? fwdL : revL) - (fwdCorr + revCorr);
+		var _g = 0;
+		var _g1 = overlap;
+		while(_g < _g1) {
+			var pos = _g++;
+			var _this = this.mFwd;
+			var i = pos + fwdCorr;
+			if(!(0 <= i && i < _this.mLength)) {
+				throw haxe_Exception.thrown("Position " + i + " out of range [0," + _this.mLength + "(");
+			}
+			var a = _this.mSequence.h[i];
+			var _this1 = this.mRev;
+			var i1 = pos + revCorr;
+			if(!(0 <= i1 && i1 < _this1.mLength)) {
+				throw haxe_Exception.thrown("Position " + i1 + " out of range [0," + _this1.mLength + "(");
+			}
+			var b = _this1.mSequence.h[i1];
+			var adenine = (a.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (b.mCode & champuru_base_SingleNucleotide.sAdenine) != 0;
+			var cytosine = (a.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (b.mCode & champuru_base_SingleNucleotide.sCytosine) != 0;
+			var thymine = (a.mCode & champuru_base_SingleNucleotide.sThymine) != 0 && (b.mCode & champuru_base_SingleNucleotide.sThymine) != 0;
+			var guanine = (a.mCode & champuru_base_SingleNucleotide.sGuanine) != 0 && (b.mCode & champuru_base_SingleNucleotide.sGuanine) != 0;
+			var code = a.mCode & b.mCode;
+			var quality = Math.min(a.mQuality,b.mQuality);
+			var copy = new champuru_base_SingleNucleotide(code,quality);
+			explained.add(copy);
+		}
+		var lenFwd = this.mFwd.mLength + (this.mPos > 0 ? this.mPos : 0);
+		var lenRev = this.mRev.mLength + (this.mPos < 0 ? -this.mPos : 0);
+		if(lenFwd > lenRev) {
+			var len = lenFwd - lenRev;
+			var posStart = this.mFwd.mLength - len;
+			var _g = 0;
+			var _g1 = len;
+			while(_g < _g1) {
+				var i = _g++;
+				var _this = this.mFwd;
+				var i1 = posStart + i;
+				if(!(0 <= i1 && i1 < _this.mLength)) {
+					throw haxe_Exception.thrown("Position " + i1 + " out of range [0," + _this.mLength + "(");
+				}
+				var c = _this.mSequence.h[i1];
+				var newQuality = 0.5;
+				if(newQuality == null) {
+					newQuality = -1;
+				}
+				var copy = new champuru_base_SingleNucleotide(c.mCode,newQuality == -1 ? c.mQuality : newQuality);
+				explained.add(copy);
+			}
+		} else if(lenRev > lenFwd) {
+			var len = lenRev - lenFwd;
+			var posStart = this.mRev.mLength - len;
+			var _g = 0;
+			var _g1 = len;
+			while(_g < _g1) {
+				var i = _g++;
+				var _this = this.mRev;
+				var i1 = posStart + i;
+				if(!(0 <= i1 && i1 < _this.mLength)) {
+					throw haxe_Exception.thrown("Position " + i1 + " out of range [0," + _this.mLength + "(");
+				}
+				var c = _this.mSequence.h[i1];
+				var newQuality = 0.5;
+				if(newQuality == null) {
+					newQuality = -1;
+				}
+				var copy = new champuru_base_SingleNucleotide(c.mCode,newQuality == -1 ? c.mQuality : newQuality);
+				explained.add(copy);
+			}
+		}
+		return new champuru_base_NucleotideSequence(explained);
+	}
+	,__class__: champuru_consensus_OverlapSolver
 };
 var champuru_perl_PerlChampuruReimplementation = function() { };
 champuru_perl_PerlChampuruReimplementation.__name__ = true;
