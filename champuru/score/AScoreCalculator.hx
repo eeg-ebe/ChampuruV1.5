@@ -15,7 +15,7 @@
  */
 package champuru.score;
 
-import champuru.base.AmbiguousNucleotideSequence;
+import champuru.base.NucleotideSequence;
 
 /**
  * An abstract class describing a ScoreCalculator.
@@ -33,7 +33,7 @@ abstract class AScoreCalculator
     /**
      * Calculate all overlap scores.
      */
-    public function calcOverlapScores(fwd:AmbiguousNucleotideSequence, rev:AmbiguousNucleotideSequence):Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}> {
+    public function calcOverlapScores(fwd:NucleotideSequence, rev:NucleotideSequence):Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}> {
         var result:Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}> = new Array<{nr:Int, index:Int, score:Float, matches:Int, mismatches:Int}>();
         for (i in -fwd.length()+1...rev.length()) {
             var score:{score:Float, matches:Int, mismatches:Int} = calcScore(i, fwd, rev);
@@ -61,5 +61,5 @@ abstract class AScoreCalculator
     /**
      * Calculate the overlap score for a particular position.
      */
-    public abstract function calcScore(i:Int, fwd:AmbiguousNucleotideSequence, rev:AmbiguousNucleotideSequence):{score:Float, matches:Int, mismatches:Int};
+    public abstract function calcScore(i:Int, fwd:NucleotideSequence, rev:NucleotideSequence):{score:Float, matches:Int, mismatches:Int};
 }

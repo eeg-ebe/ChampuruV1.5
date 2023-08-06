@@ -15,8 +15,8 @@
  */
 package champuru.score;
 
-import champuru.base.AmbiguousNucleotideSequence;
-import champuru.base.SingleAmbiguousNucleotide;
+import champuru.base.NucleotideSequence;
+import champuru.base.SingleNucleotide;
 
 /**
  * A ScoreCalculator.
@@ -42,7 +42,7 @@ class PaperScoreCalculator extends AScoreCalculator
     /**
      * Calculate the overlap score for a particular position.
      */
-    public function calcScore(i:Int, fwd:AmbiguousNucleotideSequence, rev:AmbiguousNucleotideSequence):{score:Float, matches:Int, mismatches:Int} {
+    public function calcScore(i:Int, fwd:NucleotideSequence, rev:NucleotideSequence):{score:Float, matches:Int, mismatches:Int} {
         var matches:Int = 0, mismatches:Int = 0;
         
         var fwdCorr:Int = (i < 0) ? -i : 0;
@@ -52,9 +52,9 @@ class PaperScoreCalculator extends AScoreCalculator
         var overlap:Int = ((fwdL < revL) ? fwdL : revL) - (fwdCorr + revCorr);
         
         for (pos in 0...overlap) {
-            var a:SingleAmbiguousNucleotide = fwd.get(pos + fwdCorr);
-            var b:SingleAmbiguousNucleotide = rev.get(pos + revCorr);
-            if (a.matches(b)) {
+            var a:SingleNucleotide = fwd.get(pos + fwdCorr);
+            var b:SingleNucleotide = rev.get(pos + revCorr);
+            if (a.isOverlapping(b)) {
                 matches++;
             } else {
                 mismatches++;

@@ -15,14 +15,16 @@
  */
 package champuru;
 
-/*
-import champuru.base.AmbiguousNucleotideSequence;
-import champuru.base.SingleAmbiguousNucleotide;
+import champuru.base.NucleotideSequence;
 
 import champuru.score.AScoreCalculator;
-import champuru.score.ScoreSorter;
 import champuru.score.ScoreCalculatorList;
+import champuru.score.ScoreSorter;
 import champuru.score.ScoreListVisualizer;
+/*
+
+import champuru.base.AmbiguousNucleotideSequence;
+
 import champuru.consensus.OverlapSolver;
 import champuru.reconstruction.Reconstructor;
 import champuru.reconstruction.UnexplainedSequenceConstructor;
@@ -77,7 +79,70 @@ class Worker
         out("</div>");
         out("</fieldset>");
         out("<br>");
+        
+        var s1:NucleotideSequence = NucleotideSequence.fromString(fwd);
+        var s2:NucleotideSequence = NucleotideSequence.fromString(rev);
 
+        // 1. Step
+        var lst:ScoreCalculatorList = ScoreCalculatorList.instance();
+        var calculator:AScoreCalculator = lst.getScoreCalculator(1);
+        var scores = calculator.calcOverlapScores(s1, s2);
+        var sortedScores = new ScoreSorter().sort(scores);
+
+        var sortedScoresStringList:List<String> = new List<String>();
+        sortedScoresStringList.add("#\tOffset\tScore\tMatches\tMismatches");
+        var i:Int = 1;
+        for (score in sortedScores) {
+            sortedScoresStringList.add(i + "\t" + score.index + "\t" + score.score + "\t" + score.matches + "\t" + score.mismatches);
+            i++;
+        }
+        var sortedScoresString:String = sortedScoresStringList.join("\n");
+        var sortedScoresStringB64:String = Base64.encode(Bytes.ofString(sortedScoresString));
+        
+        var vis = new ScoreListVisualizer(scores, sortedScores);
+        var scorePlot:String = vis.genScorePlot();
+        var histPlot:String = vis.genScorePlotHist();
+        
+        out("<fieldset>");
+        out("<legend>1. Step - Compatibility score calculation</legend>");
+        out("<p>The following table [<a href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
+        out(sortedScoresStringB64);
+        out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
+        out("<table class='scoreTable center'>");
+        out("<tr class='header'>");
+        out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td>");
+        out("</tr>");
+        var i:Int = 1;
+        for (score in sortedScores) {
+            out("<tr class='" + ((i % 2 == 0) ? "odd" : "even") + "' onmouseover='highlight(\"c" + score.index + "\")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
+            out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" +  score.matches + "</td><td>" + score.mismatches + "</td>");
+            out("</tr>");
+            i++;
+            if (i >= 6) { break; }
+        }
+        out("</table>");
+        out("<p>Here is a plot of the shift calculation result:</p>");
+        out(scorePlot);
+        out("<p>Warning: Close points may be overlapping!</p>");
+        out("<p>And as histogram:</p>");
+        out(histPlot);
+        
+        var score1:Int = sortedScores[0].index;
+        var score2:Int = sortedScores[1].index;
+        if (useThisOffsets) {
+            score1 = iOffset;
+            score2 = jOffset;
+        }
+        
+        if (useThisOffsets) {
+            out("<p>User requested to use the offsets " + iOffset + " and " + jOffset + " for calculation.</p>");
+        } else {
+            out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
+        }
+        out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button></span>");
+        out("</fieldset>");
+        out("<br>");
+        
 /*
         var s1:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString(fwd);
         var s2:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString(rev);

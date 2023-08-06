@@ -1,4 +1,5 @@
 (function ($global) { "use strict";
+var $estr = function() { return js_Boot.__string_rec(this,''); },$hxEnums = $hxEnums || {},$_;
 function $extend(from, fields) {
 	var proto = Object.create(from);
 	for (var name in fields) proto[name] = fields[name];
@@ -144,6 +145,69 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	var s1 = champuru_base_NucleotideSequence.fromString(fwd);
+	var s2 = champuru_base_NucleotideSequence.fromString(rev);
+	var lst = champuru_score_ScoreCalculatorList.instance();
+	var calculator = lst.getScoreCalculator(1);
+	var scores = calculator.calcOverlapScores(s1,s2);
+	var sortedScores = new champuru_score_ScoreSorter().sort(scores);
+	var sortedScoresStringList = new haxe_ds_List();
+	sortedScoresStringList.add("#\tOffset\tScore\tMatches\tMismatches");
+	var i = 1;
+	var _g = 0;
+	while(_g < sortedScores.length) {
+		var score = sortedScores[_g];
+		++_g;
+		sortedScoresStringList.add(i + "\t" + score.index + "\t" + score.score + "\t" + score.matches + "\t" + score.mismatches);
+		++i;
+	}
+	var sortedScoresString = sortedScoresStringList.join("\n");
+	var sortedScoresStringB64 = haxe_crypto_Base64.encode(haxe_io_Bytes.ofString(sortedScoresString));
+	var vis = new champuru_score_ScoreListVisualizer(scores,sortedScores);
+	var scorePlot = vis.genScorePlot();
+	var histPlot = vis.genScorePlotHist();
+	champuru_Worker.out("<fieldset>");
+	champuru_Worker.out("<legend>1. Step - Compatibility score calculation</legend>");
+	champuru_Worker.out("<p>The following table [<a href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
+	champuru_Worker.out(sortedScoresStringB64);
+	champuru_Worker.out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
+	champuru_Worker.out("<table class='scoreTable center'>");
+	champuru_Worker.out("<tr class='header'>");
+	champuru_Worker.out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td>");
+	champuru_Worker.out("</tr>");
+	var i = 1;
+	var _g = 0;
+	while(_g < sortedScores.length) {
+		var score = sortedScores[_g];
+		++_g;
+		champuru_Worker.out("<tr class='" + (i % 2 == 0 ? "odd" : "even") + "' onmouseover='highlight(\"c" + score.index + "\")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
+		champuru_Worker.out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" + score.matches + "</td><td>" + score.mismatches + "</td>");
+		champuru_Worker.out("</tr>");
+		++i;
+		if(i >= 6) {
+			break;
+		}
+	}
+	champuru_Worker.out("</table>");
+	champuru_Worker.out("<p>Here is a plot of the shift calculation result:</p>");
+	champuru_Worker.out(scorePlot);
+	champuru_Worker.out("<p>Warning: Close points may be overlapping!</p>");
+	champuru_Worker.out("<p>And as histogram:</p>");
+	champuru_Worker.out(histPlot);
+	var score1 = sortedScores[0].index;
+	var score2 = sortedScores[1].index;
+	if(useThisOffsets) {
+		score1 = iOffset;
+		score2 = jOffset;
+	}
+	if(useThisOffsets) {
+		champuru_Worker.out("<p>User requested to use the offsets " + iOffset + " and " + jOffset + " for calculation.</p>");
+	} else {
+		champuru_Worker.out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
+	}
+	champuru_Worker.out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button></span>");
+	champuru_Worker.out("</fieldset>");
+	champuru_Worker.out("<br>");
 	return { result : champuru_Worker.mMsgs.join("")};
 };
 champuru_Worker.onMessage = function(e) {
@@ -164,6 +228,378 @@ champuru_Worker.onMessage = function(e) {
 champuru_Worker.main = function() {
 	champuru_Worker.workerScope = self;
 	champuru_Worker.workerScope.onmessage = champuru_Worker.onMessage;
+};
+var champuru_base_NucleotideSequence = function(seq) {
+	if(seq == null) {
+		this.mSequence = new haxe_ds_IntMap();
+		this.mLength = 0;
+	} else {
+		this.mSequence = new haxe_ds_IntMap();
+		var i = 0;
+		var _g_head = seq.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var c = val;
+			if(c == null) {
+				throw haxe_Exception.thrown("c must not be null!");
+			}
+			this.mSequence.h[i] = c;
+			++i;
+		}
+		this.mLength = seq.length;
+	}
+};
+champuru_base_NucleotideSequence.__name__ = true;
+champuru_base_NucleotideSequence.fromString = function(str) {
+	var list = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = str.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var ch = str.charAt(i);
+		var nucleotide = champuru_base_SingleNucleotide.createNucleotideByIUPACCode(ch);
+		list.add(nucleotide);
+	}
+	return new champuru_base_NucleotideSequence(list);
+};
+champuru_base_NucleotideSequence.prototype = {
+	toString: function() {
+		var result = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = this.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = this.mSequence.h[i];
+			var s = c.toIUPACCode();
+			result.add(s);
+		}
+		return result.join("");
+	}
+	,iterator: function() {
+		var seq = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = this.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = this.mSequence.h[i];
+			seq.add(c);
+		}
+		return new haxe_ds__$List_ListIterator(seq.h);
+	}
+	,length: function() {
+		return this.mLength;
+	}
+	,get: function(i) {
+		if(!(0 <= i && i < this.mLength)) {
+			throw haxe_Exception.thrown("Position " + i + " out of range [0," + this.mLength + "(");
+		}
+		return this.mSequence.h[i];
+	}
+	,replace: function(i,c) {
+		if(c == null) {
+			throw haxe_Exception.thrown("c must not be null!");
+		}
+		if(!(0 <= i && i < this.mLength)) {
+			throw haxe_Exception.thrown("Position " + i + " out of range [0," + this.mLength + "(");
+		}
+		this.mSequence.h[i] = c;
+	}
+	,reverse: function() {
+		var seq = new haxe_ds_List();
+		var i = this.mLength - 1;
+		while(i <= 0) {
+			var c = this.mSequence.h[i];
+			seq.add(c);
+			--i;
+		}
+		var result = new champuru_base_NucleotideSequence(seq);
+		return result;
+	}
+	,getReverseComplement: function() {
+		var seq = new haxe_ds_List();
+		var i = this.mLength - 1;
+		while(i <= 0) {
+			var c = this.mSequence.h[i];
+			var code = 0;
+			code += (c.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 ? champuru_base_SingleNucleotide.sThymine : 0;
+			code += (c.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 ? champuru_base_SingleNucleotide.sGuanine : 0;
+			code += (c.mCode & champuru_base_SingleNucleotide.sGuanine) != 0 ? champuru_base_SingleNucleotide.sCytosine : 0;
+			code += (c.mCode & champuru_base_SingleNucleotide.sThymine) != 0 ? champuru_base_SingleNucleotide.sAdenine : 0;
+			c = new champuru_base_SingleNucleotide(c.mCode,c.mQuality);
+			seq.add(c);
+			--i;
+		}
+		var result = new champuru_base_NucleotideSequence(seq);
+		return result;
+	}
+	,clone: function() {
+		var seq = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = this.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = this.mSequence.h[i];
+			seq.add(c);
+		}
+		return new champuru_base_NucleotideSequence(seq);
+	}
+	,__class__: champuru_base_NucleotideSequence
+};
+var champuru_base_SingleNucleotide = function(code,quality) {
+	this.mQuality = 1.0;
+	this.mCode = 0;
+	this.mCode = code;
+	this.mQuality = quality;
+};
+champuru_base_SingleNucleotide.__name__ = true;
+champuru_base_SingleNucleotide.createNucleotideByBools = function(adenine,cytosine,thymine,guanine,quality) {
+	if(quality == null) {
+		quality = 100;
+	}
+	var code = (adenine ? champuru_base_SingleNucleotide.sAdenine : 0) + (cytosine ? champuru_base_SingleNucleotide.sCytosine : 0) + (thymine ? champuru_base_SingleNucleotide.sThymine : 0) + (guanine ? champuru_base_SingleNucleotide.sGuanine : 0);
+	return new champuru_base_SingleNucleotide(code,quality);
+};
+champuru_base_SingleNucleotide.createNucleotideByIUPACCode = function(s,origQuality) {
+	if(origQuality == null) {
+		origQuality = -1;
+	}
+	var code = s.toUpperCase();
+	var quality = origQuality == -1 ? code == s ? 100 : 50 : origQuality;
+	if(code == "." || code == "-") {
+		return new champuru_base_SingleNucleotide(0,quality);
+	} else if(code == "A") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sAdenine,quality);
+	} else if(code == "C") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sCytosine,quality);
+	} else if(code == "T") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sThymine,quality);
+	} else if(code == "G") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sGuanine,quality);
+	} else if(code == "K") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sThymine + champuru_base_SingleNucleotide.sGuanine,quality);
+	} else if(code == "S") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sCytosine + champuru_base_SingleNucleotide.sGuanine,quality);
+	} else if(code == "R") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sAdenine + champuru_base_SingleNucleotide.sGuanine,quality);
+	} else if(code == "Y") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sCytosine + champuru_base_SingleNucleotide.sThymine,quality);
+	} else if(code == "W") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sAdenine + champuru_base_SingleNucleotide.sThymine,quality);
+	} else if(code == "M") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sAdenine + champuru_base_SingleNucleotide.sCytosine,quality);
+	} else if(code == "B") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sCytosine + champuru_base_SingleNucleotide.sThymine + champuru_base_SingleNucleotide.sGuanine,quality);
+	} else if(code == "D") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sGuanine + champuru_base_SingleNucleotide.sAdenine + champuru_base_SingleNucleotide.sThymine,quality);
+	} else if(code == "V") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sGuanine + champuru_base_SingleNucleotide.sCytosine + champuru_base_SingleNucleotide.sAdenine,quality);
+	} else if(code == "H") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sAdenine + champuru_base_SingleNucleotide.sCytosine + champuru_base_SingleNucleotide.sThymine,quality);
+	} else if(code == "N") {
+		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sAdenine + champuru_base_SingleNucleotide.sCytosine + champuru_base_SingleNucleotide.sThymine + champuru_base_SingleNucleotide.sGuanine,quality);
+	}
+	throw haxe_Exception.thrown("Unknown character " + code + ". Cannot convert it into a nucleotide!");
+};
+champuru_base_SingleNucleotide.prototype = {
+	toIUPACCode: function() {
+		var result = "-";
+		if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			result = "N";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {
+			result = "V";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			result = "H";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			result = "D";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			result = "B";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0) {
+			result = "M";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			result = "W";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {
+			result = "R";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			result = "Y";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {
+			result = "S";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sThymine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {
+			result = "K";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0) {
+			result = "A";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0) {
+			result = "C";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			result = "T";
+		} else if((this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {
+			result = "G";
+		}
+		if(this.mQuality <= 0.5) {
+			result = result.toLowerCase();
+		}
+		return result;
+	}
+	,getCode: function() {
+		return this.mCode;
+	}
+	,isGap: function() {
+		return this.mCode == 0;
+	}
+	,canStandForAdenine: function() {
+		return (this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0;
+	}
+	,isAdenine: function() {
+		return this.mCode == champuru_base_SingleNucleotide.sAdenine;
+	}
+	,canStandForCytosine: function() {
+		return (this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0;
+	}
+	,isCytosine: function() {
+		return this.mCode == champuru_base_SingleNucleotide.sCytosine;
+	}
+	,canStandForThymine: function() {
+		return (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0;
+	}
+	,isThymine: function() {
+		return this.mCode == champuru_base_SingleNucleotide.sThymine;
+	}
+	,canStandForGuanine: function() {
+		return (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0;
+	}
+	,isGuanine: function() {
+		return this.mCode == champuru_base_SingleNucleotide.sGuanine;
+	}
+	,isN: function() {
+		return this.mCode == champuru_base_SingleNucleotide.sAdenine + champuru_base_SingleNucleotide.sCytosine + champuru_base_SingleNucleotide.sThymine + champuru_base_SingleNucleotide.sGuanine;
+	}
+	,getQuality: function() {
+		return this.mQuality;
+	}
+	,countPolymorphism: function() {
+		var i = 0;
+		if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0) {
+			++i;
+		}
+		if((this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0) {
+			++i;
+		}
+		if((this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			++i;
+		}
+		if((this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {
+			++i;
+		}
+		return i;
+	}
+	,isNotPolymorhism: function() {
+		if(!(this.mCode == 0 || this.mCode == champuru_base_SingleNucleotide.sAdenine || this.mCode == champuru_base_SingleNucleotide.sCytosine || this.mCode == champuru_base_SingleNucleotide.sGuanine)) {
+			return this.mCode == champuru_base_SingleNucleotide.sThymine;
+		} else {
+			return true;
+		}
+	}
+	,isPolymorhism: function() {
+		return !(this.mCode == 0 || this.mCode == champuru_base_SingleNucleotide.sAdenine || this.mCode == champuru_base_SingleNucleotide.sCytosine || this.mCode == champuru_base_SingleNucleotide.sGuanine || this.mCode == champuru_base_SingleNucleotide.sThymine);
+	}
+	,getReverseComplement: function() {
+		var code = 0;
+		code += (this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 ? champuru_base_SingleNucleotide.sThymine : 0;
+		code += (this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 ? champuru_base_SingleNucleotide.sGuanine : 0;
+		code += (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0 ? champuru_base_SingleNucleotide.sCytosine : 0;
+		code += (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0 ? champuru_base_SingleNucleotide.sAdenine : 0;
+		return new champuru_base_SingleNucleotide(this.mCode,this.mQuality);
+	}
+	,union: function(o) {
+		var code = this.mCode & o.mCode;
+		var quality = Math.min(this.mQuality,o.mQuality);
+		return new champuru_base_SingleNucleotide(code,quality);
+	}
+	,intersection: function(o) {
+		var code = this.mCode | o.mCode;
+		var quality = Math.min(this.mQuality,o.mQuality);
+		return new champuru_base_SingleNucleotide(code,quality);
+	}
+	,difference: function(o) {
+		var code = this.mCode ^ o.mCode;
+		var quality = Math.min(this.mQuality,o.mQuality);
+		return new champuru_base_SingleNucleotide(code,quality);
+	}
+	,isSubset: function(o) {
+		if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0) {
+			if((o.mCode & champuru_base_SingleNucleotide.sAdenine) == 0) {
+				return false;
+			}
+		}
+		if((this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0) {
+			if((o.mCode & champuru_base_SingleNucleotide.sCytosine) == 0) {
+				return false;
+			}
+		}
+		if((this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {
+			if((o.mCode & champuru_base_SingleNucleotide.sGuanine) == 0) {
+				return false;
+			}
+		}
+		if((this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			if((o.mCode & champuru_base_SingleNucleotide.sThymine) == 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+	,isSuperset: function(o) {
+		if((o.mCode & champuru_base_SingleNucleotide.sAdenine) != 0) {
+			if((this.mCode & champuru_base_SingleNucleotide.sAdenine) == 0) {
+				return false;
+			}
+		}
+		if((o.mCode & champuru_base_SingleNucleotide.sCytosine) != 0) {
+			if((this.mCode & champuru_base_SingleNucleotide.sCytosine) == 0) {
+				return false;
+			}
+		}
+		if((o.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {
+			if((this.mCode & champuru_base_SingleNucleotide.sGuanine) == 0) {
+				return false;
+			}
+		}
+		if((o.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
+			if((this.mCode & champuru_base_SingleNucleotide.sThymine) == 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+	,isDisjoint: function(o) {
+		var code = this.mCode & o.mCode;
+		return code == 0;
+	}
+	,isOverlapping: function(o) {
+		var code = this.mCode & o.mCode;
+		return code != 0;
+	}
+	,clone: function(newQuality) {
+		if(newQuality == null) {
+			newQuality = -1;
+		}
+		return new champuru_base_SingleNucleotide(this.mCode,newQuality == -1 ? this.mQuality : newQuality);
+	}
+	,equals: function(o,alsoEq) {
+		if(alsoEq == null) {
+			alsoEq = false;
+		}
+		if(this.mCode != o.mCode) {
+			return false;
+		}
+		if(alsoEq) {
+			if(this.mQuality != o.mQuality) {
+				return false;
+			}
+		}
+		return true;
+	}
+	,__class__: champuru_base_SingleNucleotide
 };
 var champuru_perl_PerlChampuruReimplementation = function() { };
 champuru_perl_PerlChampuruReimplementation.__name__ = true;
@@ -565,6 +1001,344 @@ champuru_perl_PerlChampuruResult.prototype = {
 	}
 	,__class__: champuru_perl_PerlChampuruResult
 };
+var champuru_score_AScoreCalculator = function() {
+};
+champuru_score_AScoreCalculator.__name__ = true;
+champuru_score_AScoreCalculator.prototype = {
+	calcOverlapScores: function(fwd,rev) {
+		var result = [];
+		var _g = -fwd.mLength + 1;
+		var _g1 = rev.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var score = this.calcScore(i,fwd,rev);
+			result.push({ nr : i - fwd.mLength + 1, index : i, score : score.score, matches : score.matches, mismatches : score.mismatches});
+		}
+		return result;
+	}
+	,__class__: champuru_score_AScoreCalculator
+};
+var champuru_score_AmbiguityCorrectionScoreCalculator = function() {
+	champuru_score_AScoreCalculator.call(this);
+};
+champuru_score_AmbiguityCorrectionScoreCalculator.__name__ = true;
+champuru_score_AmbiguityCorrectionScoreCalculator.__super__ = champuru_score_AScoreCalculator;
+champuru_score_AmbiguityCorrectionScoreCalculator.prototype = $extend(champuru_score_AScoreCalculator.prototype,{
+	getName: function() {
+		return "Ambiguity correction";
+	}
+	,getDescription: function() {
+		return "A modification of the score correction method described in the Champuru 1.0 paper. The score will get corrected for the fact that ambiguous characters (e.g. W) can match multiple other characters (e.g. A, T). Preliminary results suggests that this score calculation method works better when the reconstructed consensus sequences contain a lot of ambiguities. However this score correction method seems to work less good on short input sequences.";
+	}
+	,calcScore: function(i,fwd,rev) {
+		var matches = 0;
+		var fullMatches = 0;
+		var mismatches = 0;
+		var fwdCorr = i < 0 ? -i : 0;
+		var revCorr = i > 0 ? i : 0;
+		var fwdL = fwdCorr + rev.mLength;
+		var revL = revCorr + fwd.mLength;
+		var overlap = (fwdL < revL ? fwdL : revL) - (fwdCorr + revCorr);
+		var _g = 0;
+		var _g1 = overlap;
+		while(_g < _g1) {
+			var pos = _g++;
+			var i = pos + fwdCorr;
+			if(!(0 <= i && i < fwd.mLength)) {
+				throw haxe_Exception.thrown("Position " + i + " out of range [0," + fwd.mLength + "(");
+			}
+			var a = fwd.mSequence.h[i];
+			var i1 = pos + revCorr;
+			if(!(0 <= i1 && i1 < rev.mLength)) {
+				throw haxe_Exception.thrown("Position " + i1 + " out of range [0," + rev.mLength + "(");
+			}
+			var b = rev.mSequence.h[i1];
+			if(a.equals(b,false) && (a.mCode == 0 || a.mCode == champuru_base_SingleNucleotide.sAdenine || a.mCode == champuru_base_SingleNucleotide.sCytosine || a.mCode == champuru_base_SingleNucleotide.sGuanine || a.mCode == champuru_base_SingleNucleotide.sThymine)) {
+				++fullMatches;
+			} else {
+				var code = a.mCode & b.mCode;
+				if(code != 0) {
+					++matches;
+				} else {
+					++mismatches;
+				}
+			}
+		}
+		return { matches : matches + fullMatches, mismatches : mismatches, score : fullMatches + 0.5 * matches - 0.25 * overlap};
+	}
+	,__class__: champuru_score_AmbiguityCorrectionScoreCalculator
+});
+var champuru_score_LongestLengthScoreCalculator = function() {
+	champuru_score_AScoreCalculator.call(this);
+};
+champuru_score_LongestLengthScoreCalculator.__name__ = true;
+champuru_score_LongestLengthScoreCalculator.__super__ = champuru_score_AScoreCalculator;
+champuru_score_LongestLengthScoreCalculator.prototype = $extend(champuru_score_AScoreCalculator.prototype,{
+	getName: function() {
+		return "Longest Length";
+	}
+	,getDescription: function() {
+		return "Take the longest number of consecutive matching nucleotides as score.";
+	}
+	,calcScore: function(i,fwd,rev) {
+		var matches = 0;
+		var mismatches = 0;
+		var fwdCorr = i < 0 ? -i : 0;
+		var revCorr = i > 0 ? i : 0;
+		var fwdL = fwdCorr + rev.mLength;
+		var revL = revCorr + fwd.mLength;
+		var overlap = (fwdL < revL ? fwdL : revL) - (fwdCorr + revCorr);
+		var maxScore = 0;
+		var cScore = 0;
+		var _g = 0;
+		var _g1 = overlap;
+		while(_g < _g1) {
+			var pos = _g++;
+			var i = pos + fwdCorr;
+			if(!(0 <= i && i < fwd.mLength)) {
+				throw haxe_Exception.thrown("Position " + i + " out of range [0," + fwd.mLength + "(");
+			}
+			var a = fwd.mSequence.h[i];
+			var i1 = pos + revCorr;
+			if(!(0 <= i1 && i1 < rev.mLength)) {
+				throw haxe_Exception.thrown("Position " + i1 + " out of range [0," + rev.mLength + "(");
+			}
+			var b = rev.mSequence.h[i1];
+			var code = a.mCode & b.mCode;
+			if(code != 0) {
+				++matches;
+				++cScore;
+			} else {
+				++mismatches;
+				cScore = 0;
+			}
+			if(maxScore <= cScore) {
+				maxScore = cScore;
+			}
+		}
+		return { matches : matches, mismatches : mismatches, score : maxScore};
+	}
+	,__class__: champuru_score_LongestLengthScoreCalculator
+});
+var champuru_score_PaperScoreCalculator = function() {
+	champuru_score_AScoreCalculator.call(this);
+};
+champuru_score_PaperScoreCalculator.__name__ = true;
+champuru_score_PaperScoreCalculator.__super__ = champuru_score_AScoreCalculator;
+champuru_score_PaperScoreCalculator.prototype = $extend(champuru_score_AScoreCalculator.prototype,{
+	getName: function() {
+		return "Paper";
+	}
+	,getDescription: function() {
+		return "The score correction method described in the Champuru 1.0 paper.";
+	}
+	,calcScore: function(i,fwd,rev) {
+		var matches = 0;
+		var mismatches = 0;
+		var fwdCorr = i < 0 ? -i : 0;
+		var revCorr = i > 0 ? i : 0;
+		var fwdL = fwdCorr + rev.mLength;
+		var revL = revCorr + fwd.mLength;
+		var overlap = (fwdL < revL ? fwdL : revL) - (fwdCorr + revCorr);
+		var _g = 0;
+		var _g1 = overlap;
+		while(_g < _g1) {
+			var pos = _g++;
+			var i = pos + fwdCorr;
+			if(!(0 <= i && i < fwd.mLength)) {
+				throw haxe_Exception.thrown("Position " + i + " out of range [0," + fwd.mLength + "(");
+			}
+			var a = fwd.mSequence.h[i];
+			var i1 = pos + revCorr;
+			if(!(0 <= i1 && i1 < rev.mLength)) {
+				throw haxe_Exception.thrown("Position " + i1 + " out of range [0," + rev.mLength + "(");
+			}
+			var b = rev.mSequence.h[i1];
+			var code = a.mCode & b.mCode;
+			if(code != 0) {
+				++matches;
+			} else {
+				++mismatches;
+			}
+		}
+		return { matches : matches, mismatches : mismatches, score : matches - 0.25 * overlap};
+	}
+	,__class__: champuru_score_PaperScoreCalculator
+});
+var champuru_score_ScoreCalculatorList = function() {
+	var this1 = new Array(3);
+	this.mLst = this1;
+	this.mLst[0] = new champuru_score_PaperScoreCalculator();
+	this.mLst[1] = new champuru_score_AmbiguityCorrectionScoreCalculator();
+	this.mLst[2] = new champuru_score_LongestLengthScoreCalculator();
+};
+champuru_score_ScoreCalculatorList.__name__ = true;
+champuru_score_ScoreCalculatorList.instance = function() {
+	if(champuru_score_ScoreCalculatorList.sInstance == null) {
+		champuru_score_ScoreCalculatorList.sInstance = new champuru_score_ScoreCalculatorList();
+	}
+	return champuru_score_ScoreCalculatorList.sInstance;
+};
+champuru_score_ScoreCalculatorList.prototype = {
+	length: function() {
+		return this.mLst.length;
+	}
+	,getDefaultScoreCalculatorIndex: function() {
+		return 1;
+	}
+	,getDefaultScoreCalculator: function() {
+		var idx = 1;
+		return this.mLst[idx];
+	}
+	,getScoreCalculator: function(i) {
+		var result = null;
+		if(0 <= i && i < this.mLst.length) {
+			result = this.mLst[i];
+		}
+		return result;
+	}
+	,__class__: champuru_score_ScoreCalculatorList
+};
+var champuru_score_ScoreListVisualizer = function(scores,sortedScores) {
+	this.scores = scores;
+	this.sortedScores = sortedScores;
+	this.high = sortedScores[0].score;
+	var lowScore = sortedScores.pop();
+	sortedScores.push(lowScore);
+	this.low = lowScore.score;
+};
+champuru_score_ScoreListVisualizer.__name__ = true;
+champuru_score_ScoreListVisualizer.prototype = {
+	genScorePlot: function() {
+		var result = new haxe_ds_List();
+		result.add("<svg id='scorePlot' class='plot middle' width='600' height='400'>");
+		result.add("<rect width='600' height='400' style='fill:white' />");
+		result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Score</text>");
+		result.add("<text x='300' y='395' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>Offset</text>");
+		var d = this.high - this.low;
+		var i = 0;
+		var _g = 0;
+		var _g1 = this.scores;
+		while(_g < _g1.length) {
+			var score = _g1[_g];
+			++_g;
+			var x = 30 + 560.0 * (i / this.scores.length);
+			var y = 370 - 350 * ((score.score - this.low) / d);
+			var alertMsg = "Offset: " + score.index + "\\nScore: " + score.score + "\\nMatches: " + score.matches + "\\nMismatches: " + score.mismatches;
+			result.add("<circle id='c" + score.index + "' cx='" + x + "' cy='" + y + "' r='2' fill='black' title='" + 1 + "' onclick='alert(\"" + alertMsg + "\")' />");
+			++i;
+		}
+		result.add("</svg>");
+		return result.join("");
+	}
+	,genScorePlotHist: function() {
+		var d = this.high - this.low;
+		var result = new haxe_ds_List();
+		result.add("<svg id='scorePlotHist' class='plot middle' width='600' height='400'>");
+		result.add("<rect width='600' height='400' style='fill:white' />");
+		result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Frequency</text>");
+		result.add("<text x='300' y='395' text-anchor='start' style='font-family: monospace; text-size: 12.5px'>Score</text>");
+		result.add("<text x='030' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.floor(this.low) + "</text>");
+		result.add("<text x='170' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.round(d / 4) + "</text>");
+		result.add("<text x='310' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.round(d / 2) + "</text>");
+		result.add("<text x='450' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.round(d / 4 * 3) + "</text>");
+		result.add("<text x='590' y='380' text-anchor='end' style='font-family: monospace; text-size: 12.5px'>" + Math.ceil(this.high) + "</text>");
+		var hd = d / 28;
+		var i = 0;
+		var this1 = new Array(28);
+		var v = this1;
+		v[0] = 0;
+		v[1] = 0;
+		v[2] = 0;
+		v[3] = 0;
+		v[4] = 0;
+		v[5] = 0;
+		v[6] = 0;
+		v[7] = 0;
+		v[8] = 0;
+		v[9] = 0;
+		v[10] = 0;
+		v[11] = 0;
+		v[12] = 0;
+		v[13] = 0;
+		v[14] = 0;
+		v[15] = 0;
+		v[16] = 0;
+		v[17] = 0;
+		v[18] = 0;
+		v[19] = 0;
+		v[20] = 0;
+		v[21] = 0;
+		v[22] = 0;
+		v[23] = 0;
+		v[24] = 0;
+		v[25] = 0;
+		v[26] = 0;
+		v[27] = 0;
+		var _g = 0;
+		var _g1 = this.sortedScores;
+		while(_g < _g1.length) {
+			var score = _g1[_g];
+			++_g;
+			var scoreP = (score.score - this.low) / d;
+			var b = scoreP * 28;
+			var i = Math.floor(b);
+			if(i >= 28) {
+				i = 27;
+			}
+			v[i] += 1;
+		}
+		var highest = 0;
+		var _g = 0;
+		while(_g < v.length) {
+			var val = v[_g];
+			++_g;
+			if(highest <= val) {
+				highest = val;
+			}
+		}
+		result.add("<g style='stroke-width:1;stroke:#000;fill:#fff'>");
+		var _g = 0;
+		while(_g < 28) {
+			var i = _g++;
+			if(v[i] == 0) {
+				continue;
+			}
+			var val = v[i] / highest;
+			var x = 30 + i * 20;
+			var h = val * 350;
+			var y = 365 - h;
+			var from = Math.round((i * hd + this.low) * 10) / 10.0;
+			var to = Math.round(((i + 1) * hd + this.low) * 10) / 10.0;
+			var percentage = Math.round(v[i] / this.sortedScores.length * 1000) / 10.0;
+			var alertMsg = "From: " + from + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)";
+			result.add("<rect x='" + x + "' y='" + y + "' width='20' height='" + h + "' onclick='alert(\"" + alertMsg + "\");' />");
+		}
+		result.add("</g>");
+		result.add("</svg>");
+		return result.join("");
+	}
+	,__class__: champuru_score_ScoreListVisualizer
+};
+var champuru_score_ScoreSorter = function() {
+};
+champuru_score_ScoreSorter.__name__ = true;
+champuru_score_ScoreSorter.prototype = {
+	sort: function(scores) {
+		var result = scores.slice();
+		result.sort(function(a,b) {
+			var result = b.score - a.score;
+			if(result == 0) {
+				return a.mismatches - b.mismatches;
+			} else if(result > 0) {
+				return 1;
+			}
+			return -1;
+		});
+		return result;
+	}
+	,__class__: champuru_score_ScoreSorter
+};
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
 haxe_IMap.__isInterface__ = true;
@@ -616,6 +1390,166 @@ haxe_ValueException.prototype = $extend(haxe_Exception.prototype,{
 	}
 	,__class__: haxe_ValueException
 });
+var haxe_io_Bytes = function(data) {
+	this.length = data.byteLength;
+	this.b = new Uint8Array(data);
+	this.b.bufferValue = data;
+	data.hxBytes = this;
+	data.bytes = this.b;
+};
+haxe_io_Bytes.__name__ = true;
+haxe_io_Bytes.ofString = function(s,encoding) {
+	if(encoding == haxe_io_Encoding.RawNative) {
+		var buf = new Uint8Array(s.length << 1);
+		var _g = 0;
+		var _g1 = s.length;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = s.charCodeAt(i);
+			buf[i << 1] = c & 255;
+			buf[i << 1 | 1] = c >> 8;
+		}
+		return new haxe_io_Bytes(buf.buffer);
+	}
+	var a = [];
+	var i = 0;
+	while(i < s.length) {
+		var c = s.charCodeAt(i++);
+		if(55296 <= c && c <= 56319) {
+			c = c - 55232 << 10 | s.charCodeAt(i++) & 1023;
+		}
+		if(c <= 127) {
+			a.push(c);
+		} else if(c <= 2047) {
+			a.push(192 | c >> 6);
+			a.push(128 | c & 63);
+		} else if(c <= 65535) {
+			a.push(224 | c >> 12);
+			a.push(128 | c >> 6 & 63);
+			a.push(128 | c & 63);
+		} else {
+			a.push(240 | c >> 18);
+			a.push(128 | c >> 12 & 63);
+			a.push(128 | c >> 6 & 63);
+			a.push(128 | c & 63);
+		}
+	}
+	return new haxe_io_Bytes(new Uint8Array(a).buffer);
+};
+haxe_io_Bytes.prototype = {
+	getString: function(pos,len,encoding) {
+		if(pos < 0 || len < 0 || pos + len > this.length) {
+			throw haxe_Exception.thrown(haxe_io_Error.OutsideBounds);
+		}
+		if(encoding == null) {
+			encoding = haxe_io_Encoding.UTF8;
+		}
+		var s = "";
+		var b = this.b;
+		var i = pos;
+		var max = pos + len;
+		switch(encoding._hx_index) {
+		case 0:
+			var debug = pos > 0;
+			while(i < max) {
+				var c = b[i++];
+				if(c < 128) {
+					if(c == 0) {
+						break;
+					}
+					s += String.fromCodePoint(c);
+				} else if(c < 224) {
+					var code = (c & 63) << 6 | b[i++] & 127;
+					s += String.fromCodePoint(code);
+				} else if(c < 240) {
+					var c2 = b[i++];
+					var code1 = (c & 31) << 12 | (c2 & 127) << 6 | b[i++] & 127;
+					s += String.fromCodePoint(code1);
+				} else {
+					var c21 = b[i++];
+					var c3 = b[i++];
+					var u = (c & 15) << 18 | (c21 & 127) << 12 | (c3 & 127) << 6 | b[i++] & 127;
+					s += String.fromCodePoint(u);
+				}
+			}
+			break;
+		case 1:
+			while(i < max) {
+				var c = b[i++] | b[i++] << 8;
+				s += String.fromCodePoint(c);
+			}
+			break;
+		}
+		return s;
+	}
+	,toString: function() {
+		return this.getString(0,this.length);
+	}
+	,__class__: haxe_io_Bytes
+};
+var haxe_io_Encoding = $hxEnums["haxe.io.Encoding"] = { __ename__:true,__constructs__:null
+	,UTF8: {_hx_name:"UTF8",_hx_index:0,__enum__:"haxe.io.Encoding",toString:$estr}
+	,RawNative: {_hx_name:"RawNative",_hx_index:1,__enum__:"haxe.io.Encoding",toString:$estr}
+};
+haxe_io_Encoding.__constructs__ = [haxe_io_Encoding.UTF8,haxe_io_Encoding.RawNative];
+var haxe_crypto_Base64 = function() { };
+haxe_crypto_Base64.__name__ = true;
+haxe_crypto_Base64.encode = function(bytes,complement) {
+	if(complement == null) {
+		complement = true;
+	}
+	var str = new haxe_crypto_BaseCode(haxe_crypto_Base64.BYTES).encodeBytes(bytes).toString();
+	if(complement) {
+		switch(bytes.length % 3) {
+		case 1:
+			str += "==";
+			break;
+		case 2:
+			str += "=";
+			break;
+		default:
+		}
+	}
+	return str;
+};
+var haxe_crypto_BaseCode = function(base) {
+	var len = base.length;
+	var nbits = 1;
+	while(len > 1 << nbits) ++nbits;
+	if(nbits > 8 || len != 1 << nbits) {
+		throw haxe_Exception.thrown("BaseCode : base length must be a power of two.");
+	}
+	this.base = base;
+	this.nbits = nbits;
+};
+haxe_crypto_BaseCode.__name__ = true;
+haxe_crypto_BaseCode.prototype = {
+	encodeBytes: function(b) {
+		var nbits = this.nbits;
+		var base = this.base;
+		var size = b.length * 8 / nbits | 0;
+		var out = new haxe_io_Bytes(new ArrayBuffer(size + (b.length * 8 % nbits == 0 ? 0 : 1)));
+		var buf = 0;
+		var curbits = 0;
+		var mask = (1 << nbits) - 1;
+		var pin = 0;
+		var pout = 0;
+		while(pout < size) {
+			while(curbits < nbits) {
+				curbits += 8;
+				buf <<= 8;
+				buf |= b.b[pin++];
+			}
+			curbits -= nbits;
+			out.b[pout++] = base.b[buf >> curbits & mask];
+		}
+		if(curbits > 0) {
+			out.b[pout++] = base.b[buf << nbits - curbits & mask];
+		}
+		return out;
+	}
+	,__class__: haxe_crypto_BaseCode
+};
 var haxe_ds_IntMap = function() {
 	this.h = { };
 };
@@ -637,6 +1571,21 @@ haxe_ds__$List_ListNode.__name__ = true;
 haxe_ds__$List_ListNode.prototype = {
 	__class__: haxe_ds__$List_ListNode
 };
+var haxe_ds__$List_ListIterator = function(head) {
+	this.head = head;
+};
+haxe_ds__$List_ListIterator.__name__ = true;
+haxe_ds__$List_ListIterator.prototype = {
+	hasNext: function() {
+		return this.head != null;
+	}
+	,next: function() {
+		var val = this.head.item;
+		this.head = this.head.next;
+		return val;
+	}
+	,__class__: haxe_ds__$List_ListIterator
+};
 var haxe_ds_StringMap = function() {
 	this.h = Object.create(null);
 };
@@ -645,6 +1594,13 @@ haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
 haxe_ds_StringMap.prototype = {
 	__class__: haxe_ds_StringMap
 };
+var haxe_io_Error = $hxEnums["haxe.io.Error"] = { __ename__:true,__constructs__:null
+	,Blocked: {_hx_name:"Blocked",_hx_index:0,__enum__:"haxe.io.Error",toString:$estr}
+	,Overflow: {_hx_name:"Overflow",_hx_index:1,__enum__:"haxe.io.Error",toString:$estr}
+	,OutsideBounds: {_hx_name:"OutsideBounds",_hx_index:2,__enum__:"haxe.io.Error",toString:$estr}
+	,Custom: ($_=function(e) { return {_hx_index:3,e:e,__enum__:"haxe.io.Error",toString:$estr}; },$_._hx_name="Custom",$_.__params__ = ["e"],$_)
+};
+haxe_io_Error.__constructs__ = [haxe_io_Error.Blocked,haxe_io_Error.Overflow,haxe_io_Error.OutsideBounds,haxe_io_Error.Custom];
 var haxe_iterators_ArrayIterator = function(array) {
 	this.current = 0;
 	this.array = array;
@@ -693,6 +1649,34 @@ js_Boot.__string_rec = function(o,s) {
 	case "function":
 		return "<function>";
 	case "object":
+		if(o.__enum__) {
+			var e = $hxEnums[o.__enum__];
+			var con = e.__constructs__[o._hx_index];
+			var n = con._hx_name;
+			if(con.__params__) {
+				s = s + "\t";
+				return n + "(" + ((function($this) {
+					var $r;
+					var _g = [];
+					{
+						var _g1 = 0;
+						var _g2 = con.__params__;
+						while(true) {
+							if(!(_g1 < _g2.length)) {
+								break;
+							}
+							var p = _g2[_g1];
+							_g1 = _g1 + 1;
+							_g.push(js_Boot.__string_rec(o[p],s));
+						}
+					}
+					$r = _g;
+					return $r;
+				}(this))).join(",") + ")";
+			} else {
+				return n;
+			}
+		}
 		if(((o) instanceof Array)) {
 			var str = "[";
 			s += "\t";
@@ -805,7 +1789,7 @@ js_Boot.__instanceof = function(o,cl) {
 		if(cl == Enum ? o.__ename__ != null : false) {
 			return true;
 		}
-		return false;
+		return o.__enum__ != null ? $hxEnums[o.__enum__] == cl : false;
 	}
 };
 js_Boot.__downcastCheck = function(o,cl) {
@@ -851,6 +1835,10 @@ var Class = { };
 var Enum = { };
 js_Boot.__toStr = ({ }).toString;
 champuru_Worker.mMsgs = new haxe_ds_List();
+champuru_base_SingleNucleotide.sAdenine = 1;
+champuru_base_SingleNucleotide.sCytosine = 2;
+champuru_base_SingleNucleotide.sThymine = 4;
+champuru_base_SingleNucleotide.sGuanine = 8;
 champuru_perl_PerlChampuruReimplementation.bases = ["A","T","G","C","R","Y","M","K","W","S","V","B","H","D","N"];
 champuru_perl_PerlChampuruReimplementation.complement = (function($this) {
 	var $r;
@@ -915,5 +1903,7 @@ champuru_perl_PerlChampuruReimplementation.rev_code = (function($this) {
 	$r = _g;
 	return $r;
 }(this));
+haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
 champuru_Worker.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
