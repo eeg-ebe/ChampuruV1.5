@@ -68,15 +68,15 @@ class Worker
         out("</fieldset>");
         out("<br>");
 
+        // 0. Step - old champuru
         out("<fieldset>");
         out("<legend>Output of the original Champuru 1.0 program</legend>");
-        out("<div style='overflow-x: scroll; width:720px'>");
-        out("<pre style='font-family: monospace;'>");
+        out("<span style='font-family: monospace; word-break: break-all;'>");
         var output:String = PerlChampuruReimplementation.runChampuru(fwd, rev, false).getOutput();
         output = StringTools.htmlEscape(output);
+        output = StringTools.replace(output, "\n", "<br/>");
         out(output);
-        out("</pre>");
-        out("</div>");
+        out("</span>");
         out("</fieldset>");
         out("<br>");
         

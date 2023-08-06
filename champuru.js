@@ -60,6 +60,9 @@ StringTools.htmlEscape = function(s,quotes) {
 	}
 	return buf_b;
 };
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
+};
 var haxe_ds_List = function() {
 	this.length = 0;
 };
@@ -136,13 +139,12 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("<br>");
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>Output of the original Champuru 1.0 program</legend>");
-	champuru_Worker.out("<div style='overflow-x: scroll; width:720px'>");
-	champuru_Worker.out("<pre style='font-family: monospace;'>");
+	champuru_Worker.out("<span style='font-family: monospace; word-break: break-all;'>");
 	var output = champuru_perl_PerlChampuruReimplementation.runChampuru(fwd,rev,false).getOutput();
 	output = StringTools.htmlEscape(output);
+	output = StringTools.replace(output,"\n","<br/>");
 	champuru_Worker.out(output);
-	champuru_Worker.out("</pre>");
-	champuru_Worker.out("</div>");
+	champuru_Worker.out("</span>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
 	var s1 = champuru_base_NucleotideSequence.fromString(fwd);
