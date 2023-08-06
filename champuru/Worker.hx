@@ -67,14 +67,17 @@ class Worker
         out("<br>");
 
         out("<fieldset>");
-        out("<legend>Output of &quot;old&quot; Champuru program</legend>");
-        out("<pre>");
+        out("<legend>Output of &quot;old&quot; Champuru 1.0 program</legend>");
+        out("<div style='overflow-x: scroll; width:720px'>");
+        out("<pre style='font-family: monospace;'>");
         var output:String = PerlChampuruReimplementation.runChampuru(fwd, rev, false).getOutput();
         output = StringTools.htmlEscape(output);
         out(output);
         out("</pre>");
+        out("</div>");
         out("</fieldset>");
         out("<br>");
+
 /*
         var s1:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString(fwd);
         var s2:AmbiguousNucleotideSequence = AmbiguousNucleotideSequence.fromString(rev);
@@ -138,7 +141,7 @@ class Worker
         out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button></span>");
         out("</fieldset>");
         out("<br>");
-
+/*
         // 2. Step - Calculate consensus sequences
         var o1 = new OverlapSolver(score1, s1, s2).solve();
         var o1l = new UnexplainedSequenceConstructor(score1, s1, s2).solve();
