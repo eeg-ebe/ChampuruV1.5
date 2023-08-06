@@ -69,7 +69,7 @@ class Worker
         out("<br>");
 
         out("<fieldset>");
-        out("<legend>Output of &quot;old&quot; Champuru 1.0 program</legend>");
+        out("<legend>Output of the original Champuru 1.0 program</legend>");
         out("<div style='overflow-x: scroll; width:720px'>");
         out("<pre style='font-family: monospace;'>");
         var output:String = PerlChampuruReimplementation.runChampuru(fwd, rev, false).getOutput();
@@ -181,51 +181,10 @@ class Worker
         }
         out("</fieldset>");
         out("<br>");
-/*
-        // 2. Step - Calculate consensus sequences
-        var o1 = new OverlapSolver(score1, s1, s2).solve();
-        var o1l = new UnexplainedSequenceConstructor(score1, s1, s2).solve();
-        var o2 = new OverlapSolver(score2, s1, s2).solve();
-        var o2l = new UnexplainedSequenceConstructor(score2, s1, s2).solve();
-        
-        out("<fieldset>");
-        out("<legend>2. Step - Calculate consensus sequences</legend>");
-        out("<p>First consensus sequence: <span id='consensus1' class='sequence'>");
-        out(o1.toString());
-        out("</span></p>");
-        out("<p>Second consensus sequence: <span id='consensus2' class='sequence'>");
-        out(o2.toString());
-        out("</span></p>");
-        /*
-        if (problems == 1) {
-            out("<p>There is 1 incompatible position (indicated with an underscore), please check the input sequences.</p>");
-        } else if (problems > 1) {
-            out("<p>There are " + problems + " incompatible positions (indicated with underscores), please check the input sequences.</p>");
-        }
-        if (problems > 0) {
-            out("<span class='middle'><button onclick='colorConsensusByIncompatiblePositions()'>Color underscores</button><button onclick='removeColor()'>Remove color</button></span>");
-        }
-        if (remainingAmbFwd == 1) {
-            out("<p>There is 1 ambiguity in the first consensus sequence.</p>");
-        } else if (remainingAmbFwd > 1) {
-            out("<p>There are " + remainingAmbFwd + " ambiguities in the first consensus sequence.</p>");
-        }
-        if (remainingAmbRev == 1) {
-            out("<p>There is 1 ambiguity in the second consensus sequence.</p>");
-        } else if (remainingAmbRev > 1) {
-            out("<p>There are " + remainingAmbRev + " ambiguities in the second consensus sequence.</p>");
-        }
-        if (remainingAmbFwd + remainingAmbRev > 0) {
-            out("<span class='middle'><button onclick='colorConsensusByAmbPositions()'>Color ambiguities</button><button onclick='removeColor()'>Remove color</button></span>");
-        }
-        
-        out("</fieldset>");
-        out("<br>");
-
         
         // 3. Step - Sequence reconstruction
-        // 4. Step - 
-*/
+        // 4. Step - Checking
+        // 5. Step - Searching for alternative solutions
         return {
             result : mMsgs.join("")
         };

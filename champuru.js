@@ -135,7 +135,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
 	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>Output of &quot;old&quot; Champuru 1.0 program</legend>");
+	champuru_Worker.out("<legend>Output of the original Champuru 1.0 program</legend>");
 	champuru_Worker.out("<div style='overflow-x: scroll; width:720px'>");
 	champuru_Worker.out("<pre style='font-family: monospace;'>");
 	var output = champuru_perl_PerlChampuruReimplementation.runChampuru(fwd,rev,false).getOutput();
