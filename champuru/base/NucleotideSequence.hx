@@ -165,4 +165,30 @@ class NucleotideSequence
         }
         return new NucleotideSequence(seq);
     }
+    
+    /**
+     * Count the number of gaps in this sequence.
+     */
+    public function countGaps():Int {
+        var count:Int = 0;
+        for (c in this) {
+            if (c.isGap()) {
+                ++count;
+            }
+        }
+        return count;
+    }
+    
+    /**
+     *
+     */
+    public function countPolymorphisms():Int {
+        var count:Int = 0;
+        for (c in this) {
+            if (c.isPolymorhism()) {
+                ++count;
+            }
+        }
+        return count;
+    }
 }

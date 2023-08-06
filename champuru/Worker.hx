@@ -155,7 +155,9 @@ class Worker
         out("<p>Second consensus sequence: <span id='consensus2' class='sequence'>");
         out(o2.toString());
         out("</span></p>");
-        /*
+        var problems:Int = o1.countGaps() + o2.countGaps();
+        var remainingAmbFwd:Int = o1.countPolymorphisms();
+        var remainingAmbRev:Int = o2.countPolymorphisms();
         if (problems == 1) {
             out("<p>There is 1 incompatible position (indicated with an underscore), please check the input sequences.</p>");
         } else if (problems > 1) {
@@ -176,7 +178,7 @@ class Worker
         }
         if (remainingAmbFwd + remainingAmbRev > 0) {
             out("<span class='middle'><button onclick='colorConsensusByAmbPositions()'>Color ambiguities</button><button onclick='removeColor()'>Remove color</button></span>");
-        }*/
+        }
         out("</fieldset>");
         out("<br>");
 /*

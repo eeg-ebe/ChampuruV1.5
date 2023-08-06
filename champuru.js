@@ -236,6 +236,30 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	}
 	champuru_Worker.out(result.join(""));
 	champuru_Worker.out("</span></p>");
+	var problems = o1.countGaps() + o2.countGaps();
+	var remainingAmbFwd = o1.countPolymorphisms();
+	var remainingAmbRev = o2.countPolymorphisms();
+	if(problems == 1) {
+		champuru_Worker.out("<p>There is 1 incompatible position (indicated with an underscore), please check the input sequences.</p>");
+	} else if(problems > 1) {
+		champuru_Worker.out("<p>There are " + problems + " incompatible positions (indicated with underscores), please check the input sequences.</p>");
+	}
+	if(problems > 0) {
+		champuru_Worker.out("<span class='middle'><button onclick='colorConsensusByIncompatiblePositions()'>Color underscores</button><button onclick='removeColor()'>Remove color</button></span>");
+	}
+	if(remainingAmbFwd == 1) {
+		champuru_Worker.out("<p>There is 1 ambiguity in the first consensus sequence.</p>");
+	} else if(remainingAmbFwd > 1) {
+		champuru_Worker.out("<p>There are " + remainingAmbFwd + " ambiguities in the first consensus sequence.</p>");
+	}
+	if(remainingAmbRev == 1) {
+		champuru_Worker.out("<p>There is 1 ambiguity in the second consensus sequence.</p>");
+	} else if(remainingAmbRev > 1) {
+		champuru_Worker.out("<p>There are " + remainingAmbRev + " ambiguities in the second consensus sequence.</p>");
+	}
+	if(remainingAmbFwd + remainingAmbRev > 0) {
+		champuru_Worker.out("<span class='middle'><button onclick='colorConsensusByAmbPositions()'>Color ambiguities</button><button onclick='removeColor()'>Remove color</button></span>");
+	}
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
 	return { result : champuru_Worker.mMsgs.join("")};
@@ -374,6 +398,48 @@ champuru_base_NucleotideSequence.prototype = {
 		}
 		return new champuru_base_NucleotideSequence(seq);
 	}
+	,countGaps: function() {
+		var count = 0;
+		var seq = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = this.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = this.mSequence.h[i];
+			seq.add(c);
+		}
+		var _g_head = seq.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var c = val;
+			if(c.mCode == 0) {
+				++count;
+			}
+		}
+		return count;
+	}
+	,countPolymorphisms: function() {
+		var count = 0;
+		var seq = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = this.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = this.mSequence.h[i];
+			seq.add(c);
+		}
+		var _g_head = seq.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var c = val;
+			if(!(c.mCode == 0 || c.mCode == champuru_base_SingleNucleotide.sAdenine || c.mCode == champuru_base_SingleNucleotide.sCytosine || c.mCode == champuru_base_SingleNucleotide.sGuanine || c.mCode == champuru_base_SingleNucleotide.sThymine)) {
+				++count;
+			}
+		}
+		return count;
+	}
 	,__class__: champuru_base_NucleotideSequence
 };
 var champuru_base_SingleNucleotide = function(code,quality) {
@@ -396,7 +462,7 @@ champuru_base_SingleNucleotide.createNucleotideByIUPACCode = function(s,origQual
 	}
 	var code = s.toUpperCase();
 	var quality = origQuality == -1 ? code == s ? 100 : 50 : origQuality;
-	if(code == "." || code == "-") {
+	if(code == "." || code == "-" || code == "_") {
 		return new champuru_base_SingleNucleotide(0,quality);
 	} else if(code == "A") {
 		return new champuru_base_SingleNucleotide(champuru_base_SingleNucleotide.sAdenine,quality);
@@ -433,7 +499,7 @@ champuru_base_SingleNucleotide.createNucleotideByIUPACCode = function(s,origQual
 };
 champuru_base_SingleNucleotide.prototype = {
 	toIUPACCode: function() {
-		var result = "-";
+		var result = "_";
 		if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sThymine) != 0) {
 			result = "N";
 		} else if((this.mCode & champuru_base_SingleNucleotide.sAdenine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sCytosine) != 0 && (this.mCode & champuru_base_SingleNucleotide.sGuanine) != 0) {

@@ -78,7 +78,7 @@ class SingleNucleotide
     public static function createNucleotideByIUPACCode(s:String, ?origQuality:Float=-1):SingleNucleotide {
         var code:String = s.toUpperCase();
         var quality:Float = (origQuality == -1) ? ((code == s) ? 100 : 50) : origQuality;
-        if (code == "." || code == "-") {
+        if (code == "." || code == "-" || code == "_") {
             return new SingleNucleotide(0, quality);
         } else if (code == "A") {
             return new SingleNucleotide(sAdenine, quality);
@@ -118,7 +118,7 @@ class SingleNucleotide
      * Get the IUPAC Code for this SingleNucleotide.
      */
     public function toIUPACCode():String {
-        var result:String = "-";
+        var result:String = "_";
         if (canStandForAdenine() && canStandForCytosine() && canStandForGuanine() && canStandForThymine()) {
             result = "N";
         } else if (canStandForAdenine() && canStandForCytosine() && canStandForGuanine()) {
