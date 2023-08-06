@@ -269,7 +269,7 @@ function colorConsensusByIncompatiblePositions() {
 function addColorsIfAmb(s) {
     var result = []
     for (var i = 0; i < s.length; i++) {
-        if (s[i] == "_" || s[i] == "A" || s[i] == "C" || s[i] == "T" || s[i] == "G") {
+        if (s[i] == "_" || s[i] == "A" || s[i] == "C" || s[i] == "T" || s[i] == "G" || s[i] == "a" || s[i] == "c" || s[i] == "t" || s[i] == "g") {
             result.push(s[i]);
         } else {
             result.push("<span class='bgred'>" + s[i] + "</span>");
