@@ -58,7 +58,7 @@ class SingleNucleotide
      * Create a new SingleNucleotide. Use the static create* functions to
      * create a corresponding object.
      */
-    private inline function new(code:Int, quality:Float) {
+    public inline function new(code:Int, ?quality:Float=1.0) {
         mCode = code;
         mQuality = quality;
     }

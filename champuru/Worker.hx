@@ -22,6 +22,7 @@ import champuru.score.ScoreCalculatorList;
 import champuru.score.ScoreSorter;
 import champuru.score.ScoreListVisualizer;
 import champuru.consensus.OverlapSolver;
+import champuru.reconstruction.SequenceReconstructor;
 /*
 
 import champuru.base.AmbiguousNucleotideSequence;
@@ -183,6 +184,18 @@ class Worker
         out("<br>");
         
         // 3. Step - Sequence reconstruction
+        var result = SequenceReconstructor.reconstruct(o1, o2);
+        out("<fieldset>");
+        out("<legend>2. Step - Calculate consensus sequences</legend>");
+        out("<p>First reconstructed sequence: <span id='reconstructed1' class='sequence'>");
+        out(result.seq1.toString());
+        out("</span></p>");
+        out("<p>Second reconstructed sequence: <span id='reconstructed2' class='sequence'>");
+        out(result.seq2.toString());
+        out("</span></p>");
+        out("</fieldset>");
+        out("<br>");
+        
         // 4. Step - Checking
         // 5. Step - Searching for alternative solutions
         return {

@@ -264,6 +264,37 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	}
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	var result = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
+	champuru_Worker.out("<fieldset>");
+	champuru_Worker.out("<legend>2. Step - Calculate consensus sequences</legend>");
+	champuru_Worker.out("<p>First reconstructed sequence: <span id='reconstructed1' class='sequence'>");
+	var _this = result.seq1;
+	var result1 = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = _this.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = _this.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result1.add(s);
+	}
+	champuru_Worker.out(result1.join(""));
+	champuru_Worker.out("</span></p>");
+	champuru_Worker.out("<p>Second reconstructed sequence: <span id='reconstructed2' class='sequence'>");
+	var _this = result.seq2;
+	var result = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = _this.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = _this.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result.add(s);
+	}
+	champuru_Worker.out(result.join(""));
+	champuru_Worker.out("</span></p>");
+	champuru_Worker.out("</fieldset>");
+	champuru_Worker.out("<br>");
 	return { result : champuru_Worker.mMsgs.join("")};
 };
 champuru_Worker.onMessage = function(e) {
@@ -445,6 +476,9 @@ champuru_base_NucleotideSequence.prototype = {
 	,__class__: champuru_base_NucleotideSequence
 };
 var champuru_base_SingleNucleotide = function(code,quality) {
+	if(quality == null) {
+		quality = 1.0;
+	}
 	this.mQuality = 1.0;
 	this.mCode = 0;
 	this.mCode = code;
@@ -1219,6 +1253,71 @@ champuru_perl_PerlChampuruResult.prototype = {
 		return this.mOutput.join("");
 	}
 	,__class__: champuru_perl_PerlChampuruResult
+};
+var champuru_reconstruction_SequenceReconstructor = function() { };
+champuru_reconstruction_SequenceReconstructor.__name__ = true;
+champuru_reconstruction_SequenceReconstructor.getBegin = function(s) {
+	var begin = 0;
+	while(true) {
+		if(!(0 <= begin && begin < s.mLength)) {
+			throw haxe_Exception.thrown("Position " + begin + " out of range [0," + s.mLength + "(");
+		}
+		if(!(s.mSequence.h[begin].mQuality < 0.75)) {
+			break;
+		}
+		++begin;
+	}
+	return begin;
+};
+champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) {
+	var seq1begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq1);
+	var seq2begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq2);
+	var changed = true;
+	while(changed) {
+		changed = false;
+		var seqLen1 = seq1.mLength;
+		var seqLen2 = seq2.mLength;
+		var seqLen = seqLen1 > seqLen2 ? seqLen2 : seqLen1;
+		var _g = 0;
+		var _g1 = seqLen;
+		while(_g < _g1) {
+			var j = _g++;
+			var idx1 = seq1begin + j;
+			var idx2 = seq2begin + j;
+			if(idx1 >= seqLen1 || idx2 >= seqLen2) {
+				break;
+			}
+			if(!(0 <= idx1 && idx1 < seq1.mLength)) {
+				throw haxe_Exception.thrown("Position " + idx1 + " out of range [0," + seq1.mLength + "(");
+			}
+			var seq1n = seq1.mSequence.h[idx1];
+			if(!(0 <= idx2 && idx2 < seq2.mLength)) {
+				throw haxe_Exception.thrown("Position " + idx2 + " out of range [0," + seq2.mLength + "(");
+			}
+			var seq2n = seq2.mSequence.h[idx2];
+			var tmp;
+			if(seq1n.mCode != seq2n.mCode) {
+				var code = seq1n.mCode & seq2n.mCode;
+				tmp = code != 0;
+			} else {
+				tmp = false;
+			}
+			if(tmp) {
+				if(seq1n.mCode > seq2n.mCode) {
+					var code1 = seq1n.mCode - seq2n.mCode;
+					var newN = new champuru_base_SingleNucleotide(code1);
+					seq1.replace(idx1,newN);
+					changed = true;
+				} else {
+					var code2 = seq2n.mCode - seq1n.mCode;
+					var newN1 = new champuru_base_SingleNucleotide(code2);
+					seq2.replace(idx2,newN1);
+					changed = true;
+				}
+			}
+		}
+	}
+	return { seq1 : seq1, seq2 : seq2};
 };
 var champuru_score_AScoreCalculator = function() {
 };
