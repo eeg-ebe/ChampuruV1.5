@@ -56,7 +56,7 @@ class NucleotideSequence
     }
     
     /**
-     * Create a AmbiguousNucleotideSequence from string.
+     * Create a SingleNucleotide from string.
      */
     public static function fromString(str:String) {
         var list:List<SingleNucleotide> = new List<SingleNucleotide>();
