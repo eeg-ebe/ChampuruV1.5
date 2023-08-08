@@ -1269,9 +1269,24 @@ champuru_reconstruction_SequenceReconstructor.getBegin = function(s) {
 	}
 	return begin;
 };
+champuru_reconstruction_SequenceReconstructor.getEnd = function(s) {
+	var end = s.mLength - 1;
+	while(true) {
+		if(!(0 <= end && end < s.mLength)) {
+			throw haxe_Exception.thrown("Position " + end + " out of range [0," + s.mLength + "(");
+		}
+		if(!(s.mSequence.h[end].mQuality < 0.75)) {
+			break;
+		}
+		--end;
+	}
+	return end;
+};
 champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) {
 	var seq1begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq1);
 	var seq2begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq2);
+	var seq1end = champuru_reconstruction_SequenceReconstructor.getEnd(seq1);
+	var seq2end = champuru_reconstruction_SequenceReconstructor.getEnd(seq2);
 	var changed = true;
 	while(changed) {
 		changed = false;
@@ -1284,35 +1299,102 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 			var j = _g++;
 			var idx1 = seq1begin + j;
 			var idx2 = seq2begin + j;
-			if(idx1 >= seqLen1 || idx2 >= seqLen2) {
-				break;
-			}
-			if(!(0 <= idx1 && idx1 < seq1.mLength)) {
-				throw haxe_Exception.thrown("Position " + idx1 + " out of range [0," + seq1.mLength + "(");
-			}
-			var seq1n = seq1.mSequence.h[idx1];
-			if(!(0 <= idx2 && idx2 < seq2.mLength)) {
-				throw haxe_Exception.thrown("Position " + idx2 + " out of range [0," + seq2.mLength + "(");
-			}
-			var seq2n = seq2.mSequence.h[idx2];
 			var tmp;
-			if(seq1n.mCode != seq2n.mCode) {
-				var code = seq1n.mCode & seq2n.mCode;
-				tmp = code != 0;
+			var tmp1;
+			if(!(idx1 >= seqLen1 || idx2 >= seqLen2)) {
+				if(!(0 <= idx1 && idx1 < seq1.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx1 + " out of range [0," + seq1.mLength + "(");
+				}
+				tmp1 = seq1.mSequence.h[idx1].mQuality < 0.75;
 			} else {
-				tmp = false;
+				tmp1 = true;
 			}
-			if(tmp) {
-				if(seq1n.mCode > seq2n.mCode) {
-					var code1 = seq1n.mCode - seq2n.mCode;
-					var newN = new champuru_base_SingleNucleotide(code1);
-					seq1.replace(idx1,newN);
-					changed = true;
+			if(!tmp1) {
+				if(!(0 <= idx2 && idx2 < seq2.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx2 + " out of range [0," + seq2.mLength + "(");
+				}
+				tmp = seq2.mSequence.h[idx2].mQuality < 0.75;
+			} else {
+				tmp = true;
+			}
+			if(!tmp) {
+				if(!(0 <= idx1 && idx1 < seq1.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx1 + " out of range [0," + seq1.mLength + "(");
+				}
+				var seq1n = seq1.mSequence.h[idx1];
+				if(!(0 <= idx2 && idx2 < seq2.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx2 + " out of range [0," + seq2.mLength + "(");
+				}
+				var seq2n = seq2.mSequence.h[idx2];
+				var tmp2;
+				if(seq1n.mCode != seq2n.mCode) {
+					var code = seq1n.mCode & seq2n.mCode;
+					tmp2 = code != 0;
 				} else {
-					var code2 = seq2n.mCode - seq1n.mCode;
-					var newN1 = new champuru_base_SingleNucleotide(code2);
-					seq2.replace(idx2,newN1);
-					changed = true;
+					tmp2 = false;
+				}
+				if(tmp2) {
+					if(seq1n.mCode > seq2n.mCode) {
+						var code1 = seq1n.mCode - seq2n.mCode;
+						var newN = new champuru_base_SingleNucleotide(code1);
+						seq1.replace(idx1,newN);
+						changed = true;
+					} else {
+						var code2 = seq2n.mCode - seq1n.mCode;
+						var newN1 = new champuru_base_SingleNucleotide(code2);
+						seq2.replace(idx2,newN1);
+						changed = true;
+					}
+				}
+			}
+			var idx1_ = seq1end - j;
+			var idx2_ = seq2end - j;
+			var tmp3;
+			var tmp4;
+			if(!(idx1_ < 0 || idx2_ < 0)) {
+				if(!(0 <= idx1_ && idx1_ < seq1.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx1_ + " out of range [0," + seq1.mLength + "(");
+				}
+				tmp4 = seq1.mSequence.h[idx1_].mQuality < 0.75;
+			} else {
+				tmp4 = true;
+			}
+			if(!tmp4) {
+				if(!(0 <= idx2_ && idx2_ < seq2.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx2_ + " out of range [0," + seq2.mLength + "(");
+				}
+				tmp3 = seq2.mSequence.h[idx2_].mQuality < 0.75;
+			} else {
+				tmp3 = true;
+			}
+			if(!tmp3) {
+				if(!(0 <= idx1_ && idx1_ < seq1.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx1_ + " out of range [0," + seq1.mLength + "(");
+				}
+				var seq1n_ = seq1.mSequence.h[idx1_];
+				if(!(0 <= idx2_ && idx2_ < seq2.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx2_ + " out of range [0," + seq2.mLength + "(");
+				}
+				var seq2n_ = seq2.mSequence.h[idx2_];
+				var tmp5;
+				if(seq1n_.mCode != seq2n_.mCode) {
+					var code3 = seq1n_.mCode & seq2n_.mCode;
+					tmp5 = code3 != 0;
+				} else {
+					tmp5 = false;
+				}
+				if(tmp5) {
+					if(seq1n_.mCode > seq2n_.mCode) {
+						var code4 = seq1n_.mCode - seq2n_.mCode;
+						var newN2 = new champuru_base_SingleNucleotide(code4);
+						seq1.replace(idx1_,newN2);
+						changed = true;
+					} else {
+						var code5 = seq2n_.mCode - seq1n_.mCode;
+						var newN3 = new champuru_base_SingleNucleotide(code5);
+						seq2.replace(idx2_,newN3);
+						changed = true;
+					}
 				}
 			}
 		}

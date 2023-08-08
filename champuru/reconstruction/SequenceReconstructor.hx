@@ -32,6 +32,13 @@ class SequenceReconstructor
         }
         return begin;
     }
+    public static function getEnd(s:NucleotideSequence):Int {
+        var end:Int = s.length() - 1;
+        while (s.get(end).getQuality() < 0.75) {
+            end--;
+        }
+        return end;
+    }
 
     /**
      * Reconstruct sequences.
@@ -39,6 +46,8 @@ class SequenceReconstructor
     public static function reconstruct(seq1:NucleotideSequence, seq2:NucleotideSequence):{seq1:NucleotideSequence, seq2:NucleotideSequence} {
         var seq1begin:Int = getBegin(seq1);
         var seq2begin:Int = getBegin(seq2);
+        var seq1end:Int = getEnd(seq1);
+        var seq2end:Int = getEnd(seq2);
 
         var changed:Bool = true;
         while (changed) {
@@ -52,41 +61,47 @@ class SequenceReconstructor
                 var idx1:Int = seq1begin + j;
                 var idx2:Int = seq2begin + j;
                 
-                if (idx1 >= seqLen1 || idx2 >= seqLen2) {
-                    break;
-                }
-                
-                var seq1n:SingleNucleotide = seq1.get(idx1);
-                var seq2n:SingleNucleotide = seq2.get(idx2);
-                
-                if ((seq1n.getCode() != seq2n.getCode()) && (seq1n.isOverlapping(seq2n))) {
-                    if (seq1n.getCode() > seq2n.getCode()) {
-                        var code:Int = seq1n.getCode() - seq2n.getCode();
-                        var newN:SingleNucleotide = new SingleNucleotide(code);
-                        seq1.replace(idx1, newN);
-                        changed = true;
-                    } else { // $seq2[$j]=$rev_code{$code{$seq2[$j]}-$code{$seq1[$j]}}
-                        var code:Int = seq2n.getCode() - seq1n.getCode();
-                        var newN:SingleNucleotide = new SingleNucleotide(code);
-                        seq2.replace(idx2, newN);
-                        changed = true;
+                if (!(idx1 >= seqLen1 || idx2 >= seqLen2 || seq1.get(idx1).getQuality() < 0.75 || seq2.get(idx2).getQuality() < 0.75)) {
+                    var seq1n:SingleNucleotide = seq1.get(idx1);
+                    var seq2n:SingleNucleotide = seq2.get(idx2);
+                    
+                    if ((seq1n.getCode() != seq2n.getCode()) && (seq1n.isOverlapping(seq2n))) {
+                        if (seq1n.getCode() > seq2n.getCode()) {
+                            var code:Int = seq1n.getCode() - seq2n.getCode();
+                            var newN:SingleNucleotide = new SingleNucleotide(code);
+                            seq1.replace(idx1, newN);
+                            changed = true;
+                        } else { // $seq2[$j]=$rev_code{$code{$seq2[$j]}-$code{$seq1[$j]}}
+                            var code:Int = seq2n.getCode() - seq1n.getCode();
+                            var newN:SingleNucleotide = new SingleNucleotide(code);
+                            seq2.replace(idx2, newN);
+                            changed = true;
+                        }
                     }
                 }
                 
-                //var seq1n_:SingleNucleotide = seq1.get(idx1);
-                //var seq2n_:SingleNucleotide = seq2.get(idx2);
                 
+                var idx1_:Int = seq1end - j;
+                var idx2_:Int = seq2end - j;
                 
-                
-//                if ($seq1[$#seq1-$j] ne $seq2[$#seq2-$j]) {
-        //             if (comp($seq1[$#seq1-$j],$seq2[$#seq2-$j])==1) {
-        //                 if  ($code{$seq1[$#seq1-$j]} > $code{$seq2[$#seq2-$j]}) {
-        //                     $seq1[$#seq1-$j]=$rev_code{$code{$seq1[$#seq1-$j]}-$code{$seq2[$#seq2-$j]}}
-        //                 } else {
-        //                     $seq2[$#seq2-$j]=$rev_code{$code{$seq2[$#seq2-$j]}-$code{$seq1[$#seq1-$j]}}
-        //                 }
-        //             }
-        //         }
+                if (!(idx1_ < 0 || idx2_ < 0 || seq1.get(idx1_).getQuality() < 0.75 || seq2.get(idx2_).getQuality() < 0.75)) {
+                    var seq1n_:SingleNucleotide = seq1.get(idx1_);
+                    var seq2n_:SingleNucleotide = seq2.get(idx2_);
+                    
+                    if ((seq1n_.getCode() != seq2n_.getCode()) && (seq1n_.isOverlapping(seq2n_))) {
+                        if (seq1n_.getCode() > seq2n_.getCode()) {
+                            var code:Int = seq1n_.getCode() - seq2n_.getCode();
+                            var newN:SingleNucleotide = new SingleNucleotide(code);
+                            seq1.replace(idx1_, newN);
+                            changed = true;
+                        } else {
+                            var code:Int = seq2n_.getCode() - seq1n_.getCode();
+                            var newN:SingleNucleotide = new SingleNucleotide(code);
+                            seq2.replace(idx2_, newN);
+                            changed = true;
+                        }
+                    }
+                }
             }
         }
         
