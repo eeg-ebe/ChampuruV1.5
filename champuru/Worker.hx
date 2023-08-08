@@ -186,11 +186,11 @@ class Worker
         // 3. Step - Sequence reconstruction
         var result = SequenceReconstructor.reconstruct(o1, o2);
         out("<fieldset>");
-        out("<legend>2. Step - Calculate consensus sequences</legend>");
-        out("<p>First reconstructed sequence: <span id='reconstructed1' class='sequence'>");
+        out("<legend>3. Step - Sequence reconstruction</legend>");
+        out("<p>First reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed1\")'>Copy to clipboard</a>]: <span id='reconstructed1' class='sequence'>");
         out(result.seq1.toString());
         out("</span></p>");
-        out("<p>Second reconstructed sequence: <span id='reconstructed2' class='sequence'>");
+        out("<p>Second reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed2\")'>Copy to clipboard</a>]: <span id='reconstructed2' class='sequence'>");
         out(result.seq2.toString());
         out("</span></p>");
         out("</fieldset>");
