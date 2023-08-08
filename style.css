@@ -180,6 +180,10 @@ legend {
     font-family: monospace, monospace;
     background-color: red;
 }
+.bgyellow {
+    font-family: monospace, monospace;
+    background-color: yellow;
+}
 .plot {
     border: 1px solid black;
 }
