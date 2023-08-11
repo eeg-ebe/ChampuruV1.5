@@ -124,9 +124,9 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.mMsgs.clear();
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>Input</legend>");
-	champuru_Worker.out("<p>Forward sequence of length " + fwd.length + ": <span class='sequence'>");
+	champuru_Worker.out("<p>Forward sequence of length " + fwd.length + ": <span id='input1' class='sequence'>");
 	champuru_Worker.out(fwd);
-	champuru_Worker.out("</p><p>Reverse sequence of length " + rev.length + ": <span class='sequence'>");
+	champuru_Worker.out("</p><p>Reverse sequence of length " + rev.length + ": <span id='input2' class='sequence'>");
 	champuru_Worker.out(rev);
 	champuru_Worker.out("</p>");
 	champuru_Worker.out("<p>Score calculation method: " + scoreCalculationMethod + "</p>");
@@ -282,17 +282,72 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("</span></p>");
 	champuru_Worker.out("<p>Second reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed2\")'>Copy to clipboard</a>]: <span id='reconstructed2' class='sequence'>");
 	var _this = result.seq2;
-	var result = new haxe_ds_List();
+	var result1 = new haxe_ds_List();
 	var _g = 0;
 	var _g1 = _this.mLength;
 	while(_g < _g1) {
 		var i = _g++;
 		var c = _this.mSequence.h[i];
 		var s = c.toIUPACCode();
-		result.add(s);
+		result1.add(s);
 	}
-	champuru_Worker.out(result.join(""));
+	champuru_Worker.out(result1.join(""));
 	champuru_Worker.out("</span></p>");
+	champuru_Worker.out("</fieldset>");
+	champuru_Worker.out("<br>");
+	champuru_Worker.out("<fieldset>");
+	champuru_Worker.out("<legend>4. Step - Checking sequences</legend>");
+	var p1 = result.seq1.countPolymorphisms();
+	var p2 = result.seq2.countPolymorphisms();
+	if(p1 != 0) {
+		if(p1 == 1) {
+			champuru_Worker.out("<p>There is 1 ambiguity on the first reconstructed sequence left!</p>");
+		} else {
+			champuru_Worker.out("<p>There are " + p1 + " ambiguities on the first reconstructed sequence left!</p>");
+		}
+	}
+	if(p2 != 0) {
+		if(p2 == 1) {
+			champuru_Worker.out("<p>There is 1 ambiguity on the second reconstructed sequence left!</p>");
+		} else {
+			champuru_Worker.out("<p>There are " + p2 + " ambiguities on the second reconstructed sequence left!</p>");
+		}
+	}
+	if(p1 + p2 > 0) {
+		champuru_Worker.out("<span class='middle'><button onclick='colorFinalByAmbPositions()'>Color ambiguities</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+		champuru_Worker.out("<br>");
+	}
+	var seqChecker = new champuru_reconstruction_SequenceChecker(s1,s2);
+	seqChecker.setOffsets(score1,score2);
+	var checkerResult = seqChecker.check(result.seq1,result.seq2);
+	if(checkerResult.pF.length + checkerResult.pR.length >= 1) {
+		champuru_Worker.out("<p>");
+		if(checkerResult.pF.length > 0) {
+			champuru_Worker.out("Check position" + (checkerResult.pF.length == 1 ? "" : "s") + " on forward: <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
+		}
+		if(checkerResult.pF.length > 0 && checkerResult.pR.length > 0) {
+			champuru_Worker.out("<br>");
+		}
+		if(checkerResult.pR.length > 0) {
+			champuru_Worker.out("Check position" + (checkerResult.pR.length == 1 ? "" : "s") + " on reverse: <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
+		}
+		champuru_Worker.out("</p>");
+	}
+	if(checkerResult.pF.length + checkerResult.pR.length > 0) {
+		champuru_Worker.out("<span class='middle'><button onclick='colorFinalByPositions(\"" + checkerResult.pF.join(",") + "\", \"" + checkerResult.pR.join(",") + "\", \"" + checkerResult.pFHighlight.join(",") + "\", \"" + checkerResult.pRHighlight.join(",") + "\");'>Color positions</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+		champuru_Worker.out("<br>");
+	}
+	problems = result.seq1.countGaps() + result.seq2.countGaps();
+	if(problems == 0) {
+		champuru_Worker.out("<span class='middle'><button onclick='download()'>Download</button></span>");
+	} else if(problems == 1) {
+		champuru_Worker.out("<p>There is 1 problematic position!</p>");
+	} else if(problems > 1) {
+		champuru_Worker.out("<p>There are " + problems + " problematic positions!</p>");
+	}
+	if(problems > 0) {
+		champuru_Worker.out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+	}
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
 	return { result : champuru_Worker.mMsgs.join("")};
@@ -467,7 +522,28 @@ champuru_base_NucleotideSequence.prototype = {
 			var val = _g_head.item;
 			_g_head = _g_head.next;
 			var c = val;
-			if(!(c.mCode == 0 || c.mCode == champuru_base_SingleNucleotide.sAdenine || c.mCode == champuru_base_SingleNucleotide.sCytosine || c.mCode == champuru_base_SingleNucleotide.sGuanine || c.mCode == champuru_base_SingleNucleotide.sThymine)) {
+			if(!c.isNotPolymorhism()) {
+				++count;
+			}
+		}
+		return count;
+	}
+	,countNotPolymorphisms: function() {
+		var count = 0;
+		var seq = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = this.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = this.mSequence.h[i];
+			seq.add(c);
+		}
+		var _g_head = seq.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var c = val;
+			if(c.isNotPolymorhism()) {
 				++count;
 			}
 		}
@@ -625,14 +701,25 @@ champuru_base_SingleNucleotide.prototype = {
 		return i;
 	}
 	,isNotPolymorhism: function() {
-		if(!(this.mCode == 0 || this.mCode == champuru_base_SingleNucleotide.sAdenine || this.mCode == champuru_base_SingleNucleotide.sCytosine || this.mCode == champuru_base_SingleNucleotide.sGuanine)) {
-			return this.mCode == champuru_base_SingleNucleotide.sThymine;
-		} else {
+		if(this.mCode == 0) {
 			return true;
 		}
+		if(this.mCode == champuru_base_SingleNucleotide.sAdenine) {
+			return true;
+		}
+		if(this.mCode == champuru_base_SingleNucleotide.sCytosine) {
+			return true;
+		}
+		if(this.mCode == champuru_base_SingleNucleotide.sGuanine) {
+			return true;
+		}
+		if(this.mCode == champuru_base_SingleNucleotide.sThymine) {
+			return true;
+		}
+		return false;
 	}
 	,isPolymorhism: function() {
-		return !(this.mCode == 0 || this.mCode == champuru_base_SingleNucleotide.sAdenine || this.mCode == champuru_base_SingleNucleotide.sCytosine || this.mCode == champuru_base_SingleNucleotide.sGuanine || this.mCode == champuru_base_SingleNucleotide.sThymine);
+		return !this.isNotPolymorhism();
 	}
 	,getReverseComplement: function() {
 		var code = 0;
@@ -1254,6 +1341,79 @@ champuru_perl_PerlChampuruResult.prototype = {
 	}
 	,__class__: champuru_perl_PerlChampuruResult
 };
+var champuru_reconstruction_SequenceChecker = function(fwd,rev) {
+	this.mFwd = fwd;
+	this.mRev = rev;
+};
+champuru_reconstruction_SequenceChecker.__name__ = true;
+champuru_reconstruction_SequenceChecker.prototype = {
+	setOffsets: function(offset1,offset2) {
+		this.mOffset1 = offset1;
+		this.mOffset2 = offset2;
+	}
+	,check: function(s1,s2) {
+		var pF = new haxe_ds_List();
+		var pR = new haxe_ds_List();
+		var pFHighlight = new haxe_ds_List();
+		var pRHighlight = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = this.mFwd.mLength;
+		while(_g < _g1) {
+			var fwdPos = _g++;
+			var s1Pos = fwdPos + (this.mOffset2 > 0 ? 0 : -this.mOffset2);
+			var s2Pos = fwdPos + (this.mOffset2 < 0 ? 0 : this.mOffset2);
+			if(s1Pos < 0 || s2Pos < 0 || s1Pos >= s1.mLength || s2Pos >= s2.mLength) {
+				continue;
+			}
+			var _this = this.mFwd;
+			if(!(0 <= fwdPos && fwdPos < _this.mLength)) {
+				throw haxe_Exception.thrown("Position " + fwdPos + " out of range [0," + _this.mLength + "(");
+			}
+			var tmp = _this.mSequence.h[fwdPos].mCode;
+			if(!(0 <= s1Pos && s1Pos < s1.mLength)) {
+				throw haxe_Exception.thrown("Position " + s1Pos + " out of range [0," + s1.mLength + "(");
+			}
+			var tmp1 = s1.mSequence.h[s1Pos].mCode;
+			if(!(0 <= s2Pos && s2Pos < s2.mLength)) {
+				throw haxe_Exception.thrown("Position " + s2Pos + " out of range [0," + s2.mLength + "(");
+			}
+			if(tmp != (tmp1 | s2.mSequence.h[s2Pos].mCode)) {
+				pF.push(fwdPos + 1);
+				pFHighlight.push(s1Pos + 1);
+				pRHighlight.push(s2Pos + 1);
+			}
+		}
+		var _g = 0;
+		var _g1 = this.mRev.mLength;
+		while(_g < _g1) {
+			var revPos = _g++;
+			var s1Pos = revPos + (this.mOffset1 > 0 ? 0 : -this.mOffset1);
+			var s2Pos = revPos + (this.mOffset1 < 0 ? 0 : this.mOffset1);
+			if(s1Pos < 0 || s2Pos < 0 || s1Pos >= s1.mLength || s2Pos >= s2.mLength) {
+				continue;
+			}
+			var _this = this.mRev;
+			if(!(0 <= revPos && revPos < _this.mLength)) {
+				throw haxe_Exception.thrown("Position " + revPos + " out of range [0," + _this.mLength + "(");
+			}
+			var tmp = _this.mSequence.h[revPos].mCode;
+			if(!(0 <= s1Pos && s1Pos < s1.mLength)) {
+				throw haxe_Exception.thrown("Position " + s1Pos + " out of range [0," + s1.mLength + "(");
+			}
+			var tmp1 = s1.mSequence.h[s1Pos].mCode;
+			if(!(0 <= s2Pos && s2Pos < s2.mLength)) {
+				throw haxe_Exception.thrown("Position " + s2Pos + " out of range [0," + s2.mLength + "(");
+			}
+			if(tmp != (tmp1 | s2.mSequence.h[s2Pos].mCode)) {
+				pR.push(revPos + 1);
+				pFHighlight.push(s1Pos + 1);
+				pRHighlight.push(s2Pos + 1);
+			}
+		}
+		return { pF : pF, pR : pR, pFHighlight : pFHighlight, pRHighlight : pRHighlight};
+	}
+	,__class__: champuru_reconstruction_SequenceChecker
+};
 var champuru_reconstruction_SequenceReconstructor = function() { };
 champuru_reconstruction_SequenceReconstructor.__name__ = true;
 champuru_reconstruction_SequenceReconstructor.getBegin = function(s) {
@@ -1453,7 +1613,7 @@ champuru_score_AmbiguityCorrectionScoreCalculator.prototype = $extend(champuru_s
 				throw haxe_Exception.thrown("Position " + i1 + " out of range [0," + rev.mLength + "(");
 			}
 			var b = rev.mSequence.h[i1];
-			if(a.equals(b,false) && (a.mCode == 0 || a.mCode == champuru_base_SingleNucleotide.sAdenine || a.mCode == champuru_base_SingleNucleotide.sCytosine || a.mCode == champuru_base_SingleNucleotide.sGuanine || a.mCode == champuru_base_SingleNucleotide.sThymine)) {
+			if(a.equals(b,false) && a.isNotPolymorhism()) {
 				++fullMatches;
 			} else {
 				var code = a.mCode & b.mCode;

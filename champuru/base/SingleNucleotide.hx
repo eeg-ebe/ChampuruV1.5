@@ -263,8 +263,23 @@ class SingleNucleotide
     /** 
      * Check whether this nucleotide is not polymorphismic.
      */
-    public inline function isNotPolymorhism():Bool {
-        return isGap() || isAdenine() || isCytosine() || isGuanine() || isThymine();
+    public function isNotPolymorhism():Bool {
+        if (isGap()) {
+            return true;
+        }
+        if (isAdenine()) {
+            return true;
+        }
+        if (isCytosine()) {
+            return true;
+        }
+        if (isGuanine()) {
+            return true;
+        }
+        if (isThymine()) {
+            return true;
+        }
+        return false;
     }
     
     /**

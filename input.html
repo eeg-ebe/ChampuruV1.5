@@ -250,7 +250,7 @@ function reverse() {
 }
 
 function addColorsIfUnderscore(s) {
-    var result = []
+    var result = [];
     for (var i = 0; i < s.length; i++) {
         if (s[i] == "_") {
             result.push("<span class='bgred'>_</span>");
@@ -267,7 +267,7 @@ function colorConsensusByIncompatiblePositions() {
     document.getElementById('consensus2').innerHTML = addColorsIfUnderscore(txt2);
 }
 function addColorsIfAmb(s) {
-    var result = []
+    var result = [];
     for (var i = 0; i < s.length; i++) {
         if (s[i] == "_" || s[i] == "A" || s[i] == "C" || s[i] == "T" || s[i] == "G" || s[i] == "a" || s[i] == "c" || s[i] == "t" || s[i] == "g") {
             result.push(s[i]);
@@ -277,6 +277,22 @@ function addColorsIfAmb(s) {
             } else {
                 result.push("<span class='bgyellow'>" + s[i] + "</span>");
             }
+        }
+    }
+    return result.join("");
+}
+function addColorsForPositions(s, positions) {
+    var result = [];
+    for (var i = 0; i < s.length; i++) {
+        var correctedPosition = i + 1;
+        if (positions.includes(correctedPosition)) {
+            if (s[i] == s[i].toUpperCase()) {
+                result.push("<span class='bgred'>" + s[i] + "</span>");
+            } else {
+                result.push("<span class='bgyellow'>" + s[i] + "</span>");
+            }
+        } else {
+            result.push(s[i]);
         }
     }
     return result.join("");
@@ -293,6 +309,38 @@ function removeColor() {
     document.getElementById('consensus1').innerText = txt1;
     document.getElementById('consensus2').innerText = txt2;
 }
+function colorFinalByAmbPositions() {
+    var txt1 = document.getElementById('reconstructed1').innerText;
+    var txt2 = document.getElementById('reconstructed2').innerText;
+    document.getElementById('reconstructed1').innerHTML = addColorsIfAmb(txt1);
+    document.getElementById('reconstructed2').innerHTML = addColorsIfAmb(txt2);
+}
+function colorFinalByPositions(i1, i2, p1, p2) {
+    var i1s = i1.split(",");
+    for (var i = 0; i < i1s.length; i++) {
+        i1s[i] = parseInt(i1s[i]);
+    }
+    var i2s = i2.split(",");
+    for (var i = 0; i < i2s.length; i++) {
+        i2s[i] = parseInt(i2s[i]);
+    }
+    var p1s = p1.split(",");
+    for (var i = 0; i < p1s.length; i++) {
+        p1s[i] = parseInt(p1s[i]);
+    }
+    var p2s = p2.split(",");
+    for (var i = 0; i < p2s.length; i++) {
+        p2s[i] = parseInt(p2s[i]);
+    }
+    var txt1i = document.getElementById('input1').innerText;
+    var txt2i = document.getElementById('input2').innerText;
+    document.getElementById('input1').innerHTML = addColorsForPositions(txt1i, i1s);
+    document.getElementById('input2').innerHTML = addColorsForPositions(txt2i, i2s);
+    var txt1 = document.getElementById('reconstructed1').innerText;
+    var txt2 = document.getElementById('reconstructed2').innerText;
+    document.getElementById('reconstructed1').innerHTML = addColorsForPositions(txt1, p1s);
+    document.getElementById('reconstructed2').innerHTML = addColorsForPositions(txt2, p2s);
+}
 function colorProblems() {
     var txt1 = document.getElementById('reconstructed1').innerText;
     var txt2 = document.getElementById('reconstructed2').innerText;
@@ -306,6 +354,10 @@ function colorAmbPos() {
     document.getElementById('reconstructed2').innerHTML = addColorsIfAmb(txt2);
 }
 function removeColorFinal() {
+    var txt1i = document.getElementById('input1').innerText.trim();
+    var txt2i = document.getElementById('input2').innerText.trim();
+    document.getElementById('input1').innerText = txt1i;
+    document.getElementById('input2').innerText = txt2i;
     var txt1 = document.getElementById('reconstructed1').innerText.trim();
     var txt2 = document.getElementById('reconstructed2').innerText.trim();
     document.getElementById('reconstructed1').innerText = txt1;

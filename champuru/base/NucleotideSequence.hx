@@ -191,4 +191,14 @@ class NucleotideSequence
         }
         return count;
     }
+    
+    public function countNotPolymorphisms():Int {
+        var count:Int = 0;
+        for (c in this) {
+            if (c.isNotPolymorhism()) {
+                ++count;
+            }
+        }
+        return count;
+    }
 }

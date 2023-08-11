@@ -23,6 +23,7 @@ import champuru.score.ScoreSorter;
 import champuru.score.ScoreListVisualizer;
 import champuru.consensus.OverlapSolver;
 import champuru.reconstruction.SequenceReconstructor;
+import champuru.reconstruction.SequenceChecker;
 /*
 
 import champuru.base.AmbiguousNucleotideSequence;
@@ -55,9 +56,9 @@ class Worker
         
         out("<fieldset>");
         out("<legend>Input</legend>");
-        out("<p>Forward sequence of length " + (fwd.length) + ": <span class='sequence'>");
+        out("<p>Forward sequence of length " + (fwd.length) + ": <span id='input1' class='sequence'>");
         out(fwd);
-        out("</p><p>Reverse sequence of length " + (rev.length) + ": <span class='sequence'>");
+        out("</p><p>Reverse sequence of length " + (rev.length) + ": <span id='input2' class='sequence'>");
         out(rev);
         out("</p>");
         out("<p>Score calculation method: " + scoreCalculationMethod + "</p>");
@@ -193,11 +194,74 @@ class Worker
         out("<p>Second reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed2\")'>Copy to clipboard</a>]: <span id='reconstructed2' class='sequence'>");
         out(result.seq2.toString());
         out("</span></p>");
+//        out("<span class='middle'><button onclick='download()'>Download</button></span>");
         out("</fieldset>");
         out("<br>");
         
         // 4. Step - Checking
+        out("<fieldset>");
+        out("<legend>4. Step - Checking sequences</legend>");
+        // polymorphisms left
+        var p1:Int = result.seq1.countPolymorphisms();
+        var p2:Int = result.seq2.countPolymorphisms();
+        if (p1 == 0) {
+            // ignore - no output
+        } else if (p1 == 1) {
+            out("<p>There is 1 ambiguity on the first reconstructed sequence left!</p>");
+        } else {
+            out("<p>There are " + p1 + " ambiguities on the first reconstructed sequence left!</p>");
+        }
+        if (p2 == 0) {
+            // ignore - no output
+        } else if (p2 == 1) {
+            out("<p>There is 1 ambiguity on the second reconstructed sequence left!</p>");
+        } else {
+            out("<p>There are " + p2 + " ambiguities on the second reconstructed sequence left!</p>");
+        }
+        if (p1 + p2 > 0) {
+            out("<span class='middle'><button onclick='colorFinalByAmbPositions()'>Color ambiguities</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+            out("<br>");
+        }
+        // Check positions
+        var seqChecker:SequenceChecker = new SequenceChecker(s1, s2);
+        seqChecker.setOffsets(score1, score2);
+        var checkerResult = seqChecker.check(result.seq1, result.seq2);
+        if (checkerResult.pF.length + checkerResult.pR.length >= 1)  {
+            out("<p>");
+            if (checkerResult.pF.length > 0) {
+                out("Check position" + ((checkerResult.pF.length == 1) ? "" : "s") + " on forward: <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
+            }
+            if (checkerResult.pF.length > 0 && checkerResult.pR.length > 0) {
+                out("<br>");
+            }
+            if (checkerResult.pR.length > 0) {
+                out("Check position" + ((checkerResult.pR.length == 1) ? "" : "s") + " on reverse: <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
+            }
+            out("</p>");
+        }
+        if (checkerResult.pF.length + checkerResult.pR.length > 0) {
+            out("<span class='middle'><button onclick='colorFinalByPositions(\"" + checkerResult.pF.join(",") + "\", \"" + checkerResult.pR.join(",") + "\", \"" + checkerResult.pFHighlight.join(",") + "\", \"" + checkerResult.pRHighlight.join(",") + "\");'>Color positions</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+            out("<br>");
+        }
+        // problems
+        problems = result.seq1.countGaps() + result.seq2.countGaps();
+        if (problems == 0) {
+            out("<span class='middle'><button onclick='download()'>Download</button></span>");
+        } else if (problems == 1) {
+            out("<p>There is 1 problematic position!</p>");
+        } else if (problems > 1) {
+            out("<p>There are " + problems + " problematic positions!</p>");
+        }
+        if (problems > 0) {
+            out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+        }
+        out("</fieldset>");
+        out("<br>");
+        
         // 5. Step - Searching for alternative solutions
+        
+        
+        
         return {
             result : mMsgs.join("")
         };
