@@ -323,13 +323,13 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	if(checkerResult.pF.length + checkerResult.pR.length >= 1) {
 		champuru_Worker.out("<p>");
 		if(checkerResult.pF.length > 0) {
-			champuru_Worker.out("Check position" + (checkerResult.pF.length == 1 ? "" : "s") + " on forward: <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
+			champuru_Worker.out("Check position" + (checkerResult.pF.length == 1 ? "" : "s") + " on forward (or the facing position on the reverse): <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
 		}
 		if(checkerResult.pF.length > 0 && checkerResult.pR.length > 0) {
 			champuru_Worker.out("<br>");
 		}
 		if(checkerResult.pR.length > 0) {
-			champuru_Worker.out("Check position" + (checkerResult.pR.length == 1 ? "" : "s") + " on reverse: <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
+			champuru_Worker.out("Check position" + (checkerResult.pR.length == 1 ? "" : "s") + " on reverse (or the facing position on the forward): <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
 		}
 		champuru_Worker.out("</p>");
 	}

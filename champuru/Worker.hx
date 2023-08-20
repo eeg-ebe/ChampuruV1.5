@@ -229,13 +229,13 @@ class Worker
         if (checkerResult.pF.length + checkerResult.pR.length >= 1)  {
             out("<p>");
             if (checkerResult.pF.length > 0) {
-                out("Check position" + ((checkerResult.pF.length == 1) ? "" : "s") + " on forward: <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
+                out("Check position" + ((checkerResult.pF.length == 1) ? "" : "s") + " on forward (or the facing position on the reverse): <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
             }
             if (checkerResult.pF.length > 0 && checkerResult.pR.length > 0) {
                 out("<br>");
             }
             if (checkerResult.pR.length > 0) {
-                out("Check position" + ((checkerResult.pR.length == 1) ? "" : "s") + " on reverse: <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
+                out("Check position" + ((checkerResult.pR.length == 1) ? "" : "s") + " on reverse (or the facing position on the forward): <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
             }
             out("</p>");
         }
