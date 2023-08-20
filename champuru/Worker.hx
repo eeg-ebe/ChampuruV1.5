@@ -259,8 +259,35 @@ class Worker
         out("<br>");
         
         // 5. Step - Searching for alternative solutions
-        
-        
+        //AAAHNSYKRWTYMMMMMRSSRMSGSCCYWRSMWWMCCSRRGGRWYSGRARR
+        //MRMTGMTKMWYMMMRCRRCGRCSSYMSYAKMMYMSMSGRRKSRKMRGRRKA
+        /*        out("<fieldset>");
+        out("<legend>5. Step - Searching for alternative solutions</legend>");
+        var possibleMatches:List<Int> = new List<Int>();
+        var i:Int = 0;
+        for (score in sortedScores) {
+            if (i > 5) {
+                break;
+            }
+            i++;
+            if (score.mismatches <= 10) {
+                possibleMatches.add(score.index);
+            }
+        }
+        var possibilities:List<{a:Int, b:Int}> = new List<{a:Int, b:Int}>();
+        for (p1 in possibleMatches) {
+            for (p2 in possibleMatches) {
+                possibilities.add({a: p1, b: p2});
+            }
+        }
+        for (p in possibilities) {
+            out("=== Checking offset " + p.a + " " + p.b + " ===<br>");
+            
+            var o1 = new OverlapSolver(p.a, s1, s2).solve();
+            var o2 = new OverlapSolver(p.b, s1, s2).solve();
+        }
+        out("</fieldset>");
+        out("<br>");*/
         
         return {
             result : mMsgs.join("")
