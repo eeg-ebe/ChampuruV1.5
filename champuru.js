@@ -139,12 +139,13 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("<br>");
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>Output of the original Champuru 1.0 program</legend>");
-	champuru_Worker.out("<span style='font-family: monospace; word-break: break-all;'>");
+	champuru_Worker.out("<span id='champuruOutput' style='font-family: monospace; word-break: break-all; display: none;'>");
 	var output = champuru_perl_PerlChampuruReimplementation.runChampuru(fwd,rev,false).getOutput();
 	output = StringTools.htmlEscape(output);
 	output = StringTools.replace(output,"\n","<br/>");
 	champuru_Worker.out(output);
 	champuru_Worker.out("</span>");
+	champuru_Worker.out("<span class='middle'><button id='showLink' onclick='document.getElementById(\"champuruOutput\").style.display = \"block\";document.getElementById(\"showLink\").style.display = \"none\";'>Show output</button></span>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
 	var s1 = champuru_base_NucleotideSequence.fromString(fwd);

@@ -73,12 +73,13 @@ class Worker
         // 0. Step - old champuru
         out("<fieldset>");
         out("<legend>Output of the original Champuru 1.0 program</legend>");
-        out("<span style='font-family: monospace; word-break: break-all;'>");
+        out("<span id='champuruOutput' style='font-family: monospace; word-break: break-all; display: none;'>");
         var output:String = PerlChampuruReimplementation.runChampuru(fwd, rev, false).getOutput();
         output = StringTools.htmlEscape(output);
         output = StringTools.replace(output, "\n", "<br/>");
         out(output);
         out("</span>");
+        out("<span class='middle'><button id='showLink' onclick='document.getElementById(\"champuruOutput\").style.display = \"block\";document.getElementById(\"showLink\").style.display = \"none\";'>Show output</button></span>");
         out("</fieldset>");
         out("<br>");
         
@@ -234,18 +235,6 @@ class Worker
             out("<span class='middle'><button onclick='colorFinalByAmbPositions()'>Color ambiguities</button><button onclick='removeColorFinal()'>Remove color</button></span>");
             out("<br>");
         }
-        /*
-        if (p1 == 0) {
-            out("<p>There are NO ambiguities left on the first reconstructed sequence!</p>");
-        } else {
-            out("<p>There " + ((p1 == 1) ? "is" : "are") + " " + p1 + "(=" + p1u + "+" + p1l + ") ambiguit" + ((p1 == 1) ? "y" : "ies") + " on the first reconstructed sequence left!</p>");
-        }
-        if (p2 == 0) {
-            out("<p>There are NO ambiguities left on the second reconstructed sequence!</p>");
-        } else {
-            out("<p>There " + ((p2 == 1) ? "is" : "are") + " " + p2 + "(=" + p2u + "+" + p2l + ") ambiguit" + ((p2 == 1) ? "y" : "ies") + " on the second reconstructed sequence left!</p>");
-        }
-        */
         // Check positions
         var seqChecker:SequenceChecker = new SequenceChecker(s1, s2);
         seqChecker.setOffsets(score1, score2);
