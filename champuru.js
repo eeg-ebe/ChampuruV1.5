@@ -267,7 +267,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var result = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>3. Step - Sequence reconstruction</legend>");
-	champuru_Worker.out("<p>First reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed1\")'>Copy to clipboard</a>]: <span id='reconstructed1' class='sequence'>");
+	champuru_Worker.out("<p>First reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed1\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed1\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed1' class='sequence'>");
 	var _this = result.seq1;
 	var result1 = new haxe_ds_List();
 	var _g = 0;
@@ -280,7 +280,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	}
 	champuru_Worker.out(result1.join(""));
 	champuru_Worker.out("</span></p>");
-	champuru_Worker.out("<p>Second reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed2\")'>Copy to clipboard</a>]: <span id='reconstructed2' class='sequence'>");
+	champuru_Worker.out("<p>Second reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed2\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed2\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed2' class='sequence'>");
 	var _this = result.seq2;
 	var result1 = new haxe_ds_List();
 	var _g = 0;
