@@ -124,7 +124,7 @@ class SequenceChecker
                 continue;
             }
             if (mFwd.get(fwdPos).getCode() != s1.get(s1Pos).getCode() | s2.get(s2Pos).getCode()) {
-                pF.push(fwdPos + 1);
+                pF.add(fwdPos + 1);
                 //pFHighlight.push(s1Pos + 1);
                 //pRHighlight.push(s2Pos + 1);
             }
@@ -141,7 +141,7 @@ class SequenceChecker
                 continue;
             }
             if (mRev.get(revPos).getCode() != s1.get(s1Pos).getCode() | s2.get(s2Pos).getCode()) {
-                pR.push(revPos + 1);
+                pR.add(revPos + 1);
                 //pFHighlight.push(s1Pos + 1);
                 //pRHighlight.push(s2Pos + 1);
             }
