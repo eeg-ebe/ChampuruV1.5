@@ -1357,17 +1357,15 @@ champuru_reconstruction_SequenceChecker.prototype = {
 		this.mOffset1 = offset1;
 		this.mOffset2 = offset2;
 	}
-	,check: function(s1,s2) {
+	,_check: function(s1,s2,c1I,c2I,c3I,c4I) {
 		var pF = new haxe_ds_List();
 		var pR = new haxe_ds_List();
-		var pFHighlight = new haxe_ds_List();
-		var pRHighlight = new haxe_ds_List();
 		var _g = 0;
 		var _g1 = this.mFwd.mLength;
 		while(_g < _g1) {
 			var fwdPos = _g++;
-			var s1Pos = fwdPos + (this.mOffset2 > 0 ? 0 : -this.mOffset2);
-			var s2Pos = fwdPos + (this.mOffset2 < 0 ? 0 : this.mOffset2);
+			var s1Pos = fwdPos + c1I;
+			var s2Pos = fwdPos + c2I;
 			if(s1Pos < 0 || s2Pos < 0 || s1Pos >= s1.mLength || s2Pos >= s2.mLength) {
 				continue;
 			}
@@ -1385,16 +1383,14 @@ champuru_reconstruction_SequenceChecker.prototype = {
 			}
 			if(tmp != (tmp1 | s2.mSequence.h[s2Pos].mCode)) {
 				pF.push(fwdPos + 1);
-				pFHighlight.push(s1Pos + 1);
-				pRHighlight.push(s2Pos + 1);
 			}
 		}
 		var _g = 0;
 		var _g1 = this.mRev.mLength;
 		while(_g < _g1) {
 			var revPos = _g++;
-			var s1Pos = revPos + (this.mOffset1 > 0 ? 0 : -this.mOffset1);
-			var s2Pos = revPos + (this.mOffset1 < 0 ? 0 : this.mOffset1);
+			var s1Pos = revPos + c3I;
+			var s2Pos = revPos + c4I;
 			if(s1Pos < 0 || s2Pos < 0 || s1Pos >= s1.mLength || s2Pos >= s2.mLength) {
 				continue;
 			}
@@ -1412,11 +1408,50 @@ champuru_reconstruction_SequenceChecker.prototype = {
 			}
 			if(tmp != (tmp1 | s2.mSequence.h[s2Pos].mCode)) {
 				pR.push(revPos + 1);
-				pFHighlight.push(s1Pos + 1);
-				pRHighlight.push(s2Pos + 1);
 			}
 		}
-		return { pF : pF, pR : pR, pFHighlight : pFHighlight, pRHighlight : pRHighlight};
+		return { pF : pF, pR : pR};
+	}
+	,check: function(s1,s2) {
+		var pFbest = new haxe_ds_List();
+		var pRbest = new haxe_ds_List();
+		var eBest = this.mFwd.mLength + this.mRev.mLength + 1000;
+		var data = "-";
+		var _g = 0;
+		var _g1 = [0,this.mOffset1,this.mOffset2,this.mOffset2 - this.mOffset1,this.mOffset1 - this.mOffset2,-this.mOffset1,-this.mOffset2];
+		while(_g < _g1.length) {
+			var c1I = _g1[_g];
+			++_g;
+			var _g2 = 0;
+			var _g3 = [0,this.mOffset1,this.mOffset2,this.mOffset2 - this.mOffset1,this.mOffset1 - this.mOffset2,-this.mOffset1,-this.mOffset2];
+			while(_g2 < _g3.length) {
+				var c2I = _g3[_g2];
+				++_g2;
+				var _g4 = 0;
+				var _g5 = [0,this.mOffset1,this.mOffset2,this.mOffset2 - this.mOffset1,this.mOffset1 - this.mOffset2,-this.mOffset1,-this.mOffset2];
+				while(_g4 < _g5.length) {
+					var c3I = _g5[_g4];
+					++_g4;
+					var _g6 = 0;
+					var _g7 = [0,this.mOffset1,this.mOffset2,this.mOffset2 - this.mOffset1,this.mOffset1 - this.mOffset2,-this.mOffset1,-this.mOffset2];
+					while(_g6 < _g7.length) {
+						var c4I = _g7[_g6];
+						++_g6;
+						var c = this._check(s1,s2,c1I,c2I,c3I,c4I);
+						var e = c.pF.length + c.pR.length;
+						if(e < eBest) {
+							pFbest = c.pF;
+							pRbest = c.pR;
+							eBest = e;
+							data = "" + c1I + ", " + c2I + ", " + c3I + ", " + c4I;
+						}
+						console.log("champuru/reconstruction/SequenceChecker.hx:94:","Calculated " + c1I + ", " + c2I + ", " + c3I + ", " + c4I + ": " + e);
+					}
+				}
+			}
+		}
+		console.log("champuru/reconstruction/SequenceChecker.hx:99:","Best for " + data + ": " + eBest);
+		return { pF : pFbest, pR : pRbest, pFHighlight : new haxe_ds_List(), pRHighlight : new haxe_ds_List()};
 	}
 	,__class__: champuru_reconstruction_SequenceChecker
 };

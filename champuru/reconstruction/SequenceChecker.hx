@@ -39,36 +39,111 @@ class SequenceChecker
         mOffset2 = offset2;
     }
     
-    public function check(s1:NucleotideSequence, s2:NucleotideSequence) {
+    public function _check(s1:NucleotideSequence, s2:NucleotideSequence, c1I:Int, c2I:Int, c3I:Int, c4I:Int) {
         var pF:List<Int> = new List<Int>();
         var pR:List<Int> = new List<Int>();
-        var pFHighlight:List<Int> = new List<Int>();
-        var pRHighlight:List<Int> = new List<Int>();
     
         for (fwdPos in 0...mFwd.length()) {
-            var s1Pos:Int = fwdPos + ((mOffset2 > 0) ? 0 : -mOffset2);
-            var s2Pos:Int = fwdPos + ((mOffset2 < 0) ? 0 : mOffset2);
+            var s1Pos:Int = fwdPos + c1I;
+            var s2Pos:Int = fwdPos + c2I;
             
             if (s1Pos < 0 || s2Pos < 0 || s1Pos >= s1.length() || s2Pos >= s2.length()) {
                 continue;
             }
             if (mFwd.get(fwdPos).getCode() != s1.get(s1Pos).getCode() | s2.get(s2Pos).getCode()) {
                 pF.push(fwdPos + 1);
-                pFHighlight.push(s1Pos + 1);
-                pRHighlight.push(s2Pos + 1);
             }
         }
+        
         for (revPos in 0...mRev.length()) {
-            var s1Pos:Int = revPos + ((mOffset1 > 0) ? 0 : -mOffset1);
-            var s2Pos:Int = revPos + ((mOffset1 < 0) ? 0 : mOffset1);
+            var s1Pos:Int = revPos + c3I;
+            var s2Pos:Int = revPos + c4I;
             
             if (s1Pos < 0 || s2Pos < 0 || s1Pos >= s1.length() || s2Pos >= s2.length()) {
                 continue;
             }
             if (mRev.get(revPos).getCode() != s1.get(s1Pos).getCode() | s2.get(s2Pos).getCode()) {
                 pR.push(revPos + 1);
-                pFHighlight.push(s1Pos + 1);
-                pRHighlight.push(s2Pos + 1);
+            }
+        }
+    
+        return {
+            pF : pF,
+            pR : pR
+        }
+    }
+    
+    public function check(s1:NucleotideSequence, s2:NucleotideSequence) {
+        var pFbest = new List<Int>();
+        var pRbest = new List<Int>();
+        var eBest = mFwd.length() + mRev.length() + 1000;
+        var data = "-";
+        
+        for (c1I in [0, mOffset1, mOffset2, mOffset2 - mOffset1, mOffset1 - mOffset2, -mOffset1, -mOffset2]) {
+            for (c2I in [0, mOffset1, mOffset2, mOffset2 - mOffset1, mOffset1 - mOffset2, -mOffset1, -mOffset2]) {
+                for (c3I in [0, mOffset1, mOffset2, mOffset2 - mOffset1, mOffset1 - mOffset2, -mOffset1, -mOffset2]) {
+                    for (c4I in [0, mOffset1, mOffset2, mOffset2 - mOffset1, mOffset1 - mOffset2, -mOffset1, -mOffset2]) {
+                        var c = _check(s1, s2, c1I, c2I, c3I, c4I);
+                        var e:Int = c.pF.length + c.pR.length;
+                        if (e < eBest) {
+                            pFbest = c.pF;
+                            pRbest = c.pR;
+                            eBest = e;
+                            data = "" + c1I + ", " + c2I + ", " + c3I + ", " + c4I;
+                        }
+                        trace("Calculated " + c1I + ", " + c2I + ", " + c3I + ", " + c4I + ": " + e);
+                    }
+                }
+            }
+        }
+        trace("Best for " + data + ": " + eBest);
+        
+        return {
+            pF : pFbest,
+            pR : pRbest,
+            pFHighlight : new List<Int>(),
+            pRHighlight : new List<Int>()
+        }
+    }
+    
+    /*
+    public function check(s1:NucleotideSequence, s2:NucleotideSequence) {
+        var pF:List<Int> = new List<Int>();
+        var pR:List<Int> = new List<Int>();
+        var pFHighlight:List<Int> = new List<Int>();
+        var pRHighlight:List<Int> = new List<Int>();
+    
+        var c1I:Int = ((mOffset2 - mOffset1 > 0) ? 0 : -(mOffset2 - mOffset1));
+        var c2I:Int = ((mOffset2 - mOffset1 < 0) ? 0 : mOffset2 - mOffset1);
+    
+        for (fwdPos in 0...mFwd.length()) {
+            var s1Pos:Int = fwdPos + c1I;
+            var s2Pos:Int = fwdPos + c2I;
+            
+            if (s1Pos < 0 || s2Pos < 0 || s1Pos >= s1.length() || s2Pos >= s2.length()) {
+                continue;
+            }
+            if (mFwd.get(fwdPos).getCode() != s1.get(s1Pos).getCode() | s2.get(s2Pos).getCode()) {
+                pF.push(fwdPos + 1);
+                //pFHighlight.push(s1Pos + 1);
+                //pRHighlight.push(s2Pos + 1);
+            }
+        }
+        
+        var c3I:Int = ((mOffset1 - mOffset2 > 0) ? 0 : -(mOffset1 - mOffset2));
+        var c4I:Int = ((mOffset1 - mOffset2 < 0) ? 0 : mOffset1 - mOffset2);
+        
+        for (revPos in 0...mRev.length()) {
+            var s1Pos:Int = revPos + c3I;
+            var s2Pos:Int = revPos + c4I;
+            
+            if (s1Pos < 0 || s2Pos < 0 || s1Pos >= s1.length() || s2Pos >= s2.length()) {
+                continue;
+            }
+            if (mRev.get(revPos).getCode() != s1.get(s1Pos).getCode() | s2.get(s2Pos).getCode()) {
+                pR.push(revPos + 1);
+                //pFHighlight.push(s1Pos + 1);
+                //pRHighlight.push(s2Pos + 1);
             }
         }
     
@@ -78,5 +153,5 @@ class SequenceChecker
             pFHighlight : pFHighlight,
             pRHighlight : pRHighlight
         }
-    }
+    }*/
 }
