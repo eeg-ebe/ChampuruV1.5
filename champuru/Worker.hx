@@ -202,21 +202,21 @@ class Worker
         out("<fieldset>");
         out("<legend>4. Step - Checking sequences</legend>");
         // polymorphisms left
-        var p1:Int = result.seq1.countPolymorphisms();
+        var p1:Int = result.seq1.countPolymorphisms();     // all
         var p2:Int = result.seq2.countPolymorphisms();
+        var p1u:Int = result.seq1.countPolymorphisms(0.8); // in upper
+        var p2u:Int = result.seq2.countPolymorphisms(0.8);
+        var p1l:Int = p1 - p1u;                            // in lower
+        var p2l:Int = p2 - p2u;
         if (p1 == 0) {
-            // ignore - no output
-        } else if (p1 == 1) {
-            out("<p>There is 1 ambiguity on the first reconstructed sequence left!</p>");
+            out("<p>There are NO ambiguities left on the first reconstructed sequence!</p>");
         } else {
-            out("<p>There are " + p1 + " ambiguities on the first reconstructed sequence left!</p>");
+            out("<p>There " + ((p1 == 1) ? "is" : "are") + " " + p1 + "(=" + p1u + "+" + p1l + ") ambiguit" + ((p1 == 1) ? "y" : "ies") + " on the first reconstructed sequence left!</p>");
         }
         if (p2 == 0) {
-            // ignore - no output
-        } else if (p2 == 1) {
-            out("<p>There is 1 ambiguity on the second reconstructed sequence left!</p>");
+            out("<p>There are NO ambiguities left on the second reconstructed sequence!</p>");
         } else {
-            out("<p>There are " + p2 + " ambiguities on the second reconstructed sequence left!</p>");
+            out("<p>There " + ((p2 == 1) ? "is" : "are") + " " + p2 + "(=" + p2u + "+" + p2l + ") ambiguit" + ((p2 == 1) ? "y" : "ies") + " on the second reconstructed sequence left!</p>");
         }
         if (p1 + p2 > 0) {
             out("<span class='middle'><button onclick='colorFinalByAmbPositions()'>Color ambiguities</button><button onclick='removeColorFinal()'>Remove color</button></span>");

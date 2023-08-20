@@ -182,20 +182,20 @@ class NucleotideSequence
     /**
      *
      */
-    public function countPolymorphisms():Int {
+    public function countPolymorphisms(?minQual:Float=-1):Int {
         var count:Int = 0;
         for (c in this) {
-            if (c.isPolymorhism()) {
+            if (c.isPolymorhism() && c.getQuality() >= minQual) {
                 ++count;
             }
         }
         return count;
     }
     
-    public function countNotPolymorphisms():Int {
+    public function countNotPolymorphisms(?minQual:Float=-1):Int {
         var count:Int = 0;
         for (c in this) {
-            if (c.isNotPolymorhism()) {
+            if (c.isNotPolymorhism() && c.getQuality() >= minQual) {
                 ++count;
             }
         }

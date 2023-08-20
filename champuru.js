@@ -299,19 +299,19 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("<legend>4. Step - Checking sequences</legend>");
 	var p1 = result.seq1.countPolymorphisms();
 	var p2 = result.seq2.countPolymorphisms();
-	if(p1 != 0) {
-		if(p1 == 1) {
-			champuru_Worker.out("<p>There is 1 ambiguity on the first reconstructed sequence left!</p>");
-		} else {
-			champuru_Worker.out("<p>There are " + p1 + " ambiguities on the first reconstructed sequence left!</p>");
-		}
+	var p1u = result.seq1.countPolymorphisms(0.8);
+	var p2u = result.seq2.countPolymorphisms(0.8);
+	var p1l = p1 - p1u;
+	var p2l = p2 - p2u;
+	if(p1 == 0) {
+		champuru_Worker.out("<p>There are NO ambiguities left on the first reconstructed sequence!</p>");
+	} else {
+		champuru_Worker.out("<p>There " + (p1 == 1 ? "is" : "are") + " " + p1 + "(=" + p1u + "+" + p1l + ") ambiguit" + (p1 == 1 ? "y" : "ies") + " on the first reconstructed sequence left!</p>");
 	}
-	if(p2 != 0) {
-		if(p2 == 1) {
-			champuru_Worker.out("<p>There is 1 ambiguity on the second reconstructed sequence left!</p>");
-		} else {
-			champuru_Worker.out("<p>There are " + p2 + " ambiguities on the second reconstructed sequence left!</p>");
-		}
+	if(p2 == 0) {
+		champuru_Worker.out("<p>There are NO ambiguities left on the second reconstructed sequence!</p>");
+	} else {
+		champuru_Worker.out("<p>There " + (p2 == 1 ? "is" : "are") + " " + p2 + "(=" + p2u + "+" + p2l + ") ambiguit" + (p2 == 1 ? "y" : "ies") + " on the second reconstructed sequence left!</p>");
 	}
 	if(p1 + p2 > 0) {
 		champuru_Worker.out("<span class='middle'><button onclick='colorFinalByAmbPositions()'>Color ambiguities</button><button onclick='removeColorFinal()'>Remove color</button></span>");
@@ -507,7 +507,10 @@ champuru_base_NucleotideSequence.prototype = {
 		}
 		return count;
 	}
-	,countPolymorphisms: function() {
+	,countPolymorphisms: function(minQual) {
+		if(minQual == null) {
+			minQual = -1;
+		}
 		var count = 0;
 		var seq = new haxe_ds_List();
 		var _g = 0;
@@ -522,13 +525,16 @@ champuru_base_NucleotideSequence.prototype = {
 			var val = _g_head.item;
 			_g_head = _g_head.next;
 			var c = val;
-			if(!c.isNotPolymorhism()) {
+			if(!c.isNotPolymorhism() && c.mQuality >= minQual) {
 				++count;
 			}
 		}
 		return count;
 	}
-	,countNotPolymorphisms: function() {
+	,countNotPolymorphisms: function(minQual) {
+		if(minQual == null) {
+			minQual = -1;
+		}
 		var count = 0;
 		var seq = new haxe_ds_List();
 		var _g = 0;
@@ -543,7 +549,7 @@ champuru_base_NucleotideSequence.prototype = {
 			var val = _g_head.item;
 			_g_head = _g_head.next;
 			var c = val;
-			if(c.isNotPolymorhism()) {
+			if(c.isNotPolymorhism() && c.mQuality >= minQual) {
 				++count;
 			}
 		}
