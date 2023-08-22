@@ -6,6 +6,11 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var HxOverrides = function() { };
+HxOverrides.__name__ = true;
+HxOverrides.now = function() {
+	return Date.now();
+};
 Math.__name__ = true;
 var Std = function() { };
 Std.__name__ = true;
@@ -120,6 +125,9 @@ champuru_Worker.__name__ = true;
 champuru_Worker.out = function(s) {
 	champuru_Worker.mMsgs.add(s);
 };
+champuru_Worker.timeToStr = function(f) {
+	return "" + Math.round(f * 1000);
+};
 champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,jOffset,useThisOffsets) {
 	champuru_Worker.mMsgs.clear();
 	champuru_Worker.out("<fieldset>");
@@ -138,6 +146,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
 	champuru_Worker.out("<fieldset>");
+	var timestamp = HxOverrides.now() / 1000;
 	champuru_Worker.out("<legend>Output of the original Champuru 1.0 program</legend>");
 	champuru_Worker.out("<span id='champuruOutput' style='font-family: monospace; word-break: break-all; display: none;'>");
 	var output = champuru_perl_PerlChampuruReimplementation.runChampuru(fwd,rev,false).getOutput();
@@ -146,10 +155,12 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out(output);
 	champuru_Worker.out("</span>");
 	champuru_Worker.out("<span class='middle'><button id='showLink' onclick='document.getElementById(\"champuruOutput\").style.display = \"block\";document.getElementById(\"showLink\").style.display = \"none\";'>Show output</button></span>");
+	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
 	var s1 = champuru_base_NucleotideSequence.fromString(fwd);
 	var s2 = champuru_base_NucleotideSequence.fromString(rev);
+	var timestamp = HxOverrides.now() / 1000;
 	var lst = champuru_score_ScoreCalculatorList.instance();
 	var calculator = lst.getScoreCalculator(1);
 	var scores = calculator.calcOverlapScores(s1,s2);
@@ -209,8 +220,10 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		champuru_Worker.out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
 	}
 	champuru_Worker.out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button></span>");
+	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	var timestamp = HxOverrides.now() / 1000;
 	var o1 = new champuru_consensus_OverlapSolver(score1,s1,s2).solve();
 	var o2 = new champuru_consensus_OverlapSolver(score2,s1,s2).solve();
 	champuru_Worker.out("<fieldset>");
@@ -263,8 +276,10 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	if(remainingAmbFwd + remainingAmbRev > 0) {
 		champuru_Worker.out("<span class='middle'><button onclick='colorConsensusByAmbPositions()'>Color ambiguities</button><button onclick='removeColor()'>Remove color</button></span>");
 	}
+	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	var timestamp = HxOverrides.now() / 1000;
 	var result = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>3. Step - Sequence reconstruction</legend>");
@@ -294,8 +309,10 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	}
 	champuru_Worker.out(result1.join(""));
 	champuru_Worker.out("</span></p>");
+	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	var timestamp = HxOverrides.now() / 1000;
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>4. Step - Checking sequences</legend>");
 	var p1 = result.seq1.countPolymorphisms();
@@ -361,6 +378,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	if(problems > 0) {
 		champuru_Worker.out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
 	}
+	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
 	if(problems == 0) {
@@ -2443,6 +2461,9 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
+if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : false) {
+	HxOverrides.now = performance.now.bind(performance);
+}
 if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.prototype.__class__ = String;
 String.__name__ = true;

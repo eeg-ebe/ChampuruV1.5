@@ -124,6 +124,7 @@ p {
 }
 
 fieldset {
+    position: relative;
     background-color: #eeeeee;
     padding: 7px;
     padding-bottom: 25px;
@@ -132,6 +133,13 @@ legend {
     background-color: gray;
     color: white;
     padding: 5px 10px;
+}
+.timelegend {
+  position: absolute;
+  top: -1.6em;
+  right: 10px;
+  background: #fff;
+  line-height:1.2em;
 }
 
 .scoreTable {

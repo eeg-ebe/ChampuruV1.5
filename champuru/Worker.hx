@@ -50,6 +50,10 @@ class Worker
     public static function out(s:String) {
         mMsgs.add(s);
     }
+    
+    public static inline function timeToStr(f:Float):String {
+        return "" + Math.round(f * 1000);
+    }
 
     public static function generateHtml(fwd:String, rev:String, scoreCalculationMethod:Int, iOffset:Int, jOffset:Int, useThisOffsets:Bool) {
         mMsgs.clear();
@@ -72,6 +76,7 @@ class Worker
 
         // 0. Step - old champuru
         out("<fieldset>");
+        var timestamp:Float = Timer.stamp();
         out("<legend>Output of the original Champuru 1.0 program</legend>");
         out("<span id='champuruOutput' style='font-family: monospace; word-break: break-all; display: none;'>");
         var output:String = PerlChampuruReimplementation.runChampuru(fwd, rev, false).getOutput();
@@ -80,6 +85,7 @@ class Worker
         out(output);
         out("</span>");
         out("<span class='middle'><button id='showLink' onclick='document.getElementById(\"champuruOutput\").style.display = \"block\";document.getElementById(\"showLink\").style.display = \"none\";'>Show output</button></span>");
+        out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
         out("<br>");
         
@@ -87,6 +93,7 @@ class Worker
         var s2:NucleotideSequence = NucleotideSequence.fromString(rev);
 
         // 1. Step
+        var timestamp:Float = Timer.stamp();
         var lst:ScoreCalculatorList = ScoreCalculatorList.instance();
         var calculator:AScoreCalculator = lst.getScoreCalculator(1);
         var scores = calculator.calcOverlapScores(s1, s2);
@@ -143,10 +150,12 @@ class Worker
             out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
         }
         out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button></span>");
+        out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
         out("<br>");
         
         // 2. Step - Calculate consensus sequences
+        var timestamp:Float = Timer.stamp();
         var o1 = new OverlapSolver(score1, s1, s2).solve();
         var o2 = new OverlapSolver(score2, s1, s2).solve();
         
@@ -182,10 +191,12 @@ class Worker
         if (remainingAmbFwd + remainingAmbRev > 0) {
             out("<span class='middle'><button onclick='colorConsensusByAmbPositions()'>Color ambiguities</button><button onclick='removeColor()'>Remove color</button></span>");
         }
+        out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
         out("<br>");
         
         // 3. Step - Sequence reconstruction
+        var timestamp:Float = Timer.stamp();
         var result = SequenceReconstructor.reconstruct(o1, o2);
         out("<fieldset>");
         out("<legend>3. Step - Sequence reconstruction</legend>");
@@ -196,10 +207,12 @@ class Worker
         out(result.seq2.toString());
         out("</span></p>");
 //        out("<span class='middle'><button onclick='download()'>Download</button></span>");
+        out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
         out("<br>");
         
         // 4. Step - Checking
+        var timestamp:Float = Timer.stamp();
         out("<fieldset>");
         out("<legend>4. Step - Checking sequences</legend>");
         // polymorphisms left
@@ -267,6 +280,7 @@ class Worker
         if (problems > 0) {
             out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
         }
+        out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
         out("<br>");
         
