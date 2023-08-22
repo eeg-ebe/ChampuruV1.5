@@ -259,7 +259,6 @@ class Worker
         // problems
         problems = result.seq1.countGaps() + result.seq2.countGaps();
         if (problems == 0) {
-            out("<span class='middle'><button onclick='download()'>Download</button></span>");
         } else if (problems == 1) {
             out("<p>There is 1 problematic position!</p>");
         } else if (problems > 1) {
@@ -301,6 +300,14 @@ class Worker
         }
         out("</fieldset>");
         out("<br>");*/
+        
+        // Download area
+        if (problems == 0) {
+            out("<fieldset>");
+            out("<legend>Download area</legend>");
+            out("<span class='middle'><button onclick='downloadFasta(true)'>Download FASTA (all bases)</button><button onclick='downloadFasta(false)'>Download FASTA (only overlap)</button></span><br>");
+            out("</fieldset>");
+        }
         
         return {
             result : mMsgs.join("")

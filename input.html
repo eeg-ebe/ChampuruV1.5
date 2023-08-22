@@ -363,18 +363,26 @@ function removeColorFinal() {
     document.getElementById('reconstructed1').innerText = txt1;
     document.getElementById('reconstructed2').innerText = txt2;
 }
-function download() {
+function downloadFasta(full) {
     var txt1 = document.getElementById('reconstructed1').innerText;
     var txt2 = document.getElementById('reconstructed2').innerText;
-    var content = []
-    content.push(">first")
+    if (!full) {
+        txt1 = txt1.replace(/[a-z]/g, '');
+        txt2 = txt2.replace(/[a-z]/g, '');
+    }
+    var content = [];
+    content.push(">first");
     content.push(txt1);
-    content.push(">second")
+    content.push(">second");
     content.push(txt2);
     var b64 = window.btoa(content.join('\n'));
     var link = "<a id='downloadLink' href-lang='text/fasta' href='data:text/fasta;base64,\n" + b64 + "' title='result.fasta' style='display:none' download='result.fasta'>Download</a>";
     document.getElementById("hiddenDiv").innerHTML = link;
     document.getElementById('downloadLink').click();
+    
+}
+function download() {
+    downloadFasta(true);
 }
 function highlight(id) {
     var circle = document.getElementById(id);
@@ -399,7 +407,7 @@ function removeHighlight(id) {
 function toClipboard(id, everything=true) {
     var text = document.getElementById(id).innerText;
     if (!everything) {
-        text = text.replace( /[a-z]/g, '' );
+        text = text.replace(/[a-z]/g, '');
     }
     navigator.clipboard.writeText(text);
     return false;

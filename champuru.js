@@ -351,18 +351,24 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		champuru_Worker.out("<br>");
 	}
 	problems = result.seq1.countGaps() + result.seq2.countGaps();
-	if(problems == 0) {
-		champuru_Worker.out("<span class='middle'><button onclick='download()'>Download</button></span>");
-	} else if(problems == 1) {
-		champuru_Worker.out("<p>There is 1 problematic position!</p>");
-	} else if(problems > 1) {
-		champuru_Worker.out("<p>There are " + problems + " problematic positions!</p>");
+	if(problems != 0) {
+		if(problems == 1) {
+			champuru_Worker.out("<p>There is 1 problematic position!</p>");
+		} else if(problems > 1) {
+			champuru_Worker.out("<p>There are " + problems + " problematic positions!</p>");
+		}
 	}
 	if(problems > 0) {
 		champuru_Worker.out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
 	}
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	if(problems == 0) {
+		champuru_Worker.out("<fieldset>");
+		champuru_Worker.out("<legend>Download area</legend>");
+		champuru_Worker.out("<span class='middle'><button onclick='downloadFasta(true)'>Download FASTA (all bases)</button><button onclick='downloadFasta(false)'>Download FASTA (only overlap)</button></span><br>");
+		champuru_Worker.out("</fieldset>");
+	}
 	return { result : champuru_Worker.mMsgs.join("")};
 };
 champuru_Worker.onMessage = function(e) {
