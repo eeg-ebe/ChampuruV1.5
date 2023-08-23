@@ -126,7 +126,9 @@ However this score correction method seems to work less good on short input sequ
             </div>
         </div>
         <script>
-
+String.prototype.replaceAt = function(index, replacement) {
+    return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+}
 var reverseLookup = {
     'A' : 'T', 'T' : 'A', 'G' : 'C', 'C' : 'G',
     'R' : 'Y', 'Y' : 'R', 'M' : 'K', 'K' : 'M',
@@ -191,7 +193,7 @@ function askForOffset(title, fwd, rev) {
     var input = prompt(title);
     if (input == null || input == undefined) return NaN; // Cancel button
     var i = parseInt(input.trim());
-    if (i == NaN) {
+    if (isNaN(i)) {
         alert("Invalid input!");
         return NaN;
     }
@@ -281,13 +283,56 @@ function addColorsIfAmb(s) {
     }
     return result.join("");
 }
-function addColorsForPositions(s, positions) {
+function changePosition(i, c, name, positions, green) {
+    var greenX = green.split(",");
+    var newNN = prompt("Changing nucleotide at position " + (i + 1) + " from '" + c + "' to:");
+    if (newNN == null || newNN == "") {         // Cancel or no input
+        return;
+    }
+    newNN = newNN.toUpperCase();
+    if (newNN.length != 1 || reverseLookup[newNN] == undefined) {
+        alert("Illegal input!");
+        return;
+    }
+    // ok, change
+    var string = document.getElementById(name).value.trim();
+    string = string.replaceAt(i, newNN);
+    document.getElementById(name).value = string;
+    // recolor
+    greenX.push("" + i);
+    positions = positions.split(",");
+    for (var ii = 0; ii < positions.length; ii++) {
+        positions[ii] = parseInt(positions[ii]);
+    }
+    if (name == "forward") {
+        var txt1i = document.getElementById('input1').innerText;
+        document.getElementById('input1').innerHTML = addColorsForPositions(txt1i, positions, true, "forward", greenX.join(","));
+    } else if (name == "reverse") {
+        var txt2i = document.getElementById('input2').innerText;
+        document.getElementById('input2').innerHTML = addColorsForPositions(txt2i, positions, true, "reverse", greenX.join(","));
+    }
+}
+function isInGreen(ii, green) {
+    var greenX = green.split(",");
+    for (var i = 0; i < greenX.length; i++) {
+        var part = parseInt(greenX[i]);
+        if (!isNaN(part) && ii == part) {
+            return true;
+        }
+    }
+    return false;
+}
+function addColorsForPositions(s, positions, addLinks, name, green="") {
     var result = [];
     for (var i = 0; i < s.length; i++) {
         var correctedPosition = i + 1;
         if (positions.includes(correctedPosition)) {
             if (s[i] == s[i].toUpperCase()) {
-                result.push("<span class='bgred'>" + s[i] + "</span>");
+                var toAdd = s[i];
+                if (addLinks) {
+                    toAdd = "<a onclick='changePosition(" + i + ", \"" + s[i] + "\", \"" + name + "\", \"" + positions.join(",") + "\", \"" + green + "\")'>" + toAdd + "</a>";
+                }
+                result.push("<span class='" + ((isInGreen(i, green)) ? "bggreen" : "bgred") + "'>" + toAdd + "</span>");
             } else {
                 result.push("<span class='bgyellow'>" + s[i] + "</span>");
             }
@@ -334,12 +379,12 @@ function colorFinalByPositions(i1, i2, p1, p2) {
     }
     var txt1i = document.getElementById('input1').innerText;
     var txt2i = document.getElementById('input2').innerText;
-    document.getElementById('input1').innerHTML = addColorsForPositions(txt1i, i1s);
-    document.getElementById('input2').innerHTML = addColorsForPositions(txt2i, i2s);
+    document.getElementById('input1').innerHTML = addColorsForPositions(txt1i, i1s, true, "forward");
+    document.getElementById('input2').innerHTML = addColorsForPositions(txt2i, i2s, true, "reverse");
     var txt1 = document.getElementById('reconstructed1').innerText;
     var txt2 = document.getElementById('reconstructed2').innerText;
-    document.getElementById('reconstructed1').innerHTML = addColorsForPositions(txt1, p1s);
-    document.getElementById('reconstructed2').innerHTML = addColorsForPositions(txt2, p2s);
+    document.getElementById('reconstructed1').innerHTML = addColorsForPositions(txt1, p1s, false);
+    document.getElementById('reconstructed2').innerHTML = addColorsForPositions(txt2, p2s, false);
 }
 function colorProblems() {
     var txt1 = document.getElementById('reconstructed1').innerText;

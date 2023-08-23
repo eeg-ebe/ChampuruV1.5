@@ -192,6 +192,10 @@ legend {
     font-family: monospace, monospace;
     background-color: yellow;
 }
+.bggreen {
+    font-family: monospace, monospace;
+    background-color: green;
+}
 .plot {
     border: 1px solid black;
 }
