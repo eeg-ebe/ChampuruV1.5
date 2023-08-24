@@ -79,7 +79,8 @@ class Worker
         var timestamp:Float = Timer.stamp();
         out("<legend>Output of the original Champuru 1.0 program</legend>");
         out("<span id='champuruOutput' style='font-family: monospace; word-break: break-all; display: none;'>");
-        var output:String = PerlChampuruReimplementation.runChampuru(fwd, rev, false).getOutput();
+        var perlReimplementationOutput = PerlChampuruReimplementation.runChampuru(fwd, rev, false);
+        var output:String = perlReimplementationOutput.getOutput();
         output = StringTools.htmlEscape(output);
         output = StringTools.replace(output, "\n", "<br/>");
         out(output);
@@ -280,14 +281,25 @@ class Worker
         if (problems > 0) {
             out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
         }
+        // Check that the output is similar to the output of the "original" Champuru program
+        var firstSequenceIsSame:Bool = result.seq1.toString().indexOf(perlReimplementationOutput.sequence1) != -1 || result.seq1.toString().indexOf(perlReimplementationOutput.sequence2) != -1;
+        var secondSequenceIsSame:Bool = result.seq2.toString().indexOf(perlReimplementationOutput.sequence1) != -1 || result.seq2.toString().indexOf(perlReimplementationOutput.sequence2) != -1;
+        if (!firstSequenceIsSame || !secondSequenceIsSame) {
+            var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
+            var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
+            if (idx1Same && idx2Same) {
+                out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program seem to mismatch with the deconvoluted sequences from this program although the same offsets have been used. Please check the output of the original Champuru program and contact <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
+            } else {
+                out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program seem to mismatch with the deconvoluted sequences from this program because different offsets have been used.<p>");
+            }
+        }
         out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
         out("<br>");
         
         // 5. Step - Searching for alternative solutions
-        //AAAHNSYKRWTYMMMMMRSSRMSGSCCYWRSMWWMCCSRRGGRWYSGRARR
-        //MRMTGMTKMWYMMMRCRRCGRCSSYMSYAKMMYMSMSGRRKSRKMRGRRKA
-        /*        out("<fieldset>");
+        var timestamp:Float = Timer.stamp();
+        out("<fieldset>");
         out("<legend>5. Step - Searching for alternative solutions</legend>");
         var possibleMatches:List<Int> = new List<Int>();
         var i:Int = 0;
@@ -311,9 +323,11 @@ class Worker
             
             var o1 = new OverlapSolver(p.a, s1, s2).solve();
             var o2 = new OverlapSolver(p.b, s1, s2).solve();
+            var result = SequenceReconstructor.reconstruct(o1, o2);
         }
+        out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
-        out("<br>");*/
+        out("<br>");
         
         // Download area
         if (problems == 0) {

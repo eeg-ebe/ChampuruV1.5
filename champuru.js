@@ -149,7 +149,8 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var timestamp = HxOverrides.now() / 1000;
 	champuru_Worker.out("<legend>Output of the original Champuru 1.0 program</legend>");
 	champuru_Worker.out("<span id='champuruOutput' style='font-family: monospace; word-break: break-all; display: none;'>");
-	var output = champuru_perl_PerlChampuruReimplementation.runChampuru(fwd,rev,false).getOutput();
+	var perlReimplementationOutput = champuru_perl_PerlChampuruReimplementation.runChampuru(fwd,rev,false);
+	var output = perlReimplementationOutput.getOutput();
 	output = StringTools.htmlEscape(output);
 	output = StringTools.replace(output,"\n","<br/>");
 	champuru_Worker.out(output);
@@ -378,6 +379,111 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	if(problems > 0) {
 		champuru_Worker.out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
 	}
+	var firstSequenceIsSame;
+	var _this = result.seq1;
+	var result1 = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = _this.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = _this.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result1.add(s);
+	}
+	if(result1.join("").indexOf(perlReimplementationOutput.sequence1) == -1) {
+		var _this = result.seq1;
+		var result1 = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = _this.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = _this.mSequence.h[i];
+			var s = c.toIUPACCode();
+			result1.add(s);
+		}
+		firstSequenceIsSame = result1.join("").indexOf(perlReimplementationOutput.sequence2) != -1;
+	} else {
+		firstSequenceIsSame = true;
+	}
+	var secondSequenceIsSame;
+	var _this = result.seq2;
+	var result1 = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = _this.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = _this.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result1.add(s);
+	}
+	if(result1.join("").indexOf(perlReimplementationOutput.sequence1) == -1) {
+		var _this = result.seq2;
+		var result = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = _this.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = _this.mSequence.h[i];
+			var s = c.toIUPACCode();
+			result.add(s);
+		}
+		secondSequenceIsSame = result.join("").indexOf(perlReimplementationOutput.sequence2) != -1;
+	} else {
+		secondSequenceIsSame = true;
+	}
+	if(!firstSequenceIsSame || !secondSequenceIsSame) {
+		var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
+		var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
+		if(idx1Same && idx2Same) {
+			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program seem to mismatch with the deconvoluted sequences from this program although the same offsets have been used. Please check the output of the original Champuru program and contact <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
+		} else {
+			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program seem to mismatch with the deconvoluted sequences from this program because different offsets have been used.<p>");
+		}
+	}
+	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
+	champuru_Worker.out("</fieldset>");
+	champuru_Worker.out("<br>");
+	var timestamp = HxOverrides.now() / 1000;
+	champuru_Worker.out("<fieldset>");
+	champuru_Worker.out("<legend>5. Step - Searching for alternative solutions</legend>");
+	var possibleMatches = new haxe_ds_List();
+	var i = 0;
+	var _g = 0;
+	while(_g < sortedScores.length) {
+		var score = sortedScores[_g];
+		++_g;
+		if(i > 5) {
+			break;
+		}
+		++i;
+		if(score.mismatches <= 10) {
+			possibleMatches.add(score.index);
+		}
+	}
+	var possibilities = new haxe_ds_List();
+	var _g3_head = possibleMatches.h;
+	while(_g3_head != null) {
+		var val = _g3_head.item;
+		_g3_head = _g3_head.next;
+		var p1 = val;
+		var _g3_head1 = possibleMatches.h;
+		while(_g3_head1 != null) {
+			var val1 = _g3_head1.item;
+			_g3_head1 = _g3_head1.next;
+			var p2 = val1;
+			possibilities.add({ a : p1, b : p2});
+		}
+	}
+	var _g4_head = possibilities.h;
+	while(_g4_head != null) {
+		var val = _g4_head.item;
+		_g4_head = _g4_head.next;
+		var p = val;
+		champuru_Worker.out("=== Checking offset " + p.a + " " + p.b + " ===<br>");
+		var o1 = new champuru_consensus_OverlapSolver(p.a,s1,s2).solve();
+		var o2 = new champuru_consensus_OverlapSolver(p.b,s1,s2).solve();
+		var result = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
+	}
 	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
@@ -401,7 +507,7 @@ champuru_Worker.onMessage = function(e) {
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:345:",e);
+		console.log("champuru/Worker.hx:359:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };
