@@ -90,8 +90,8 @@ class SequenceReconstructor
                 }
                 
                 
-                var idx1_:Int = seq1end - j; // + diffStart;
-                var idx2_:Int = seq2end - j; // - diffStart;
+                var idx1_:Int = seq1.length() - 1 - j;
+                var idx2_:Int = seq2.length() - 1 - j;
                 
                 if (!(idx1_ < 0 || idx2_ < 0 || seq1.get(idx1_).getQuality() < 0.75 || seq2.get(idx2_).getQuality() < 0.75)) {
                     var seq1n_:SingleNucleotide = seq1.get(idx1_);

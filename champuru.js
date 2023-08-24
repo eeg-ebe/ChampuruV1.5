@@ -1643,8 +1643,8 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 					}
 				}
 			}
-			var idx1_ = seq1end - j;
-			var idx2_ = seq2end - j;
+			var idx1_ = seq1.mLength - 1 - j;
+			var idx2_ = seq2.mLength - 1 - j;
 			var tmp3;
 			var tmp4;
 			if(!(idx1_ < 0 || idx2_ < 0)) {
