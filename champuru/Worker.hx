@@ -341,8 +341,11 @@ class Worker
             var use:Bool = cast(e.data.useOffsets, Bool);
             var result = generateHtml(fwd, rev, scoreCalculationMethod, i, j, use); // ""; //doChampuru(fwd, rev, scoreCalculationMethod, i, j, use);
             workerScope.postMessage(result);
-        } catch(e:Dynamic) {
-            workerScope.postMessage("The following error occurred: " + e);
+        } catch(e) {
+            trace(e);
+            workerScope.postMessage({
+                result : "The following error occurred: " + e
+            });
         }
     }
     public static function main() {

@@ -400,8 +400,9 @@ champuru_Worker.onMessage = function(e) {
 		var result = champuru_Worker.generateHtml(fwd,rev,scoreCalculationMethod,i,j,use);
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
-		var e = haxe_Exception.caught(_g).unwrap();
-		champuru_Worker.workerScope.postMessage("The following error occurred: " + Std.string(e));
+		var e = haxe_Exception.caught(_g);
+		console.log("champuru/Worker.hx:345:",e);
+		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };
 champuru_Worker.main = function() {
@@ -2008,8 +2009,11 @@ haxe_Exception.thrown = function(value) {
 };
 haxe_Exception.__super__ = Error;
 haxe_Exception.prototype = $extend(Error.prototype,{
-	unwrap: function() {
-		return this.__nativeException;
+	toString: function() {
+		return this.get_message();
+	}
+	,get_message: function() {
+		return this.message;
 	}
 	,get_native: function() {
 		return this.__nativeException;
@@ -2023,10 +2027,7 @@ var haxe_ValueException = function(value,previous,native) {
 haxe_ValueException.__name__ = true;
 haxe_ValueException.__super__ = haxe_Exception;
 haxe_ValueException.prototype = $extend(haxe_Exception.prototype,{
-	unwrap: function() {
-		return this.value;
-	}
-	,__class__: haxe_ValueException
+	__class__: haxe_ValueException
 });
 var haxe_io_Bytes = function(data) {
 	this.length = data.byteLength;
