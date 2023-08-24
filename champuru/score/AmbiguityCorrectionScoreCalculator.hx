@@ -54,7 +54,7 @@ class AmbiguityCorrectionScoreCalculator extends AScoreCalculator
         for (pos in 0...overlap) {
             var a:SingleNucleotide = fwd.get(pos + fwdCorr);
             var b:SingleNucleotide = rev.get(pos + revCorr);
-            if (a.equals(b, false) && (!a.isPolymorhism())) {
+            if (a.equals(b, false) && (!a.isPolymorphism())) {
                 fullMatches++;
             } else if (a.isOverlapping(b)) {
                 matches++;

@@ -73,16 +73,41 @@ class SequenceChecker
         }
     }
     
+    public function listContains(l:List<Int>, ele:Int):Bool {
+        for (item in l) {
+            if (ele == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public inline function addToListIfNotPresent(l:List<Int>, ele:Int):Void {
+        if (!listContains(l, ele)) {
+            l.push(ele);
+        }
+    }
+    
     public function check(s1:NucleotideSequence, s2:NucleotideSequence) {
         var pFbest = new List<Int>();
         var pRbest = new List<Int>();
         var eBest = mFwd.length() + mRev.length() + 1000;
         var data = "-";
         
-        for (c1I in [0, mOffset1, mOffset2, mOffset2 - mOffset1, mOffset1 - mOffset2, -mOffset1, -mOffset2]) {
-            for (c2I in [0, mOffset1, mOffset2, mOffset2 - mOffset1, mOffset1 - mOffset2, -mOffset1, -mOffset2]) {
-                for (c3I in [0, mOffset1, mOffset2, mOffset2 - mOffset1, mOffset1 - mOffset2, -mOffset1, -mOffset2]) {
-                    for (c4I in [0, mOffset1, mOffset2, mOffset2 - mOffset1, mOffset1 - mOffset2, -mOffset1, -mOffset2]) {
+        var l:List<Int> = new List<Int>();
+        addToListIfNotPresent(l, 0);
+        addToListIfNotPresent(l, -mOffset1);
+        addToListIfNotPresent(l, -mOffset2);
+        addToListIfNotPresent(l, mOffset1);
+        addToListIfNotPresent(l, mOffset2);
+        addToListIfNotPresent(l, mOffset2 - mOffset1);
+        addToListIfNotPresent(l, mOffset1 - mOffset2);
+        addToListIfNotPresent(l, mOffset2 + mOffset1);
+        addToListIfNotPresent(l, mOffset1 + mOffset2);
+        
+        for (c1I in l) {
+            for (c2I in l) {
+                for (c3I in l) {
+                    for (c4I in l) {
                         var c = _check(s1, s2, c1I, c2I, c3I, c4I);
                         var e:Int = c.pF.length + c.pR.length;
                         if (e < eBest) {

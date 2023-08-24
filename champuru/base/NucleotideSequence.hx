@@ -185,7 +185,7 @@ class NucleotideSequence
     public function countPolymorphisms(?minQual:Float=-1):Int {
         var count:Int = 0;
         for (c in this) {
-            if (c.isPolymorhism() && c.getQuality() >= minQual) {
+            if (c.isPolymorphism() && c.getQuality() >= minQual) {
                 ++count;
             }
         }
@@ -195,7 +195,7 @@ class NucleotideSequence
     public function countNotPolymorphisms(?minQual:Float=-1):Int {
         var count:Int = 0;
         for (c in this) {
-            if (c.isNotPolymorhism() && c.getQuality() >= minQual) {
+            if (c.isNotPolymorphism() && c.getQuality() >= minQual) {
                 ++count;
             }
         }

@@ -263,7 +263,7 @@ class SingleNucleotide
     /** 
      * Check whether this nucleotide is not polymorphismic.
      */
-    public function isNotPolymorhism():Bool {
+    public function isNotPolymorphism():Bool {
         if (isGap()) {
             return true;
         }
@@ -285,8 +285,8 @@ class SingleNucleotide
     /**
      * Check whether this nucleotide is polymorphismic.
      */
-    public inline function isPolymorhism():Bool {
-        return !isNotPolymorhism();
+    public inline function isPolymorphism():Bool {
+        return !isNotPolymorphism();
     }
     
     /**
