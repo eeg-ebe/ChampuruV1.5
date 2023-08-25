@@ -162,6 +162,26 @@ legend {
 .scoreTable .even:hover {
     background-color: yellow;
 }
+.offsetTable {
+    margin: 0 auto;
+    background-color: white;
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+.offsetTable .header {
+    background-color: #ddd;
+}
+.offsetTable td {
+    padding: 2px 6px;
+    text-align: right;
+    border: 0px solid #000;
+}
+.offsetTable .odd:hover {
+    background-color: yellow;
+}
+.offsetTable .even:hover {
+    background-color: yellow;
+}
 .descTable {
     border-collapse: collapse;
 }
@@ -179,6 +199,12 @@ legend {
     background-color: #eee;
 }
 .scoreTable .odd {
+    background-color: #white;
+}
+.offsetTable .even {
+    background-color: #eee;
+}
+.offsetTable .odd {
     background-color: #white;
 }
 .center {

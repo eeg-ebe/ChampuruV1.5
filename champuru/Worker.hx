@@ -55,7 +55,7 @@ class Worker
         return "" + Math.round(f * 1000);
     }
 
-    public static function generateHtml(fwd:String, rev:String, scoreCalculationMethod:Int, iOffset:Int, jOffset:Int, useThisOffsets:Bool) {
+    public static function generateHtml(fwd:String, rev:String, scoreCalculationMethod:Int, iOffset:Int, jOffset:Int, useThisOffsets:Bool, searchForAlternativeSolutions:Bool) {
         mMsgs.clear();
         
         out("<fieldset>");
@@ -298,36 +298,74 @@ class Worker
         out("<br>");
         
         // 5. Step - Searching for alternative solutions
-        var timestamp:Float = Timer.stamp();
-        out("<fieldset>");
-        out("<legend>5. Step - Searching for alternative solutions</legend>");
-        var possibleMatches:List<Int> = new List<Int>();
-        var i:Int = 0;
-        for (score in sortedScores) {
-            if (i > 5) {
-                break;
+        if (searchForAlternativeSolutions) {
+            var timestamp:Float = Timer.stamp();
+            out("<fieldset>");
+            out("<legend>5. Step - Searching for alternative solutions</legend>");
+            var possibleMatches:List<Int> = new List<Int>();
+            var i:Int = 0;
+            for (score in sortedScores) {
+                if (i > 5) {
+                    break;
+                }
+                i++;
+                if (score.mismatches <= 10) {
+                    possibleMatches.add(score.index);
+                }
             }
-            i++;
-            if (score.mismatches <= 10) {
-                possibleMatches.add(score.index);
+            var possibilities:List<{a:Int, b:Int}> = new List<{a:Int, b:Int}>();
+            for (p1 in possibleMatches) {
+                for (p2 in possibleMatches) {
+                    if (p1 > p2) {
+                        possibilities.add({a: p1, b: p2});
+                    }
+                }
             }
-        }
-        var possibilities:List<{a:Int, b:Int}> = new List<{a:Int, b:Int}>();
-        for (p1 in possibleMatches) {
-            for (p2 in possibleMatches) {
-                possibilities.add({a: p1, b: p2});
+            var scores:Array<{score:Int, idx1:Int, idx2:Int, pF:Int, pR:Int, p:Int}> = new Array<{score:Int, idx1:Int, idx2:Int, pF:Int, pR:Int, p:Int}>();
+            for (p in possibilities) {
+                var o1 = new OverlapSolver(p.a, s1, s2).solve();
+                var o2 = new OverlapSolver(p.b, s1, s2).solve();
+                var result2 = SequenceReconstructor.reconstruct(o1, o2);
+                
+                var seqChecker2:SequenceChecker = new SequenceChecker(s1, s2);
+                seqChecker2.setOffsets(p.a, p.b);
+                var checkerResult2 = seqChecker2.check(result2.seq1, result2.seq2);
+                
+                var score = {
+                    score : checkerResult2.pF.length + checkerResult2.pR.length + result2.seq1.countGaps() + result2.seq2.countGaps(),
+                    idx1 : p.a,
+                    idx2 : p.b,
+                    pF : checkerResult2.pF.length,
+                    pR : checkerResult2.pR.length,
+                    p : result2.seq1.countGaps() + result2.seq2.countGaps()
+                };
+                scores.push(score);
             }
+            scores.sort(function(a:{score:Int, idx1:Int, idx2:Int, pF:Int, pR:Int, p:Int}, b:{score:Int, idx1:Int, idx2:Int, pF:Int, pR:Int, p:Int}):Int {
+                return a.score - b.score;
+            });
+            out("<table class='offsetTable center'>");
+            out("<tr class='header'>");
+            out("<td>#</td><td>Score</td><td>Offset 1</td><td>Offset 2</td><td>Use</td>");
+            out("</tr>");
+            var i:Int = 1;
+            for (score in scores) {
+                out("<tr class='" + ((i % 2 == 0) ? "odd" : "even") + "'>");
+                out("<td>" + i + "</td><td>" + score.score + "</td><td>" + score.idx1 + "</td><td>" +  score.idx2 + "</td><td><a href='#' onclick='rerunAnalysisWithDifferentOffsets2(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ", " + score.idx1 + ", " + score.idx2 + "); return false;'>Calculate</a></td>");
+                out("</tr>");
+                i++;
+                if (i > 5) {
+                    break;
+                }
+            }
+            out("</table>");
+            //if (() || ()) {
+            //    out("<p>Use offsets</p>");
+            //}
+            out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
+            out("</fieldset>");
+            out("<br>");
         }
-        for (p in possibilities) {
-            out("=== Checking offset " + p.a + " " + p.b + " ===<br>");
-            
-            var o1 = new OverlapSolver(p.a, s1, s2).solve();
-            var o2 = new OverlapSolver(p.b, s1, s2).solve();
-            var result = SequenceReconstructor.reconstruct(o1, o2);
-        }
-        out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
-        out("</fieldset>");
-        out("<br>");
         
         // Download area
         if (problems == 0) {
@@ -353,7 +391,8 @@ class Worker
             var i:Int = cast(e.data.i, Int);
             var j:Int = cast(e.data.j, Int);
             var use:Bool = cast(e.data.useOffsets, Bool);
-            var result = generateHtml(fwd, rev, scoreCalculationMethod, i, j, use); // ""; //doChampuru(fwd, rev, scoreCalculationMethod, i, j, use);
+            var searchForAlternativeSolutions:Bool = cast(e.data.searchForAlternativeSolutions, Bool);
+            var result = generateHtml(fwd, rev, scoreCalculationMethod, i, j, use, searchForAlternativeSolutions); // ""; //doChampuru(fwd, rev, scoreCalculationMethod, i, j, use);
             workerScope.postMessage(result);
         } catch(e) {
             trace(e);

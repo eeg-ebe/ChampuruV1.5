@@ -78,6 +78,16 @@ However this score correction method seems to work less good on short input sequ
                         </table>
                     </td>
                 </tr>
+                <tr class="option">
+                    <td>Search for alternative solutions:</td>
+                    <td>&nbsp;&nbsp;&nbsp;</td>
+                    <td><input type="checkbox" id="searchForAlternativeSolutions" autocomplete="off"></td>
+                </tr>
+                <tr class="description">
+                    <td colspan="3">
+                        <p>When this checkbox is clicked, Champuru will search search for alternative solutions. Because this can take some time, this checkbox is not checked by default.</p>
+                    </td>
+                </tr>
             </table>
             <span class="middle">
                 <button onclick="calculate()">Calculate</button>
@@ -107,13 +117,20 @@ However this score correction method seems to work less good on short input sequ
                     Forward sequence: <span class="sequence" id="example3forward">AAATSSYKRWTYMMMMMRSSRMSGSCCYWRSMWWMCCSRRGGRWYSGRARR</span><br>
                     Reverse sequence: <span class="sequence" id="example3reverse">MRMTGMTKMWYMMMRCRRCGRCSSYMSYAKMMYMSMSGRRKSRKMRGRRKA</span><br>
                     <button href="#" onclick="load(3)">Copy data to input fields</button><br>
-                </div>                
+                </div>
+                <br>
+                <div class="noindent">
+                    The following example has multiple solutions:<br>
+                    Forward sequence: <span class="sequence" id="example4forward">SYKRWTYMMMMMRSSRMSGSCCYWRSMWWMCCSRRGGRWYSGRAR</span><br>
+                    Reverse sequence: <span class="sequence" id="example4reverse">MRMTGMTKMWYMMMRCRRCGRCSSYMSYAKMMYMSMSGRRKSRKMRGRRKA</span><br>
+                    <button href="#" onclick="load(4)">Copy data to input fields</button><br>
+                </div>
                 <br>
                 <div class="noindent">
                     And here is a 'real-life' example (original chromatograms: <a href="ExampleForward.ab1">Forward</a> and <a href="ExampleReverse.ab1">Reverse</a>):<br>
-                    Forward sequence: <span class="sequence" id="example4forward">ATCGTGGGCGGCCGGCCCTGCCACAGACGGGGTTGTCACCCTCTGCGACGTGCCGTTCCAAGCAACTTAGGCAGGGCCCCTCCGCCTAGAAAGTGCTTCTCGCAACTACAACTCGCCGATGCAGGCATCGGAGATTTCAAATTTGAGCTCTTCCCGCTTCACTCGCCGTTACTGGGGGAATCCTTGTTAGTTTCTTTTCCTCCGCTTATTAATATGCTTAAATTCAGCGGGTAGCCTTGCCTGATCTGAGGTCTGGAAGGCGATTCCTTTTTTCCTTTGAGATGCCGCCACCGCTACCCGGCGGCAGCAGAAAAAAGAATCGAATGGAGAAAGATTTGTTCCGTCAAAGCGATAGAGCCGTGGCCGTTTGGGGTACATTGTTCTATGATCCCCGCGCGACACCGGATGTCGCTTGGCGGATCTTTCTCCCTGAATTTCAAGGGACGCGGTAAACCGACCGGTCGGGCCGAGCAGCACCAGGGCTGGCTAGCTAGCGCACGACCGGTCATCTCGACCGCGACCCTCAACGCCGCACGAACCCGTTCACGGCGGGCGCGYSYCSSSSCCMYMYSCKMYASASRSGGRSMMSRSGSRSRCGCGCRCRCGSRKWYKCRCRMKRKRKRTKTKWRWAKASACWCWSASASASAYRYKCYYSKGRGARMMCMMRAGMGCSMYWTKYGYKYWMARAKWYKMKRWKWYWCWSWRWWYTCYGCWWYTCACWCTWYWTMTCRSMMTCKMKCTGA</span><br>
-                    Reverse sequence: <span class="sequence" id="example4reverse">GTGCRMTMTCAACACMCSASTCTCGMRACRCATMKYGKGSGSSSSSSSCYSYSMCASASRSGGKKKTSWCMCYCTSYGMSRYGYSSYKYYMMRMRMMWYWKRSRSRGSSCCYCYSCSYMKARARWGYKYYTCKCRMMWMYAMMWCKCSSMKRYRSRSRYMKSRGAKWTYWMAWWTKWGMKCTYYYCSCKYYWCWCKCSSYKWYWSKGGGRRWMYYYKTKWKWKTYTYTTYYYCYSCKYWTWWWWATRYKYWWAWWYWSMGSGKRKMSYYKYSYSWKMTSWGRKSTSKRRRRSGMKWYYYYTTTTYYYYTKWGAKRYSSCSMCMSCKMYMCSSSGSSRSMRSARAAAARARWMKMRWRKRGARARAKWTKTKYYSYSWMARMGMKAKAGMSSYGKSSSYKTKKGGKRYAYWKTKYTMTRWKMYCCSCGCGMSACMSSRKRTSKCKYKKSGSRKMTYTYTCYCYSWRWWTYWMRRGRSRCGSKRWAMMSMSMSSKSKSGSSSMGMRSMRCMMSRGSKSKSKMKMKMKMGCRCRMSMSSKSWYMTCKMSMSCGMSMCYCWMMRCSSCRCRMRMMCSYKYWCRSSGSGSGCGCGTCCCGGCCCCATCCGCTACAGACGGGGACCAGGCGGACGCGCGCACGCGGATTCGCACGATGGATGTTTGAATAGACACTCAGACAGACATGCTCCTGGGAGAACCCAAGAGCGCCATTTGCGTTCAAAGATTCGATGATTCACTGAAT</span><br>
-                    <button href="#" onclick="load(4)">Copy data to input fields</button><br>
+                    Forward sequence: <span class="sequence" id="example5forward">ATCGTGGGCGGCCGGCCCTGCCACAGACGGGGTTGTCACCCTCTGCGACGTGCCGTTCCAAGCAACTTAGGCAGGGCCCCTCCGCCTAGAAAGTGCTTCTCGCAACTACAACTCGCCGATGCAGGCATCGGAGATTTCAAATTTGAGCTCTTCCCGCTTCACTCGCCGTTACTGGGGGAATCCTTGTTAGTTTCTTTTCCTCCGCTTATTAATATGCTTAAATTCAGCGGGTAGCCTTGCCTGATCTGAGGTCTGGAAGGCGATTCCTTTTTTCCTTTGAGATGCCGCCACCGCTACCCGGCGGCAGCAGAAAAAAGAATCGAATGGAGAAAGATTTGTTCCGTCAAAGCGATAGAGCCGTGGCCGTTTGGGGTACATTGTTCTATGATCCCCGCGCGACACCGGATGTCGCTTGGCGGATCTTTCTCCCTGAATTTCAAGGGACGCGGTAAACCGACCGGTCGGGCCGAGCAGCACCAGGGCTGGCTAGCTAGCGCACGACCGGTCATCTCGACCGCGACCCTCAACGCCGCACGAACCCGTTCACGGCGGGCGCGYSYCSSSSCCMYMYSCKMYASASRSGGRSMMSRSGSRSRCGCGCRCRCGSRKWYKCRCRMKRKRKRTKTKWRWAKASACWCWSASASASAYRYKCYYSKGRGARMMCMMRAGMGCSMYWTKYGYKYWMARAKWYKMKRWKWYWCWSWRWWYTCYGCWWYTCACWCTWYWTMTCRSMMTCKMKCTGA</span><br>
+                    Reverse sequence: <span class="sequence" id="example5reverse">GTGCRMTMTCAACACMCSASTCTCGMRACRCATMKYGKGSGSSSSSSSCYSYSMCASASRSGGKKKTSWCMCYCTSYGMSRYGYSSYKYYMMRMRMMWYWKRSRSRGSSCCYCYSCSYMKARARWGYKYYTCKCRMMWMYAMMWCKCSSMKRYRSRSRYMKSRGAKWTYWMAWWTKWGMKCTYYYCSCKYYWCWCKCSSYKWYWSKGGGRRWMYYYKTKWKWKTYTYTTYYYCYSCKYWTWWWWATRYKYWWAWWYWSMGSGKRKMSYYKYSYSWKMTSWGRKSTSKRRRRSGMKWYYYYTTTTYYYYTKWGAKRYSSCSMCMSCKMYMCSSSGSSRSMRSARAAAARARWMKMRWRKRGARARAKWTKTKYYSYSWMARMGMKAKAGMSSYGKSSSYKTKKGGKRYAYWKTKYTMTRWKMYCCSCGCGMSACMSSRKRTSKCKYKKSGSRKMTYTYTCYCYSWRWWTYWMRRGRSRCGSKRWAMMSMSMSSKSKSGSSSMGMRSMRCMMSRGSKSKSKMKMKMKMGCRCRMSMSSKSWYMTCKMSMSCGMSMCYCWMMRCSSCRCRMRMMCSYKYWCRSSGSGSGCGCGTCCCGGCCCCATCCGCTACAGACGGGGACCAGGCGGACGCGCGCACGCGGATTCGCACGATGGATGTTTGAATAGACACTCAGACAGACATGCTCCTGGGAGAACCCAAGAGCGCCATTTGCGTTCAAAGATTCGATGATTCACTGAAT</span><br>
+                    <button href="#" onclick="load(5)">Copy data to input fields</button><br>
                 </div>
                 <br>
             </div>
@@ -174,6 +191,8 @@ function calculate() {
         alert("Unknown base (" + unknown2 + ") in reverse sequence!");
         return;
     }
+    
+    var searchForAlternativeSolutions = document.getElementById("searchForAlternativeSolutions").checked;
 
     var resultArea = document.getElementById("resultArea");
     resultArea.innerText = "Calculating ... Please wait ... Results will appear here!";
@@ -186,7 +205,7 @@ function calculate() {
         resultArea.innerHTML = data.result;
         worker.terminate();
     });
-    worker.postMessage({"fwd" : fwd, "rev" : rev, "score" : score, "i" : 0, "j" : 0, "useOffsets" : false});
+    worker.postMessage({"fwd" : fwd, "rev" : rev, "score" : score, "i" : 0, "j" : 0, "useOffsets" : false, "searchForAlternativeSolutions" : searchForAlternativeSolutions});
 }
 
 function askForOffset(title, fwd, rev) {
@@ -209,13 +228,16 @@ function rerunAnalysisWithDifferentOffsets(fwd, rev, method) {
     var j = askForOffset("Please enter second offset:", fwd, rev);
     if (isNaN(j)) return;
 
+    rerunAnalysisWithDifferentOffsets2(fwd, rev, method, i, j);
+}
+function rerunAnalysisWithDifferentOffsets2(fwd, rev, method, i, j) {
     var worker = new Worker("champuru.js");
     worker.addEventListener("message", function(e) {
         data = e.data;
         resultArea.innerHTML = data.result;
         worker.terminate();
     });
-    worker.postMessage({"fwd" : fwd, "rev" : rev, "score" : method, "i" : i, "j" : j, "useOffsets" : true});
+    worker.postMessage({"fwd" : fwd, "rev" : rev, "score" : method, "i" : i, "j" : j, "useOffsets" : true, "searchForAlternativeSolutions" : false});
 }
 
 function resetForm() {

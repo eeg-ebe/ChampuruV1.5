@@ -128,7 +128,7 @@ champuru_Worker.out = function(s) {
 champuru_Worker.timeToStr = function(f) {
 	return "" + Math.round(f * 1000);
 };
-champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,jOffset,useThisOffsets) {
+champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,jOffset,useThisOffsets,searchForAlternativeSolutions) {
 	champuru_Worker.mMsgs.clear();
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>Input</legend>");
@@ -443,50 +443,80 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
-	var timestamp = HxOverrides.now() / 1000;
-	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>5. Step - Searching for alternative solutions</legend>");
-	var possibleMatches = new haxe_ds_List();
-	var i = 0;
-	var _g = 0;
-	while(_g < sortedScores.length) {
-		var score = sortedScores[_g];
-		++_g;
-		if(i > 5) {
-			break;
+	if(searchForAlternativeSolutions) {
+		var timestamp = HxOverrides.now() / 1000;
+		champuru_Worker.out("<fieldset>");
+		champuru_Worker.out("<legend>5. Step - Searching for alternative solutions</legend>");
+		var possibleMatches = new haxe_ds_List();
+		var i = 0;
+		var _g = 0;
+		while(_g < sortedScores.length) {
+			var score = sortedScores[_g];
+			++_g;
+			if(i > 5) {
+				break;
+			}
+			++i;
+			if(score.mismatches <= 10) {
+				possibleMatches.add(score.index);
+			}
 		}
-		++i;
-		if(score.mismatches <= 10) {
-			possibleMatches.add(score.index);
+		var possibilities = new haxe_ds_List();
+		var _g3_head = possibleMatches.h;
+		while(_g3_head != null) {
+			var val = _g3_head.item;
+			_g3_head = _g3_head.next;
+			var p1 = val;
+			var _g3_head1 = possibleMatches.h;
+			while(_g3_head1 != null) {
+				var val1 = _g3_head1.item;
+				_g3_head1 = _g3_head1.next;
+				var p2 = val1;
+				if(p1 > p2) {
+					possibilities.add({ a : p1, b : p2});
+				}
+			}
 		}
-	}
-	var possibilities = new haxe_ds_List();
-	var _g3_head = possibleMatches.h;
-	while(_g3_head != null) {
-		var val = _g3_head.item;
-		_g3_head = _g3_head.next;
-		var p1 = val;
-		var _g3_head1 = possibleMatches.h;
-		while(_g3_head1 != null) {
-			var val1 = _g3_head1.item;
-			_g3_head1 = _g3_head1.next;
-			var p2 = val1;
-			possibilities.add({ a : p1, b : p2});
+		var scores = [];
+		var _g4_head = possibilities.h;
+		while(_g4_head != null) {
+			var val = _g4_head.item;
+			_g4_head = _g4_head.next;
+			var p = val;
+			var o1 = new champuru_consensus_OverlapSolver(p.a,s1,s2).solve();
+			var o2 = new champuru_consensus_OverlapSolver(p.b,s1,s2).solve();
+			var result2 = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
+			var seqChecker2 = new champuru_reconstruction_SequenceChecker(s1,s2);
+			seqChecker2.setOffsets(p.a,p.b);
+			var checkerResult2 = seqChecker2.check(result2.seq1,result2.seq2);
+			var score = { score : checkerResult2.pF.length + checkerResult2.pR.length + result2.seq1.countGaps() + result2.seq2.countGaps(), idx1 : p.a, idx2 : p.b, pF : checkerResult2.pF.length, pR : checkerResult2.pR.length, p : result2.seq1.countGaps() + result2.seq2.countGaps()};
+			scores.push(score);
 		}
+		scores.sort(function(a,b) {
+			return a.score - b.score;
+		});
+		champuru_Worker.out("<table class='offsetTable center'>");
+		champuru_Worker.out("<tr class='header'>");
+		champuru_Worker.out("<td>#</td><td>Score</td><td>Offset 1</td><td>Offset 2</td><td>Use</td>");
+		champuru_Worker.out("</tr>");
+		var i = 1;
+		var _g = 0;
+		while(_g < scores.length) {
+			var score = scores[_g];
+			++_g;
+			champuru_Worker.out("<tr class='" + (i % 2 == 0 ? "odd" : "even") + "'>");
+			champuru_Worker.out("<td>" + i + "</td><td>" + score.score + "</td><td>" + score.idx1 + "</td><td>" + score.idx2 + "</td><td><a href='#' onclick='rerunAnalysisWithDifferentOffsets2(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ", " + score.idx1 + ", " + score.idx2 + "); return false;'>Calculate</a></td>");
+			champuru_Worker.out("</tr>");
+			++i;
+			if(i > 5) {
+				break;
+			}
+		}
+		champuru_Worker.out("</table>");
+		champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
+		champuru_Worker.out("</fieldset>");
+		champuru_Worker.out("<br>");
 	}
-	var _g4_head = possibilities.h;
-	while(_g4_head != null) {
-		var val = _g4_head.item;
-		_g4_head = _g4_head.next;
-		var p = val;
-		champuru_Worker.out("=== Checking offset " + p.a + " " + p.b + " ===<br>");
-		var o1 = new champuru_consensus_OverlapSolver(p.a,s1,s2).solve();
-		var o2 = new champuru_consensus_OverlapSolver(p.b,s1,s2).solve();
-		var result = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
-	}
-	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
-	champuru_Worker.out("</fieldset>");
-	champuru_Worker.out("<br>");
 	if(problems == 0) {
 		champuru_Worker.out("<fieldset>");
 		champuru_Worker.out("<legend>Download area</legend>");
@@ -503,11 +533,12 @@ champuru_Worker.onMessage = function(e) {
 		var i = js_Boot.__cast(e.data.i , Int);
 		var j = js_Boot.__cast(e.data.j , Int);
 		var use = js_Boot.__cast(e.data.useOffsets , Bool);
-		var result = champuru_Worker.generateHtml(fwd,rev,scoreCalculationMethod,i,j,use);
+		var searchForAlternativeSolutions = js_Boot.__cast(e.data.searchForAlternativeSolutions , Bool);
+		var result = champuru_Worker.generateHtml(fwd,rev,scoreCalculationMethod,i,j,use,searchForAlternativeSolutions);
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:359:",e);
+		console.log("champuru/Worker.hx:398:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };
