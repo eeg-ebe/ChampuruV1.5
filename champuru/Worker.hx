@@ -288,9 +288,9 @@ class Worker
             var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
             var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
             if (idx1Same && idx2Same) {
-                out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program seem to mismatch with the deconvoluted sequences from this program although the same offsets have been used. Please check the output of the original Champuru program and contact <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
+                out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program although the same offsets have been used. Please check the output of the original Champuru program and contact <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
             } else {
-                out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program seem to mismatch with the deconvoluted sequences from this program because different offsets have been used.<p>");
+                out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program because different offsets have been used.<p>");
             }
         }
         out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
@@ -301,7 +301,7 @@ class Worker
         if (searchForAlternativeSolutions) {
             var timestamp:Float = Timer.stamp();
             out("<fieldset>");
-            out("<legend>5. Step - Searching for alternative solutions</legend>");
+            out("<legend>5. Step - Analyzing further offset pairs</legend>");
             var possibleMatches:List<Int> = new List<Int>();
             var i:Int = 0;
             for (score in sortedScores) {
@@ -317,7 +317,9 @@ class Worker
             for (p1 in possibleMatches) {
                 for (p2 in possibleMatches) {
                     if (p1 > p2) {
-                        possibilities.add({a: p1, b: p2});
+                        if (!((p1 == score1 && p2 == score2) || (p2 == score1 && p1 == score2))) {
+                            possibilities.add({a: p1, b: p2});
+                        }
                     }
                 }
             }
@@ -346,7 +348,7 @@ class Worker
             });
             out("<table class='offsetTable center'>");
             out("<tr class='header'>");
-            out("<td>#</td><td>Score</td><td>Offset 1</td><td>Offset 2</td><td>Use</td>");
+            out("<td>#</td><td>Nr. of issues</td><td>Offset 1</td><td>Offset 2</td><td>Use</td>");
             out("</tr>");
             var i:Int = 1;
             for (score in scores) {

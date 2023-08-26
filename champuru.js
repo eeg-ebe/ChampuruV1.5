@@ -435,9 +435,9 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
 		var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
 		if(idx1Same && idx2Same) {
-			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program seem to mismatch with the deconvoluted sequences from this program although the same offsets have been used. Please check the output of the original Champuru program and contact <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
+			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program although the same offsets have been used. Please check the output of the original Champuru program and contact <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
 		} else {
-			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program seem to mismatch with the deconvoluted sequences from this program because different offsets have been used.<p>");
+			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program because different offsets have been used.<p>");
 		}
 	}
 	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
@@ -446,7 +446,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	if(searchForAlternativeSolutions) {
 		var timestamp = HxOverrides.now() / 1000;
 		champuru_Worker.out("<fieldset>");
-		champuru_Worker.out("<legend>5. Step - Searching for alternative solutions</legend>");
+		champuru_Worker.out("<legend>5. Step - Analyzing further offset pairs</legend>");
 		var possibleMatches = new haxe_ds_List();
 		var i = 0;
 		var _g = 0;
@@ -473,7 +473,9 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 				_g3_head1 = _g3_head1.next;
 				var p2 = val1;
 				if(p1 > p2) {
-					possibilities.add({ a : p1, b : p2});
+					if(!(p1 == score1 && p2 == score2 || p2 == score1 && p1 == score2)) {
+						possibilities.add({ a : p1, b : p2});
+					}
 				}
 			}
 		}
@@ -497,7 +499,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		});
 		champuru_Worker.out("<table class='offsetTable center'>");
 		champuru_Worker.out("<tr class='header'>");
-		champuru_Worker.out("<td>#</td><td>Score</td><td>Offset 1</td><td>Offset 2</td><td>Use</td>");
+		champuru_Worker.out("<td>#</td><td>Nr. of issues</td><td>Offset 1</td><td>Offset 2</td><td>Use</td>");
 		champuru_Worker.out("</tr>");
 		var i = 1;
 		var _g = 0;
@@ -538,7 +540,7 @@ champuru_Worker.onMessage = function(e) {
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:398:",e);
+		console.log("champuru/Worker.hx:400:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };
@@ -1557,7 +1559,7 @@ champuru_reconstruction_SequenceChecker.prototype = {
 				throw haxe_Exception.thrown("Position " + s2Pos + " out of range [0," + s2.mLength + "(");
 			}
 			if(tmp != (tmp1 | s2.mSequence.h[s2Pos].mCode)) {
-				pF.push(fwdPos + 1);
+				pF.add(fwdPos + 1);
 			}
 		}
 		var _g = 0;
@@ -1582,7 +1584,7 @@ champuru_reconstruction_SequenceChecker.prototype = {
 				throw haxe_Exception.thrown("Position " + s2Pos + " out of range [0," + s2.mLength + "(");
 			}
 			if(tmp != (tmp1 | s2.mSequence.h[s2Pos].mCode)) {
-				pR.push(revPos + 1);
+				pR.add(revPos + 1);
 			}
 		}
 		return { pF : pF, pR : pR};
