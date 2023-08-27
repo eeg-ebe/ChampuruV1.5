@@ -1716,8 +1716,6 @@ champuru_reconstruction_SequenceReconstructor.getEnd = function(s) {
 champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) {
 	var seq1begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq1);
 	var seq2begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq2);
-	var seq1end = champuru_reconstruction_SequenceReconstructor.getEnd(seq1);
-	var seq2end = champuru_reconstruction_SequenceReconstructor.getEnd(seq2);
 	var changed = true;
 	var round = 1;
 	while(changed) {
@@ -1725,7 +1723,7 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 		var seqLen1 = seq1.mLength;
 		var seqLen2 = seq2.mLength;
 		var seqLen = seqLen1 > seqLen2 ? seqLen2 : seqLen1;
-		console.log("champuru/reconstruction/SequenceReconstructor.hx:61:","=== Reconstruction round " + round + " (" + seq1begin + ", " + seq2begin + ", " + seq1end + ", " + seq2end + ", " + seqLen + ") ===");
+		console.log("champuru/reconstruction/SequenceReconstructor.hx:58:","=== Reconstruction round " + round + " (" + seq1begin + ", " + seq2begin + ", " + seqLen + ") ===");
 		++round;
 		var _g = 0;
 		var _g1 = seqLen;
@@ -1761,9 +1759,9 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 				}
 				var seq2n = seq2.mSequence.h[idx2];
 				if(!seq1n.isNotPolymorphism() || !seq2n.isNotPolymorphism()) {
-					var tmp2 = "F Positions " + idx1 + ", " + idx2 + ": " + seq1n.toIUPACCode() + " " + seq2n.toIUPACCode() + " ";
+					var data = "F Positions " + idx1 + ", " + idx2 + ": " + seq1n.toIUPACCode() + " " + seq2n.toIUPACCode() + " ";
 					var code = seq1n.mCode & seq2n.mCode;
-					console.log("champuru/reconstruction/SequenceReconstructor.hx:73:",tmp2 + Std.string(seq1n.mCode != seq2n.mCode) + " " + Std.string(code != 0));
+					var data1 = data + Std.string(seq1n.mCode != seq2n.mCode) + " " + Std.string(code != 0);
 					if(seq1n.mCode != seq2n.mCode) {
 						var code1 = seq1n.mCode & seq2n.mCode;
 						if(code1 != 0) {
@@ -1772,37 +1770,40 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 								var newN = new champuru_base_SingleNucleotide(code2);
 								seq1.replace(idx1,newN);
 								changed = true;
+								data1 = data1 + " (seq1) " + idx1 + "->" + newN.toIUPACCode();
 							} else {
 								var code3 = seq2n.mCode - seq1n.mCode;
 								var newN1 = new champuru_base_SingleNucleotide(code3);
 								seq2.replace(idx2,newN1);
 								changed = true;
+								data1 = data1 + " (seq2) " + idx2 + "->" + newN1.toIUPACCode();
 							}
 						}
 					}
+					console.log("champuru/reconstruction/SequenceReconstructor.hx:88:",data1);
 				}
 			}
 			var idx1_ = seq1.mLength - 1 - j;
 			var idx2_ = seq2.mLength - 1 - j;
+			var tmp2;
 			var tmp3;
-			var tmp4;
 			if(!(idx1_ < 0 || idx2_ < 0)) {
 				if(!(0 <= idx1_ && idx1_ < seq1.mLength)) {
 					throw haxe_Exception.thrown("Position " + idx1_ + " out of range [0," + seq1.mLength + "(");
 				}
-				tmp4 = seq1.mSequence.h[idx1_].mQuality < 0.75;
-			} else {
-				tmp4 = true;
-			}
-			if(!tmp4) {
-				if(!(0 <= idx2_ && idx2_ < seq2.mLength)) {
-					throw haxe_Exception.thrown("Position " + idx2_ + " out of range [0," + seq2.mLength + "(");
-				}
-				tmp3 = seq2.mSequence.h[idx2_].mQuality < 0.75;
+				tmp3 = seq1.mSequence.h[idx1_].mQuality < 0.75;
 			} else {
 				tmp3 = true;
 			}
 			if(!tmp3) {
+				if(!(0 <= idx2_ && idx2_ < seq2.mLength)) {
+					throw haxe_Exception.thrown("Position " + idx2_ + " out of range [0," + seq2.mLength + "(");
+				}
+				tmp2 = seq2.mSequence.h[idx2_].mQuality < 0.75;
+			} else {
+				tmp2 = true;
+			}
+			if(!tmp2) {
 				if(!(0 <= idx1_ && idx1_ < seq1.mLength)) {
 					throw haxe_Exception.thrown("Position " + idx1_ + " out of range [0," + seq1.mLength + "(");
 				}
@@ -1812,9 +1813,9 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 				}
 				var seq2n_ = seq2.mSequence.h[idx2_];
 				if(!seq1n_.isNotPolymorphism() || !seq2n_.isNotPolymorphism()) {
-					var tmp5 = "R Positions " + idx1_ + ", " + idx2_ + ": " + seq1n_.toIUPACCode() + " " + seq2n_.toIUPACCode() + " ";
+					var data2 = "R Positions " + idx1_ + ", " + idx2_ + ": " + seq1n_.toIUPACCode() + " " + seq2n_.toIUPACCode() + " ";
 					var code4 = seq1n_.mCode & seq2n_.mCode;
-					console.log("champuru/reconstruction/SequenceReconstructor.hx:101:",tmp5 + Std.string(seq1n_.mCode != seq2n_.mCode) + " " + Std.string(code4 != 0));
+					var data3 = data2 + Std.string(seq1n_.mCode != seq2n_.mCode) + " " + Std.string(code4 != 0);
 					if(seq1n_.mCode != seq2n_.mCode) {
 						var code5 = seq1n_.mCode & seq2n_.mCode;
 						if(code5 != 0) {
@@ -1823,20 +1824,200 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 								var newN2 = new champuru_base_SingleNucleotide(code6);
 								seq1.replace(idx1_,newN2);
 								changed = true;
+								data3 = data3 + " (seq1) " + idx1_ + "->" + newN2.toIUPACCode();
 							} else {
 								var code7 = seq2n_.mCode - seq1n_.mCode;
 								var newN3 = new champuru_base_SingleNucleotide(code7);
 								seq2.replace(idx2_,newN3);
 								changed = true;
+								data3 = data3 + " (seq2) " + idx2_ + "->" + newN3.toIUPACCode();
 							}
+						}
+					}
+					console.log("champuru/reconstruction/SequenceReconstructor.hx:119:",data3);
+				}
+			}
+		}
+		console.log("champuru/reconstruction/SequenceReconstructor.hx:123:","changed " + (changed == null ? "null" : "" + changed));
+	}
+	return { seq1 : seq1, seq2 : seq2};
+};
+champuru_reconstruction_SequenceReconstructor.reconstruct2 = function(seq1,seq2,round) {
+	if(round == null) {
+		round = 0;
+	}
+	var seq1begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq1);
+	var seq2begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq2);
+	var toChange = new haxe_ds_List();
+	var round = 1;
+	var seqLen1 = seq1.mLength;
+	var seqLen2 = seq2.mLength;
+	var seqLen = seqLen1 > seqLen2 ? seqLen2 : seqLen1;
+	++round;
+	var _g = 0;
+	var _g1 = seqLen;
+	while(_g < _g1) {
+		var j = _g++;
+		var idx1 = seq1begin + j;
+		var idx2 = seq2begin + j;
+		var tmp;
+		var tmp1;
+		if(!(idx1 >= seqLen1 || idx2 >= seqLen2)) {
+			if(!(0 <= idx1 && idx1 < seq1.mLength)) {
+				throw haxe_Exception.thrown("Position " + idx1 + " out of range [0," + seq1.mLength + "(");
+			}
+			tmp1 = seq1.mSequence.h[idx1].mQuality < 0.75;
+		} else {
+			tmp1 = true;
+		}
+		if(!tmp1) {
+			if(!(0 <= idx2 && idx2 < seq2.mLength)) {
+				throw haxe_Exception.thrown("Position " + idx2 + " out of range [0," + seq2.mLength + "(");
+			}
+			tmp = seq2.mSequence.h[idx2].mQuality < 0.75;
+		} else {
+			tmp = true;
+		}
+		if(!tmp) {
+			if(!(0 <= idx1 && idx1 < seq1.mLength)) {
+				throw haxe_Exception.thrown("Position " + idx1 + " out of range [0," + seq1.mLength + "(");
+			}
+			var seq1n = seq1.mSequence.h[idx1];
+			if(!(0 <= idx2 && idx2 < seq2.mLength)) {
+				throw haxe_Exception.thrown("Position " + idx2 + " out of range [0," + seq2.mLength + "(");
+			}
+			var seq2n = seq2.mSequence.h[idx2];
+			if(!seq1n.isNotPolymorphism() || !seq2n.isNotPolymorphism()) {
+				if(seq1n.mCode != seq2n.mCode) {
+					var code = seq1n.mCode & seq2n.mCode;
+					if(code != 0) {
+						if(seq1n.mCode > seq2n.mCode) {
+							var code1 = seq1n.mCode - seq2n.mCode;
+							var newN = new champuru_base_SingleNucleotide(code1);
+							toChange.add({ isSeq1 : true, pos : idx1, newNN : newN});
+						} else {
+							var code2 = seq2n.mCode - seq1n.mCode;
+							var newN1 = new champuru_base_SingleNucleotide(code2);
+							toChange.add({ isSeq1 : false, pos : idx2, newNN : newN1});
 						}
 					}
 				}
 			}
 		}
-		console.log("champuru/reconstruction/SequenceReconstructor.hx:120:","changed " + (changed == null ? "null" : "" + changed));
 	}
-	return { seq1 : seq1, seq2 : seq2};
+	console.log("champuru/reconstruction/SequenceReconstructor.hx:216:","Length of toChange " + toChange.length);
+	var result = new haxe_ds_List();
+	if(toChange.length > 0) {
+		var _g2_head = toChange.h;
+		while(_g2_head != null) {
+			var val = _g2_head.item;
+			_g2_head = _g2_head.next;
+			var change = val;
+			if(result.length > 5) {
+				break;
+			}
+			var r = new haxe_ds_List();
+			if(change.isSeq1) {
+				var seq1Clone = seq1.clone();
+				seq1Clone.replace(change.pos,change.newNN);
+				r = champuru_reconstruction_SequenceReconstructor.reconstruct2(seq1Clone,seq2,round++);
+			} else {
+				var seq2Clone = seq2.clone();
+				seq2Clone.replace(change.pos,change.newNN);
+				r = champuru_reconstruction_SequenceReconstructor.reconstruct2(seq1,seq2Clone,round++);
+			}
+			var _g2_head1 = r.h;
+			while(_g2_head1 != null) {
+				var val1 = _g2_head1.item;
+				_g2_head1 = _g2_head1.next;
+				var e = val1;
+				if(result.length > 5) {
+					break;
+				}
+				var _this = e.seq1;
+				var result1 = new haxe_ds_List();
+				var _g = 0;
+				var _g1 = _this.mLength;
+				while(_g < _g1) {
+					var i = _g++;
+					var c = _this.mSequence.h[i];
+					var s = c.toIUPACCode();
+					result1.add(s);
+				}
+				var s1 = result1.join("");
+				var _this1 = e.seq2;
+				var result2 = new haxe_ds_List();
+				var _g2 = 0;
+				var _g3 = _this1.mLength;
+				while(_g2 < _g3) {
+					var i1 = _g2++;
+					var c1 = _this1.mSequence.h[i1];
+					var s2 = c1.toIUPACCode();
+					result2.add(s2);
+				}
+				var s21 = result2.join("");
+				var found = false;
+				var _g2_head2 = result.h;
+				while(_g2_head2 != null) {
+					var val2 = _g2_head2.item;
+					_g2_head2 = _g2_head2.next;
+					var ele = val2;
+					var _this2 = e.seq1;
+					var result3 = new haxe_ds_List();
+					var _g4 = 0;
+					var _g5 = _this2.mLength;
+					while(_g4 < _g5) {
+						var i2 = _g4++;
+						var c2 = _this2.mSequence.h[i2];
+						var s3 = c2.toIUPACCode();
+						result3.add(s3);
+					}
+					var s1ele = result3.join("");
+					var _this3 = e.seq2;
+					var result4 = new haxe_ds_List();
+					var _g6 = 0;
+					var _g7 = _this3.mLength;
+					while(_g6 < _g7) {
+						var i3 = _g6++;
+						var c3 = _this3.mSequence.h[i3];
+						var s4 = c3.toIUPACCode();
+						result4.add(s4);
+					}
+					var s2ele = result4.join("");
+					if(s1 == s1ele && s21 == s2ele) {
+						found = true;
+						break;
+					}
+				}
+				if(!found) {
+					result.add(e);
+				}
+			}
+		}
+	} else {
+		var result1 = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = seq1.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = seq1.mSequence.h[i];
+			var s = c.toIUPACCode();
+			result1.add(s);
+		}
+		var tmp = "Solution: " + result1.join("") + " ";
+		var result1 = new haxe_ds_List();
+		var _g = 0;
+		var _g1 = seq2.mLength;
+		while(_g < _g1) {
+			var i = _g++;
+			var c = seq2.mSequence.h[i];
+			var s = c.toIUPACCode();
+			result1.add(s);
+		}
+		console.log("champuru/reconstruction/SequenceReconstructor.hx:254:",tmp + result1.join("") + " " + round);
+		result.add({ seq1 : seq1, seq2 : seq2});
+	}
+	return result;
 };
 var champuru_score_AScoreCalculator = function() {
 };
