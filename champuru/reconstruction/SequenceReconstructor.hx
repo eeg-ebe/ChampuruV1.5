@@ -46,6 +46,8 @@ class SequenceReconstructor
     public static function reconstruct(seq1:NucleotideSequence, seq2:NucleotideSequence):{seq1:NucleotideSequence, seq2:NucleotideSequence} {
         var seq1begin:Int = getBegin(seq1);
         var seq2begin:Int = getBegin(seq2);
+        var seq1end:Int = getEnd(seq1);
+        var seq2end:Int = getEnd(seq2);
         
         var changed:Bool = true;
         var round:Int = 1;
@@ -90,8 +92,8 @@ class SequenceReconstructor
                 }
                 
                 
-                var idx1_:Int = seq1.length() - 1 - j;
-                var idx2_:Int = seq2.length() - 1 - j;
+                var idx1_:Int = seq1end - j;
+                var idx2_:Int = seq2end - j;
                 
                 if (!(idx1_ < 0 || idx2_ < 0 || seq1.get(idx1_).getQuality() < 0.75 || seq2.get(idx2_).getQuality() < 0.75)) {
                     var seq1n_:SingleNucleotide = seq1.get(idx1_);

@@ -1716,6 +1716,8 @@ champuru_reconstruction_SequenceReconstructor.getEnd = function(s) {
 champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) {
 	var seq1begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq1);
 	var seq2begin = champuru_reconstruction_SequenceReconstructor.getBegin(seq2);
+	var seq1end = champuru_reconstruction_SequenceReconstructor.getEnd(seq1);
+	var seq2end = champuru_reconstruction_SequenceReconstructor.getEnd(seq2);
 	var changed = true;
 	var round = 1;
 	while(changed) {
@@ -1723,7 +1725,7 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 		var seqLen1 = seq1.mLength;
 		var seqLen2 = seq2.mLength;
 		var seqLen = seqLen1 > seqLen2 ? seqLen2 : seqLen1;
-		console.log("champuru/reconstruction/SequenceReconstructor.hx:58:","=== Reconstruction round " + round + " (" + seq1begin + ", " + seq2begin + ", " + seqLen + ") ===");
+		console.log("champuru/reconstruction/SequenceReconstructor.hx:60:","=== Reconstruction round " + round + " (" + seq1begin + ", " + seq2begin + ", " + seqLen + ") ===");
 		++round;
 		var _g = 0;
 		var _g1 = seqLen;
@@ -1780,11 +1782,11 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 							}
 						}
 					}
-					console.log("champuru/reconstruction/SequenceReconstructor.hx:88:",data1);
+					console.log("champuru/reconstruction/SequenceReconstructor.hx:90:",data1);
 				}
 			}
-			var idx1_ = seq1.mLength - 1 - j;
-			var idx2_ = seq2.mLength - 1 - j;
+			var idx1_ = seq1end - j;
+			var idx2_ = seq2end - j;
 			var tmp2;
 			var tmp3;
 			if(!(idx1_ < 0 || idx2_ < 0)) {
@@ -1834,11 +1836,11 @@ champuru_reconstruction_SequenceReconstructor.reconstruct = function(seq1,seq2) 
 							}
 						}
 					}
-					console.log("champuru/reconstruction/SequenceReconstructor.hx:119:",data3);
+					console.log("champuru/reconstruction/SequenceReconstructor.hx:121:",data3);
 				}
 			}
 		}
-		console.log("champuru/reconstruction/SequenceReconstructor.hx:123:","changed " + (changed == null ? "null" : "" + changed));
+		console.log("champuru/reconstruction/SequenceReconstructor.hx:125:","changed " + (changed == null ? "null" : "" + changed));
 	}
 	return { seq1 : seq1, seq2 : seq2};
 };
@@ -1905,7 +1907,7 @@ champuru_reconstruction_SequenceReconstructor.reconstruct2 = function(seq1,seq2,
 			}
 		}
 	}
-	console.log("champuru/reconstruction/SequenceReconstructor.hx:216:","Length of toChange " + toChange.length);
+	console.log("champuru/reconstruction/SequenceReconstructor.hx:218:","Length of toChange " + toChange.length);
 	var result = new haxe_ds_List();
 	if(toChange.length > 0) {
 		var _g2_head = toChange.h;
@@ -2014,7 +2016,7 @@ champuru_reconstruction_SequenceReconstructor.reconstruct2 = function(seq1,seq2,
 			var s = c.toIUPACCode();
 			result1.add(s);
 		}
-		console.log("champuru/reconstruction/SequenceReconstructor.hx:254:",tmp + result1.join("") + " " + round);
+		console.log("champuru/reconstruction/SequenceReconstructor.hx:256:",tmp + result1.join("") + " " + round);
 		result.add({ seq1 : seq1, seq2 : seq2});
 	}
 	return result;
