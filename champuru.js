@@ -128,6 +128,10 @@ champuru_Worker.out = function(s) {
 champuru_Worker.timeToStr = function(f) {
 	return "" + Math.round(f * 1000);
 };
+champuru_Worker.formatFloat = function(f) {
+	var number = f * Math.pow(10,3);
+	return "" + Math.round(number) / Math.pow(10,3);
+};
 champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,jOffset,useThisOffsets,searchForAlternativeSolutions) {
 	champuru_Worker.mMsgs.clear();
 	champuru_Worker.out("<fieldset>");
@@ -163,24 +167,102 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var s2 = champuru_base_NucleotideSequence.fromString(rev);
 	var timestamp = HxOverrides.now() / 1000;
 	var lst = champuru_score_ScoreCalculatorList.instance();
-	var calculator = lst.getScoreCalculator(1);
+	var calculator = lst.getScoreCalculator(scoreCalculationMethod);
 	var scores = calculator.calcOverlapScores(s1,s2);
 	var sortedScores = new champuru_score_ScoreSorter().sort(scores);
+	var ge = new champuru_score_GumbelDistributionEstimator(s1,s2);
+	var scores1 = new haxe_ds_List();
+	var _g = 0;
+	while(_g < 20) {
+		var i = _g++;
+		var _g1 = 0;
+		while(_g1 < 100) {
+			var j = _g1++;
+			var s = ge.mSeq1;
+			var copySequence = new haxe_ds_List();
+			var sLen = s.mLength;
+			var _g2 = 0;
+			var _g3 = sLen;
+			while(_g2 < _g3) {
+				var i1 = _g2++;
+				var randomPos = Math.floor(Math.random() * sLen);
+				if(!(0 <= randomPos && randomPos < s.mLength)) {
+					throw haxe_Exception.thrown("Position " + randomPos + " out of range [0," + s.mLength + "(");
+				}
+				var newNN = s.mSequence.h[randomPos];
+				copySequence.add(newNN);
+			}
+			var result = new champuru_base_NucleotideSequence(copySequence);
+			var randomFwd = result;
+			var s3 = ge.mSeq2;
+			var copySequence1 = new haxe_ds_List();
+			var sLen1 = s3.mLength;
+			var _g4 = 0;
+			var _g5 = sLen1;
+			while(_g4 < _g5) {
+				var i2 = _g4++;
+				var randomPos1 = Math.floor(Math.random() * sLen1);
+				if(!(0 <= randomPos1 && randomPos1 < s3.mLength)) {
+					throw haxe_Exception.thrown("Position " + randomPos1 + " out of range [0," + s3.mLength + "(");
+				}
+				var newNN1 = s3.mSequence.h[randomPos1];
+				copySequence1.add(newNN1);
+			}
+			var result1 = new champuru_base_NucleotideSequence(copySequence1);
+			var randomRev = result1;
+			var a = -randomFwd.mLength;
+			var b = randomRev.mLength;
+			var result2 = 0;
+			var rand = Math.random();
+			if(rand > 0.5) {
+				result2 = Math.floor(a * Math.random());
+			} else {
+				result2 = Math.floor(b * Math.random());
+			}
+			var randPos = result2;
+			var score = calculator.calcScore(randPos,randomFwd,randomRev);
+			scores1.add(score.score);
+		}
+	}
+	var summe = 0.0;
+	var _g_head = scores1.h;
+	while(_g_head != null) {
+		var val = _g_head.item;
+		_g_head = _g_head.next;
+		var score = val;
+		summe += score;
+	}
+	var mean = summe / scores1.length;
+	var summe = 0.0;
+	var _g_head = scores1.h;
+	while(_g_head != null) {
+		var val = _g_head.item;
+		_g_head = _g_head.next;
+		var score = val;
+		var diff = score - mean;
+		summe += diff * diff;
+	}
+	var deviation = Math.sqrt(summe / (scores1.length - 1));
+	var beta = Math.sqrt(6) * deviation / Math.PI;
+	var mu = mean - champuru_score_GumbelDistribution.eulerMascheroniConst * beta;
+	var distribution = new champuru_score_GumbelDistribution(mu,beta);
 	var sortedScoresStringList = new haxe_ds_List();
-	sortedScoresStringList.add("#\tOffset\tScore\tMatches\tMismatches");
+	sortedScoresStringList.add("#\tOffset\tScore\tMatches\tMismatches\tP(score)\tP(higher score)");
 	var i = 1;
 	var _g = 0;
 	while(_g < sortedScores.length) {
 		var score = sortedScores[_g];
 		++_g;
-		sortedScoresStringList.add(i + "\t" + score.index + "\t" + score.score + "\t" + score.matches + "\t" + score.mismatches);
+		var z = (score.score - distribution.mMu) / distribution.mBeta;
+		var s = -(score.score - distribution.mMu) / distribution.mBeta;
+		sortedScoresStringList.add(i + "\t" + score.index + "\t" + score.score + "\t" + score.matches + "\t" + score.mismatches + "\t" + 1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z))) + "\t" + (1 - Math.exp(-Math.exp(s))));
 		++i;
 	}
 	var sortedScoresString = sortedScoresStringList.join("\n");
 	var sortedScoresStringB64 = haxe_crypto_Base64.encode(haxe_io_Bytes.ofString(sortedScoresString));
 	var vis = new champuru_score_ScoreListVisualizer(scores,sortedScores);
 	var scorePlot = vis.genScorePlot();
-	var histPlot = vis.genScorePlotHist();
+	var histPlot = vis.genScorePlotHist(distribution);
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>1. Step - Compatibility score calculation</legend>");
 	champuru_Worker.out("<p>The following table [<a href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
@@ -188,7 +270,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
 	champuru_Worker.out("<table class='scoreTable center'>");
 	champuru_Worker.out("<tr class='header'>");
-	champuru_Worker.out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td>");
+	champuru_Worker.out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td><td>P(score)</td><td>P(higher score)</td>");
 	champuru_Worker.out("</tr>");
 	var i = 1;
 	var _g = 0;
@@ -196,7 +278,11 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var score = sortedScores[_g];
 		++_g;
 		champuru_Worker.out("<tr class='" + (i % 2 == 0 ? "odd" : "even") + "' onmouseover='highlight(\"c" + score.index + "\")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
-		champuru_Worker.out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" + score.matches + "</td><td>" + score.mismatches + "</td>");
+		var z = (score.score - distribution.mMu) / distribution.mBeta;
+		var number = 1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z))) * Math.pow(10,3);
+		var s = -(score.score - distribution.mMu) / distribution.mBeta;
+		var number1 = (1 - Math.exp(-Math.exp(s))) * Math.pow(10,3);
+		champuru_Worker.out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" + score.matches + "</td><td>" + score.mismatches + "</td><td>" + ("" + Math.round(number) / Math.pow(10,3)) + "</td><td>" + ("" + Math.round(number1) / Math.pow(10,3)) + "</td>");
 		champuru_Worker.out("</tr>");
 		++i;
 		if(i >= 6) {
@@ -435,7 +521,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
 		var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
 		if(idx1Same && idx2Same) {
-			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program although the same offsets have been used. Please check the output of the original Champuru program and contact <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
+			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program although the same offsets have been used. If you find this in a real life example please send your chromatograms to <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
 		} else {
 			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program because different offsets have been used.<p>");
 		}
@@ -540,7 +626,7 @@ champuru_Worker.onMessage = function(e) {
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:400:",e);
+		console.log("champuru/Worker.hx:411:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };
@@ -2088,6 +2174,168 @@ champuru_score_AmbiguityCorrectionScoreCalculator.prototype = $extend(champuru_s
 	}
 	,__class__: champuru_score_AmbiguityCorrectionScoreCalculator
 });
+var champuru_score_GumbelDistribution = function(mu,beta) {
+	this.mMu = mu;
+	this.mBeta = beta;
+};
+champuru_score_GumbelDistribution.__name__ = true;
+champuru_score_GumbelDistribution.getEstimatedGumbelDistribution = function(mean,deviation) {
+	var beta = Math.sqrt(6) * deviation / Math.PI;
+	var mu = mean - champuru_score_GumbelDistribution.eulerMascheroniConst * beta;
+	return new champuru_score_GumbelDistribution(mu,beta);
+};
+champuru_score_GumbelDistribution.prototype = {
+	getMu: function() {
+		return this.mMu;
+	}
+	,getBeta: function() {
+		return this.mBeta;
+	}
+	,getProbabilityForScore: function(score) {
+		var z = (score - this.mMu) / this.mBeta;
+		return 1.0 / this.mBeta * Math.exp(-(z + Math.exp(-z)));
+	}
+	,getProbabilityForHigherScore: function(score) {
+		var s = -(score - this.mMu) / this.mBeta;
+		return 1 - Math.exp(-Math.exp(s));
+	}
+	,__class__: champuru_score_GumbelDistribution
+};
+var champuru_score_GumbelDistributionEstimator = function(seq1,seq2) {
+	this.mSeq1 = seq1;
+	this.mSeq2 = seq2;
+};
+champuru_score_GumbelDistributionEstimator.__name__ = true;
+champuru_score_GumbelDistributionEstimator.prototype = {
+	shuffleSequence: function(s) {
+		var copySequence = new haxe_ds_List();
+		var sLen = s.mLength;
+		var _g = 0;
+		var _g1 = sLen;
+		while(_g < _g1) {
+			var i = _g++;
+			var randomPos = Math.floor(Math.random() * sLen);
+			if(!(0 <= randomPos && randomPos < s.mLength)) {
+				throw haxe_Exception.thrown("Position " + randomPos + " out of range [0," + s.mLength + "(");
+			}
+			var newNN = s.mSequence.h[randomPos];
+			copySequence.add(newNN);
+		}
+		var result = new champuru_base_NucleotideSequence(copySequence);
+		return result;
+	}
+	,calculateMean: function(scores) {
+		var summe = 0.0;
+		var _g_head = scores.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var score = val;
+			summe += score;
+		}
+		return summe / scores.length;
+	}
+	,calculateVar: function(scores,mean) {
+		var summe = 0.0;
+		var _g_head = scores.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var score = val;
+			var diff = score - mean;
+			summe += diff * diff;
+		}
+		return summe / (scores.length - 1);
+	}
+	,randI: function(a,b) {
+		var result = 0;
+		var rand = Math.random();
+		if(rand > 0.5) {
+			result = Math.floor(a * Math.random());
+		} else {
+			result = Math.floor(b * Math.random());
+		}
+		return result;
+	}
+	,calculate: function(scoreCalculator) {
+		var scores = new haxe_ds_List();
+		var _g = 0;
+		while(_g < 20) {
+			var i = _g++;
+			var _g1 = 0;
+			while(_g1 < 100) {
+				var j = _g1++;
+				var s = this.mSeq1;
+				var copySequence = new haxe_ds_List();
+				var sLen = s.mLength;
+				var _g2 = 0;
+				var _g3 = sLen;
+				while(_g2 < _g3) {
+					var i1 = _g2++;
+					var randomPos = Math.floor(Math.random() * sLen);
+					if(!(0 <= randomPos && randomPos < s.mLength)) {
+						throw haxe_Exception.thrown("Position " + randomPos + " out of range [0," + s.mLength + "(");
+					}
+					var newNN = s.mSequence.h[randomPos];
+					copySequence.add(newNN);
+				}
+				var result = new champuru_base_NucleotideSequence(copySequence);
+				var randomFwd = result;
+				var s1 = this.mSeq2;
+				var copySequence1 = new haxe_ds_List();
+				var sLen1 = s1.mLength;
+				var _g4 = 0;
+				var _g5 = sLen1;
+				while(_g4 < _g5) {
+					var i2 = _g4++;
+					var randomPos1 = Math.floor(Math.random() * sLen1);
+					if(!(0 <= randomPos1 && randomPos1 < s1.mLength)) {
+						throw haxe_Exception.thrown("Position " + randomPos1 + " out of range [0," + s1.mLength + "(");
+					}
+					var newNN1 = s1.mSequence.h[randomPos1];
+					copySequence1.add(newNN1);
+				}
+				var result1 = new champuru_base_NucleotideSequence(copySequence1);
+				var randomRev = result1;
+				var a = -randomFwd.mLength;
+				var b = randomRev.mLength;
+				var result2 = 0;
+				var rand = Math.random();
+				if(rand > 0.5) {
+					result2 = Math.floor(a * Math.random());
+				} else {
+					result2 = Math.floor(b * Math.random());
+				}
+				var randPos = result2;
+				var score = scoreCalculator.calcScore(randPos,randomFwd,randomRev);
+				scores.add(score.score);
+			}
+		}
+		var summe = 0.0;
+		var _g_head = scores.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var score = val;
+			summe += score;
+		}
+		var mean = summe / scores.length;
+		var summe = 0.0;
+		var _g_head = scores.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var score = val;
+			var diff = score - mean;
+			summe += diff * diff;
+		}
+		var deviation = Math.sqrt(summe / (scores.length - 1));
+		var beta = Math.sqrt(6) * deviation / Math.PI;
+		var mu = mean - champuru_score_GumbelDistribution.eulerMascheroniConst * beta;
+		return new champuru_score_GumbelDistribution(mu,beta);
+	}
+	,__class__: champuru_score_GumbelDistributionEstimator
+};
 var champuru_score_LongestLengthScoreCalculator = function() {
 	champuru_score_AScoreCalculator.call(this);
 };
@@ -2251,12 +2499,13 @@ champuru_score_ScoreListVisualizer.prototype = {
 		result.add("</svg>");
 		return result.join("");
 	}
-	,genScorePlotHist: function() {
+	,genScorePlotHist: function(distribution) {
 		var d = this.high - this.low;
 		var result = new haxe_ds_List();
 		result.add("<svg id='scorePlotHist' class='plot middle' width='600' height='400'>");
 		result.add("<rect width='600' height='400' style='fill:white' />");
 		result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Frequency</text>");
+		result.add("<text x='025' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px; fill: #00f' transform='rotate(270 20.5 195)'>Probability</text>");
 		result.add("<text x='300' y='395' text-anchor='start' style='font-family: monospace; text-size: 12.5px'>Score</text>");
 		result.add("<text x='030' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.floor(this.low) + "</text>");
 		result.add("<text x='170' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.round(d / 4) + "</text>");
@@ -2331,8 +2580,69 @@ champuru_score_ScoreListVisualizer.prototype = {
 			var from = Math.round((i * hd + this.low) * 10) / 10.0;
 			var to = Math.round(((i + 1) * hd + this.low) * 10) / 10.0;
 			var percentage = Math.round(v[i] / this.sortedScores.length * 1000) / 10.0;
-			var alertMsg = "From: " + from + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)";
+			var z = (from - distribution.mMu) / distribution.mBeta;
+			var pval1 = Math.round(1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z))) * 1000) / 1000;
+			var z1 = (to - distribution.mMu) / distribution.mBeta;
+			var pval2 = Math.round(1.0 / distribution.mBeta * Math.exp(-(z1 + Math.exp(-z1))) * 1000) / 1000;
+			var s = -(from - distribution.mMu) / distribution.mBeta;
+			var s1 = -(to - distribution.mMu) / distribution.mBeta;
+			var cdfVal = Math.round((1 - Math.exp(-Math.exp(s)) - (1 - Math.exp(-Math.exp(s1)))) * 1000) / 1000;
+			var alertMsg = "From: " + from + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)\\nProbability from: " + pval1 + "-" + pval2 + "\\nCDF: " + cdfVal;
 			result.add("<rect x='" + x + "' y='" + y + "' width='20' height='" + h + "' onclick='alert(\"" + alertMsg + "\");' />");
+		}
+		result.add("</g>");
+		var highestPVal = 0;
+		var listOfPoints = new haxe_ds_List();
+		var _g = 0;
+		while(_g < 28) {
+			var i = _g++;
+			var val = i * hd + this.low;
+			var z = (val - distribution.mMu) / distribution.mBeta;
+			var pval = 1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z)));
+			listOfPoints.add({ x : val, y : pval, i : i});
+			if(!(highestPVal > pval)) {
+				highestPVal = pval;
+			}
+			val = (i * hd + this.low) * 3 / 4 + ((i + 1) * hd + this.low) / 4;
+			var z1 = (val - distribution.mMu) / distribution.mBeta;
+			pval = 1.0 / distribution.mBeta * Math.exp(-(z1 + Math.exp(-z1)));
+			if(!(highestPVal > pval)) {
+				highestPVal = pval;
+			}
+			listOfPoints.add({ x : val, y : pval, i : i + 0.25});
+			val = (i * hd + this.low + ((i + 1) * hd + this.low)) / 2;
+			var z2 = (val - distribution.mMu) / distribution.mBeta;
+			pval = 1.0 / distribution.mBeta * Math.exp(-(z2 + Math.exp(-z2)));
+			if(!(highestPVal > pval)) {
+				highestPVal = pval;
+			}
+			listOfPoints.add({ x : val, y : pval, i : i + 0.5});
+			val = (i * hd + this.low) / 4 + ((i + 1) * hd + this.low) * 3 / 4;
+			var z3 = (val - distribution.mMu) / distribution.mBeta;
+			pval = 1.0 / distribution.mBeta * Math.exp(-(z3 + Math.exp(-z3)));
+			if(!(highestPVal > pval)) {
+				highestPVal = pval;
+			}
+			listOfPoints.add({ x : val, y : pval, i : i + 0.75});
+		}
+		result.add("<g style='stroke-width:1;stroke:#00f;'>");
+		var lastX = -1;
+		var lastY = -1;
+		var _g5_head = listOfPoints.h;
+		while(_g5_head != null) {
+			var val = _g5_head.item;
+			_g5_head = _g5_head.next;
+			var obj = val;
+			var val1 = obj.x;
+			var pval = obj.y;
+			var x = 30 + obj.i * 20;
+			var h = pval / highestPVal * 350;
+			var y = 365 - h;
+			if(lastX != -1 && lastY != -1) {
+				result.add("<line x1='" + lastX + "' y1='" + lastY + "' x2='" + x + "' y2='" + y + "'/>");
+			}
+			lastX = x;
+			lastY = y;
 		}
 		result.add("</g>");
 		result.add("</svg>");
@@ -2926,6 +3236,7 @@ champuru_perl_PerlChampuruReimplementation.rev_code = (function($this) {
 	$r = _g;
 	return $r;
 }(this));
+champuru_score_GumbelDistribution.eulerMascheroniConst = 0.5772156649015328606065120900824024310421593359399235988057672348;
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
 champuru_Worker.main();

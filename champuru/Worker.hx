@@ -18,6 +18,8 @@ package champuru;
 import champuru.base.NucleotideSequence;
 
 import champuru.score.AScoreCalculator;
+import champuru.score.GumbelDistribution;
+import champuru.score.GumbelDistributionEstimator;
 import champuru.score.ScoreCalculatorList;
 import champuru.score.ScoreSorter;
 import champuru.score.ScoreListVisualizer;
@@ -53,6 +55,11 @@ class Worker
     
     public static inline function timeToStr(f:Float):String {
         return "" + Math.round(f * 1000);
+    }
+    
+    public static inline function formatFloat(f:Float):String {
+        var number:Float = f * Math.pow(10, 3);
+        return "" + (Math.round(number) / Math.pow(10, 3));
     }
 
     public static function generateHtml(fwd:String, rev:String, scoreCalculationMethod:Int, iOffset:Int, jOffset:Int, useThisOffsets:Bool, searchForAlternativeSolutions:Bool) {
@@ -96,23 +103,27 @@ class Worker
         // 1. Step
         var timestamp:Float = Timer.stamp();
         var lst:ScoreCalculatorList = ScoreCalculatorList.instance();
-        var calculator:AScoreCalculator = lst.getScoreCalculator(1);
+        var calculator:AScoreCalculator = lst.getScoreCalculator(scoreCalculationMethod);
         var scores = calculator.calcOverlapScores(s1, s2);
         var sortedScores = new ScoreSorter().sort(scores);
 
+        var ge:GumbelDistributionEstimator = new GumbelDistributionEstimator(s1, s2);
+        var distribution:GumbelDistribution = ge.calculate(calculator);
+        
         var sortedScoresStringList:List<String> = new List<String>();
-        sortedScoresStringList.add("#\tOffset\tScore\tMatches\tMismatches");
+        sortedScoresStringList.add("#\tOffset\tScore\tMatches\tMismatches\tP(score)\tP(higher score)");
         var i:Int = 1;
         for (score in sortedScores) {
-            sortedScoresStringList.add(i + "\t" + score.index + "\t" + score.score + "\t" + score.matches + "\t" + score.mismatches);
+            sortedScoresStringList.add(i + "\t" + score.index + "\t" + score.score + "\t" + score.matches + "\t" + score.mismatches + "\t" + distribution.getProbabilityForScore(score.score) + "\t" + distribution.getProbabilityForHigherScore(score.score));
             i++;
         }
         var sortedScoresString:String = sortedScoresStringList.join("\n");
         var sortedScoresStringB64:String = Base64.encode(Bytes.ofString(sortedScoresString));
         
         var vis = new ScoreListVisualizer(scores, sortedScores);
+        
         var scorePlot:String = vis.genScorePlot();
-        var histPlot:String = vis.genScorePlotHist();
+        var histPlot:String = vis.genScorePlotHist(distribution);
         
         out("<fieldset>");
         out("<legend>1. Step - Compatibility score calculation</legend>");
@@ -121,12 +132,12 @@ class Worker
         out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
         out("<table class='scoreTable center'>");
         out("<tr class='header'>");
-        out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td>");
+        out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td><td>P(score)</td><td>P(higher score)</td>");
         out("</tr>");
         var i:Int = 1;
         for (score in sortedScores) {
             out("<tr class='" + ((i % 2 == 0) ? "odd" : "even") + "' onmouseover='highlight(\"c" + score.index + "\")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
-            out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" +  score.matches + "</td><td>" + score.mismatches + "</td>");
+            out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" +  score.matches + "</td><td>" + score.mismatches + "</td><td>" + formatFloat(distribution.getProbabilityForScore(score.score)) + "</td><td>" + formatFloat(distribution.getProbabilityForHigherScore(score.score)) + "</td>");
             out("</tr>");
             i++;
             if (i >= 6) { break; }

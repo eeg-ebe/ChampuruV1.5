@@ -15,6 +15,7 @@
  */
 package champuru.score;
 
+import champuru.score.GumbelDistribution;
 import haxe.ds.Vector;
 
 /**
@@ -57,12 +58,13 @@ class ScoreListVisualizer
         return result.join("");
     }
 
-    public function genScorePlotHist():String {
+    public function genScorePlotHist(distribution:GumbelDistribution):String {
         var d:Float = high - low;
         var result:List<String> = new List<String>();
         result.add("<svg id='scorePlotHist' class='plot middle' width='600' height='400'>");
         result.add("<rect width='600' height='400' style='fill:white' />");
         result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Frequency</text>");
+        result.add("<text x='025' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px; fill: #00f' transform='rotate(270 20.5 195)'>Probability</text>");
         result.add("<text x='300' y='395' text-anchor='start' style='font-family: monospace; text-size: 12.5px'>Score</text>");
         result.add("<text x='030' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.floor(low) + "</text>");
         result.add("<text x='170' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.round(d / 4) + "</text>");
@@ -100,8 +102,51 @@ class ScoreListVisualizer
             var from:Float = Math.round((i * hd + low) * 10) / 10.0;
             var to:Float = Math.round(((i + 1) * hd + low) * 10) / 10.0;
             var percentage:Float = (Math.round(v[i] / sortedScores.length * 1000) / 10.0);
-            var alertMsg:String = "From: " + from + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)";
+            var pval1:Float = Math.round(distribution.getProbabilityForScore(from) * 1000) / 1000;
+            var pval2:Float = Math.round(distribution.getProbabilityForScore(to) * 1000) / 1000;
+            var cdfVal:Float = Math.round((distribution.getProbabilityForHigherScore(from) - distribution.getProbabilityForHigherScore(to)) * 1000) / 1000;
+            var alertMsg:String = "From: " + from + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)\\nProbability from: " + pval1 + "-" + pval2 + "\\nCDF: " + cdfVal;
             result.add("<rect x='" + x + "' y='" + y + "' width='20' height='" + h + "' onclick='alert(\"" + alertMsg + "\");' />");
+        }
+        result.add("</g>");
+        
+        var highestPVal:Float = 0;
+        var listOfPoints:List<{x:Float, y:Float, i:Float}> = new List<{x:Float, y:Float, i:Float}>();
+        for (i in 0...28) {
+            var val:Float = (i * hd + low);
+            var pval:Float = distribution.getProbabilityForScore(val);
+            listOfPoints.add({x : val, y : pval, i : i});
+            highestPVal = (highestPVal > pval) ? highestPVal : pval;
+            
+            val = (i * hd + low) * 3 / 4 + ((i + 1) * hd + low) / 4;
+            pval = distribution.getProbabilityForScore(val);
+            highestPVal = (highestPVal > pval) ? highestPVal : pval;
+            listOfPoints.add({x : val, y : pval, i : i + 0.25});
+            
+            val = ((i * hd + low) + ((i + 1) * hd + low)) / 2;
+            pval = distribution.getProbabilityForScore(val);
+            highestPVal = (highestPVal > pval) ? highestPVal : pval;
+            listOfPoints.add({x : val, y : pval, i : i + 0.5});
+            
+            val = (i * hd + low) / 4 + ((i + 1) * hd + low) * 3 / 4;
+            pval = distribution.getProbabilityForScore(val);
+            highestPVal = (highestPVal > pval) ? highestPVal : pval;
+            listOfPoints.add({x : val, y : pval, i : i + 0.75});
+        }
+        result.add("<g style='stroke-width:1;stroke:#00f;'>");
+        var lastX:Float = -1, lastY:Float = -1;
+        for (obj in listOfPoints) {
+            var val:Float = obj.x;
+            var pval:Float = obj.y;
+            var x:Float = 30 + obj.i * 20;
+            var h:Float = pval / highestPVal * 350;
+            var y:Float = 365 - h;
+            
+            if (lastX != -1 && lastY != -1) {
+                result.add("<line x1='" + lastX + "' y1='" + lastY + "' x2='" + x + "' y2='" + y + "'/>");
+            }
+            lastX = x;
+            lastY = y;
         }
         result.add("</g>");
         result.add("</svg>");
