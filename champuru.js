@@ -405,29 +405,37 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var timestamp = HxOverrides.now() / 1000;
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>4. Step - Checking sequences</legend>");
+	var successfullyDeconvoluted = true;
+	problems = result.seq1.countGaps() + result.seq2.countGaps();
+	if(problems != 0) {
+		if(problems == 1) {
+			champuru_Worker.out("<p>There is 1 problematic position!</p>");
+			successfullyDeconvoluted = false;
+		} else if(problems > 1) {
+			champuru_Worker.out("<p>There are " + problems + " problematic positions!</p>");
+			successfullyDeconvoluted = false;
+		}
+	}
+	if(problems > 0) {
+		champuru_Worker.out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+	}
 	var p1 = result.seq1.countPolymorphisms();
 	var p2 = result.seq2.countPolymorphisms();
 	var p1u = result.seq1.countPolymorphisms(0.8);
 	var p2u = result.seq2.countPolymorphisms(0.8);
 	var p1l = p1 - p1u;
 	var p2l = p2 - p2u;
-	if(p1u + p2u == 0) {
-		if(p1l + p2l == 0) {
-			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted.</p>");
-		} else if(p1l > 0 && p2l > 0) {
-			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + p1l + " ambiguit" + (p1l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap and " + p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the second reconstructed sequence in places where the two chromatograms do not overlap.</p>");
-		} else {
-			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + (p1l + p2l) + " ambiguit" + (p1l + p2l == 1 ? "y" : "ies") + " remain in the " + (p1l > 0 ? "first" : "second") + " reconstructed sequence in places where the two chromatograms do not overlap.</p>");
-		}
-	} else {
+	if(p1u + p2u != 0) {
 		if(p1u > 0) {
 			champuru_Worker.out("<p>There " + (p1u == 1 ? "is" : "are") + " " + p1u + " ambiguit" + (p1u == 1 ? "y" : "ies") + " on the first reconstructed sequence left!</p>");
+			successfullyDeconvoluted = false;
 		}
 		if(p1l > 0) {
 			champuru_Worker.out("<p>" + p1l + " ambiguit" + (p1l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
 		}
 		if(p2u > 0) {
 			champuru_Worker.out("<p>There " + (p2u == 1 ? "is" : "are") + " " + p2u + " ambiguit" + (p2u == 1 ? "y" : "ies") + " on the second reconstructed sequence left!</p>");
+			successfullyDeconvoluted = false;
 		}
 		if(p2l > 0) {
 			champuru_Worker.out("<p>" + p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
@@ -452,21 +460,20 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 			champuru_Worker.out("Check position" + (checkerResult.pR.length == 1 ? "" : "s") + " on reverse (and/or the facing positions on the forward): <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
 		}
 		champuru_Worker.out("</p>");
+		successfullyDeconvoluted = false;
 	}
 	if(checkerResult.pF.length + checkerResult.pR.length > 0) {
 		champuru_Worker.out("<span class='middle'><button onclick='colorFinalByPositions(\"" + checkerResult.pF.join(",") + "\", \"" + checkerResult.pR.join(",") + "\", \"" + checkerResult.pFHighlight.join(",") + "\", \"" + checkerResult.pRHighlight.join(",") + "\");'>Color positions</button><button onclick='removeColorFinal()'>Remove color</button></span>");
 		champuru_Worker.out("<br>");
 	}
-	problems = result.seq1.countGaps() + result.seq2.countGaps();
-	if(problems != 0) {
-		if(problems == 1) {
-			champuru_Worker.out("<p>There is 1 problematic position!</p>");
-		} else if(problems > 1) {
-			champuru_Worker.out("<p>There are " + problems + " problematic positions!</p>");
+	if(successfullyDeconvoluted && p1u + p2u == 0) {
+		if(p1l + p2l == 0) {
+			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted.</p>");
+		} else if(p1l > 0 && p2l > 0) {
+			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + p1l + " ambiguit" + (p1l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap and " + p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the second reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+		} else {
+			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + (p1l + p2l) + " ambiguit" + (p1l + p2l == 1 ? "y" : "ies") + " remain in the " + (p1l > 0 ? "first" : "second") + " reconstructed sequence in places where the two chromatograms do not overlap.</p>");
 		}
-	}
-	if(problems > 0) {
-		champuru_Worker.out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
 	}
 	var firstSequenceIsSame;
 	var _this = result.seq1;
@@ -629,7 +636,7 @@ champuru_Worker.onMessage = function(e) {
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:417:",e);
+		console.log("champuru/Worker.hx:426:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };
