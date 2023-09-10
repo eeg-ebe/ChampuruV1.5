@@ -366,6 +366,9 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
+	if(problems > 0) {
+		return { result : champuru_Worker.mMsgs.join("")};
+	}
 	var timestamp = HxOverrides.now() / 1000;
 	var result = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
 	champuru_Worker.out("<fieldset>");
@@ -626,7 +629,7 @@ champuru_Worker.onMessage = function(e) {
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:411:",e);
+		console.log("champuru/Worker.hx:417:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };

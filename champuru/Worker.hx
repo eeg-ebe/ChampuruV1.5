@@ -207,6 +207,12 @@ class Worker
         out("</fieldset>");
         out("<br>");
         
+        if (problems > 0) {
+            return {
+                result : mMsgs.join("")
+            };
+        }
+        
         // 3. Step - Sequence reconstruction
         var timestamp:Float = Timer.stamp();
         var result = SequenceReconstructor.reconstruct(o1, o2);
