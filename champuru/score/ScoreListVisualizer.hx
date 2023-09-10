@@ -111,30 +111,34 @@ class ScoreListVisualizer
         result.add("</g>");
         
         var highestPVal:Float = 0;
-        var listOfPoints:List<{x:Float, y:Float, i:Float}> = new List<{x:Float, y:Float, i:Float}>();
+        var listOfPoints:List<{x:Float, y:Float, i:Float, d:Float}> = new List<{x:Float, y:Float, i:Float, d:Float}>();
         for (i in 0...28) {
             var val:Float = (i * hd + low);
             var pval:Float = distribution.getProbabilityForScore(val);
-            listOfPoints.add({x : val, y : pval, i : i});
+            var d:Float = distribution.getProbabilityForHigherScore(val);
+            listOfPoints.add({x : val, y : pval, i : i, d : d});
             highestPVal = (highestPVal > pval) ? highestPVal : pval;
             
             val = (i * hd + low) * 3 / 4 + ((i + 1) * hd + low) / 4;
             pval = distribution.getProbabilityForScore(val);
+            d = distribution.getProbabilityForHigherScore(val);
             highestPVal = (highestPVal > pval) ? highestPVal : pval;
-            listOfPoints.add({x : val, y : pval, i : i + 0.25});
+            listOfPoints.add({x : val, y : pval, i : i + 0.25, d : d});
             
             val = ((i * hd + low) + ((i + 1) * hd + low)) / 2;
             pval = distribution.getProbabilityForScore(val);
+            d = distribution.getProbabilityForHigherScore(val);
             highestPVal = (highestPVal > pval) ? highestPVal : pval;
-            listOfPoints.add({x : val, y : pval, i : i + 0.5});
+            listOfPoints.add({x : val, y : pval, i : i + 0.5, d : d});
             
             val = (i * hd + low) / 4 + ((i + 1) * hd + low) * 3 / 4;
             pval = distribution.getProbabilityForScore(val);
+            d = distribution.getProbabilityForHigherScore(val);
             highestPVal = (highestPVal > pval) ? highestPVal : pval;
-            listOfPoints.add({x : val, y : pval, i : i + 0.75});
+            listOfPoints.add({x : val, y : pval, i : i + 0.75, d : d});
         }
         result.add("<g style='stroke-width:1;stroke:#00f;'>");
-        var lastX:Float = -1, lastY:Float = -1;
+        var lastX:Float = -1, lastY:Float = -1, lastY2:Float = -1;
         for (obj in listOfPoints) {
             var val:Float = obj.x;
             var pval:Float = obj.y;
@@ -142,11 +146,15 @@ class ScoreListVisualizer
             var h:Float = pval / highestPVal * 350;
             var y:Float = 365 - h;
             
+            var y2:Float = 365 - obj.d * 350;
+            
             if (lastX != -1 && lastY != -1) {
                 result.add("<line x1='" + lastX + "' y1='" + lastY + "' x2='" + x + "' y2='" + y + "'/>");
+                result.add("<line x1='" + lastX + "' y1='" + lastY2 + "' x2='" + x + "' y2='" + y2 + "' style='stroke:#0ff'/>");
             }
             lastX = x;
             lastY = y;
+            lastY2 = y2;
         }
         result.add("</g>");
         result.add("</svg>");

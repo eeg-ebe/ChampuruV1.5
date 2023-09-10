@@ -2609,35 +2609,44 @@ champuru_score_ScoreListVisualizer.prototype = {
 			var val = i * hd + this.low;
 			var z = (val - distribution.mMu) / distribution.mBeta;
 			var pval = 1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z)));
-			listOfPoints.add({ x : val, y : pval, i : i});
+			var s = -(val - distribution.mMu) / distribution.mBeta;
+			var d = 1 - Math.exp(-Math.exp(s));
+			listOfPoints.add({ x : val, y : pval, i : i, d : d});
 			if(!(highestPVal > pval)) {
 				highestPVal = pval;
 			}
 			val = (i * hd + this.low) * 3 / 4 + ((i + 1) * hd + this.low) / 4;
 			var z1 = (val - distribution.mMu) / distribution.mBeta;
 			pval = 1.0 / distribution.mBeta * Math.exp(-(z1 + Math.exp(-z1)));
+			var s1 = -(val - distribution.mMu) / distribution.mBeta;
+			d = 1 - Math.exp(-Math.exp(s1));
 			if(!(highestPVal > pval)) {
 				highestPVal = pval;
 			}
-			listOfPoints.add({ x : val, y : pval, i : i + 0.25});
+			listOfPoints.add({ x : val, y : pval, i : i + 0.25, d : d});
 			val = (i * hd + this.low + ((i + 1) * hd + this.low)) / 2;
 			var z2 = (val - distribution.mMu) / distribution.mBeta;
 			pval = 1.0 / distribution.mBeta * Math.exp(-(z2 + Math.exp(-z2)));
+			var s2 = -(val - distribution.mMu) / distribution.mBeta;
+			d = 1 - Math.exp(-Math.exp(s2));
 			if(!(highestPVal > pval)) {
 				highestPVal = pval;
 			}
-			listOfPoints.add({ x : val, y : pval, i : i + 0.5});
+			listOfPoints.add({ x : val, y : pval, i : i + 0.5, d : d});
 			val = (i * hd + this.low) / 4 + ((i + 1) * hd + this.low) * 3 / 4;
 			var z3 = (val - distribution.mMu) / distribution.mBeta;
 			pval = 1.0 / distribution.mBeta * Math.exp(-(z3 + Math.exp(-z3)));
+			var s3 = -(val - distribution.mMu) / distribution.mBeta;
+			d = 1 - Math.exp(-Math.exp(s3));
 			if(!(highestPVal > pval)) {
 				highestPVal = pval;
 			}
-			listOfPoints.add({ x : val, y : pval, i : i + 0.75});
+			listOfPoints.add({ x : val, y : pval, i : i + 0.75, d : d});
 		}
 		result.add("<g style='stroke-width:1;stroke:#00f;'>");
 		var lastX = -1;
 		var lastY = -1;
+		var lastY2 = -1;
 		var _g5_head = listOfPoints.h;
 		while(_g5_head != null) {
 			var val = _g5_head.item;
@@ -2648,11 +2657,14 @@ champuru_score_ScoreListVisualizer.prototype = {
 			var x = 30 + obj.i * 20;
 			var h = pval / highestPVal * 350;
 			var y = 365 - h;
+			var y2 = 365 - obj.d * 350;
 			if(lastX != -1 && lastY != -1) {
 				result.add("<line x1='" + lastX + "' y1='" + lastY + "' x2='" + x + "' y2='" + y + "'/>");
+				result.add("<line x1='" + lastX + "' y1='" + lastY2 + "' x2='" + x + "' y2='" + y2 + "' style='stroke:#0ff'/>");
 			}
 			lastX = x;
 			lastY = y;
+			lastY2 = y2;
 		}
 		result.add("</g>");
 		result.add("</svg>");
