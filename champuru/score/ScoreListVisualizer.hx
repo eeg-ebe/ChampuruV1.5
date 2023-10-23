@@ -65,8 +65,8 @@ class ScoreListVisualizer
         result.add("<rect width='600' height='400' style='fill:white' />");
         result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Frequency</text>");
         result.add("<text x='025' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 20.5 195)'>Probability</text>");
-        result.add("<text x='380' y='020' text-anchor='start' style='font-family: monospace; text-size: 12.5px; fill: #0ff''>P (score)</text>");
-        result.add("<text x='380' y='035' text-anchor='start' style='font-family: monospace; text-size: 12.5px; fill: #00f''>P (higher score)</text>");
+        result.add("<text x='380' y='020' text-anchor='start' style='font-family: monospace; text-size: 12.5px; fill: #0ff''>P (higher score)</text>");
+        result.add("<text x='380' y='035' text-anchor='start' style='font-family: monospace; text-size: 12.5px; fill: #00f''>P (score)</text>");
         result.add("<text x='300' y='395' text-anchor='start' style='font-family: monospace; text-size: 12.5px'>Score</text>");
         result.add("<text x='030' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.floor(low) + "</text>");
         result.add("<text x='170' y='380' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>" + Math.round(d / 4) + "</text>");
