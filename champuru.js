@@ -264,7 +264,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var scorePlot = vis.genScorePlot();
 	var histPlot = vis.genScorePlotHist(distribution);
 	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>1. Step - Compatibility score calculation</legend>");
+	champuru_Worker.out("<legend>Step 1 - Alignment score calculation</legend>");
 	champuru_Worker.out("<p>The following table [<a href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
 	champuru_Worker.out(sortedScoresStringB64);
 	champuru_Worker.out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
@@ -314,7 +314,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var o1 = new champuru_consensus_OverlapSolver(score1,s1,s2).solve();
 	var o2 = new champuru_consensus_OverlapSolver(score2,s1,s2).solve();
 	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>2. Step - Calculate consensus sequences</legend>");
+	champuru_Worker.out("<legend>Step 2 - Consensus sequence calculation</legend>");
 	champuru_Worker.out("<p>First consensus sequence: <span id='consensus1' class='sequence'>");
 	var result = new haxe_ds_List();
 	var _g = 0;
@@ -372,7 +372,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var timestamp = HxOverrides.now() / 1000;
 	var result = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
 	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>3. Step - Sequence reconstruction</legend>");
+	champuru_Worker.out("<legend>Step 3 - Sequence reconstruction</legend>");
 	champuru_Worker.out("<p>First reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed1\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed1\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed1' class='sequence'>");
 	var _this = result.seq1;
 	var result1 = new haxe_ds_List();
@@ -404,7 +404,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	champuru_Worker.out("<br>");
 	var timestamp = HxOverrides.now() / 1000;
 	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>4. Step - Checking sequences</legend>");
+	champuru_Worker.out("<legend>Step 4 - Checking sequences</legend>");
 	var successfullyDeconvoluted = true;
 	problems = result.seq1.countGaps() + result.seq2.countGaps();
 	if(problems != 0) {
@@ -542,7 +542,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	if(searchForAlternativeSolutions) {
 		var timestamp = HxOverrides.now() / 1000;
 		champuru_Worker.out("<fieldset>");
-		champuru_Worker.out("<legend>5. Step - Analyzing further offset pairs</legend>");
+		champuru_Worker.out("<legend>Step 5 - Analyzing further offset pairs</legend>");
 		var possibleMatches = new haxe_ds_List();
 		var i = 0;
 		var _g = 0;

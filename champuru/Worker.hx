@@ -126,7 +126,7 @@ class Worker
         var histPlot:String = vis.genScorePlotHist(distribution);
         
         out("<fieldset>");
-        out("<legend>1. Step - Compatibility score calculation</legend>");
+        out("<legend>Step 1 - Alignment score calculation</legend>");
         out("<p>The following table [<a href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
         out(sortedScoresStringB64);
         out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
@@ -172,7 +172,7 @@ class Worker
         var o2 = new OverlapSolver(score2, s1, s2).solve();
         
         out("<fieldset>");
-        out("<legend>2. Step - Calculate consensus sequences</legend>");
+        out("<legend>Step 2 - Consensus sequence calculation</legend>");
         out("<p>First consensus sequence: <span id='consensus1' class='sequence'>");
         out(o1.toString());
         out("</span></p>");
@@ -217,7 +217,7 @@ class Worker
         var timestamp:Float = Timer.stamp();
         var result = SequenceReconstructor.reconstruct(o1, o2);
         out("<fieldset>");
-        out("<legend>3. Step - Sequence reconstruction</legend>");
+        out("<legend>Step 3 - Sequence reconstruction</legend>");
         out("<p>First reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed1\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed1\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed1' class='sequence'>");
         out(result.seq1.toString());
         out("</span></p>");
@@ -232,7 +232,7 @@ class Worker
         // 4. Step - Checking
         var timestamp:Float = Timer.stamp();
         out("<fieldset>");
-        out("<legend>4. Step - Checking sequences</legend>");
+        out("<legend>Step 4 - Checking sequences</legend>");
         var successfullyDeconvoluted:Bool = true;
         // problems
         problems = result.seq1.countGaps() + result.seq2.countGaps();
@@ -327,7 +327,7 @@ class Worker
         if (searchForAlternativeSolutions) {
             var timestamp:Float = Timer.stamp();
             out("<fieldset>");
-            out("<legend>5. Step - Analyzing further offset pairs</legend>");
+            out("<legend>Step 5 - Analyzing further offset pairs</legend>");
             var possibleMatches:List<Int> = new List<Int>();
             var i:Int = 0;
             for (score in sortedScores) {
