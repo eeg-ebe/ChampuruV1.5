@@ -127,7 +127,7 @@ class Worker
         
         out("<fieldset>");
         out("<legend>Step 1 - Alignment score calculation</legend>");
-        out("<p>The following table [<a href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
+        out("<p>The following table [<a id='downloadScoreTable' href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
         out(sortedScoresStringB64);
         out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
         out("<table class='scoreTable center'>");
@@ -161,7 +161,7 @@ class Worker
         } else {
             out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
         }
-        out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button></span>");
+        out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button><button onclick='document.getElementById(\"downloadScoreTable\").click();'>Download score table</button></span>");
         out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
         out("<br>");
