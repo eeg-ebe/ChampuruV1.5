@@ -234,13 +234,16 @@ function rerunAnalysisWithDifferentOffsets(fwd, rev, method) {
     rerunAnalysisWithDifferentOffsets2(fwd, rev, method, i, j);
 }
 function rerunAnalysisWithDifferentOffsets2(fwd, rev, method, i, j) {
+    rerunAnalysisWithDifferentOffsets3(fwd, rev, method, i, j, false);
+}
+function rerunAnalysisWithDifferentOffsets3(fwd, rev, method, i, j, alternativeSolutions) {
     var worker = new Worker("champuru.js");
     worker.addEventListener("message", function(e) {
         data = e.data;
         resultArea.innerHTML = data.result;
         worker.terminate();
     });
-    worker.postMessage({"fwd" : fwd, "rev" : rev, "score" : method, "i" : i, "j" : j, "useOffsets" : true, "searchForAlternativeSolutions" : false});
+    worker.postMessage({"fwd" : fwd, "rev" : rev, "score" : method, "i" : i, "j" : j, "useOffsets" : true, "searchForAlternativeSolutions" : alternativeSolutions});
 }
 
 function resetForm() {

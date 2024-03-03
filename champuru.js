@@ -603,7 +603,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 			var score = scores[_g];
 			++_g;
 			champuru_Worker.out("<tr class='" + (i % 2 == 0 ? "odd" : "even") + "'>");
-			champuru_Worker.out("<td>" + i + "</td><td>" + score.score + "</td><td>" + score.idx1 + "</td><td>" + score.idx2 + "</td><td><a href='#' onclick='rerunAnalysisWithDifferentOffsets2(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ", " + score.idx1 + ", " + score.idx2 + "); return false;'>Calculate</a></td>");
+			champuru_Worker.out("<td>" + i + "</td><td>" + score.score + "</td><td>" + score.idx1 + "</td><td>" + score.idx2 + "</td><td><a href='#' onclick='rerunAnalysisWithDifferentOffsets3(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ", " + score.idx1 + ", " + score.idx2 + ", true); return false;'>Calculate</a></td>");
 			champuru_Worker.out("</tr>");
 			++i;
 			if(i > 5) {
