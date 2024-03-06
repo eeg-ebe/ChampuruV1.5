@@ -265,9 +265,9 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var histPlot = vis.genScorePlotHist(distribution);
 	champuru_Worker.out("<fieldset>");
 	champuru_Worker.out("<legend>Step 1 - Alignment score calculation</legend>");
-	champuru_Worker.out("<p>The following table [<a id='downloadScoreTable' href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
+	champuru_Worker.out("<p>The following table <a style='display:none' id='downloadScoreTable' href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
 	champuru_Worker.out(sortedScoresStringB64);
-	champuru_Worker.out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
+	champuru_Worker.out("' title='table.tsv' download='table.tsv'>Download</a>lists the best compatibility scores and their positions:</p>");
 	champuru_Worker.out("<table class='scoreTable center'>");
 	champuru_Worker.out("<tr class='header'>");
 	champuru_Worker.out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td><td>P(score)</td><td>P(higher score)</td>");

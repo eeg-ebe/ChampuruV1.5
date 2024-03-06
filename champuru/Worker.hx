@@ -127,9 +127,9 @@ class Worker
         
         out("<fieldset>");
         out("<legend>Step 1 - Alignment score calculation</legend>");
-        out("<p>The following table [<a id='downloadScoreTable' href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
+        out("<p>The following table <a style='display:none' id='downloadScoreTable' href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
         out(sortedScoresStringB64);
-        out("' title='table.tsv' download='table.tsv'>Download</a>] lists the best compatibility scores and their positions:</p>");
+        out("' title='table.tsv' download='table.tsv'>Download</a>lists the best compatibility scores and their positions:</p>");
         out("<table class='scoreTable center'>");
         out("<tr class='header'>");
         out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td><td>P(score)</td><td>P(higher score)</td>");
