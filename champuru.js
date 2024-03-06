@@ -616,7 +616,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		champuru_Worker.out("</fieldset>");
 		champuru_Worker.out("<br>");
 	}
-	if(problems == 0) {
+	if(problems == 0 && successfullyDeconvoluted) {
 		champuru_Worker.out("<fieldset>");
 		champuru_Worker.out("<legend>Download area</legend>");
 		champuru_Worker.out("<span class='middle'><button onclick='downloadFasta(true)'>Download FASTA (all bases)</button><button onclick='downloadFasta(false)'>Download FASTA (only overlap)</button></span><br>");

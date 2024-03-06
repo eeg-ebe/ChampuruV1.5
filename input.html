@@ -123,7 +123,7 @@ However this score correction method seems to work less good on short input sequ
                 </div>
                 <br>
                 <div class="noindent">
-                    The following example has multiple solutions:<br>
+                    The following example has multiple solutions (for offset pairs 5,1 and 4,2):<br>
                     Forward sequence: <span class="sequence" id="example4forward">SYKRWTYMMMMMRSSRMSGSCCYWRSMWWMCCSRRGGRWYSGRAR</span><br>
                     Reverse sequence: <span class="sequence" id="example4reverse">MRMTGMTKMWYMMMRCRRCGRCSSYMSYAKMMYMSMSGRRKSRKMRGRRKA</span><br>
                     <button href="#" onclick="load(4)">Copy data to input fields</button><br>
@@ -257,6 +257,9 @@ function resetForm() {
 function load(i) {
     document.getElementById('forward').value = document.getElementById('example' + i + 'forward').innerText;
     document.getElementById('reverse').value = document.getElementById('example' + i + 'reverse').innerText;
+    if (i == 4) {
+        document.getElementById('searchForAlternativeSolutions').checked = true;
+    }
 }
 
 function reverse() {

@@ -397,7 +397,7 @@ class Worker
         }
         
         // Download area
-        if (problems == 0) {
+        if (problems == 0 && successfullyDeconvoluted) {
             out("<fieldset>");
             out("<legend>Download area</legend>");
             out("<span class='middle'><button onclick='downloadFasta(true)'>Download FASTA (all bases)</button><button onclick='downloadFasta(false)'>Download FASTA (only overlap)</button></span><br>");
