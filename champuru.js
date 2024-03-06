@@ -530,9 +530,9 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
 		var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
 		if(idx1Same && idx2Same) {
-			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program although the same offsets have been used. If you find this in a real life example please send your chromatograms to <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
+			champuru_Worker.out("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program although the same offsets have been used. If you find this in a real life example please send your chromatograms to <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
 		} else {
-			champuru_Worker.out("<p>The deconvoluted sequences from the (reimplemented) original Champuru program mismatches with the deconvoluted sequences from this program because different offsets have been used.<p>");
+			champuru_Worker.out("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program because different offsets have been used.<p>");
 		}
 	}
 	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
