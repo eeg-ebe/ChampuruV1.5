@@ -315,7 +315,7 @@ class Worker
             var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
             var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
             if (idx1Same && idx2Same) {
-                out("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program although the same offsets have been used. If you find this in a real life example please send your chromatograms to <a href='mailto: jflot@ulb.ac.be'>jflot@ulb.be</a>.</p>");
+                out("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program although the same offsets have been used. If you find this in a real life example please send your chromatograms to <a href='mailto: jflot@ulb.be'>jflot@ulb.be</a>.</p>");
             } else {
                 out("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program because different offsets have been used.<p>");
             }
