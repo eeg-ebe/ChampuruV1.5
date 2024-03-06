@@ -260,14 +260,14 @@ class Worker
         } else {
             if (p1u > 0) {
                 out("<p>There " + ((p1u == 1) ? "is" : "are") + " " + p1u + " ambiguit" + ((p1u == 1) ? "y" : "ies") + " on the first reconstructed sequence left!</p>");
-                successfullyDeconvoluted = false;
+//                successfullyDeconvoluted = false;
             }
             if (p1l > 0) {
                 out("<p>" + p1l + " ambiguit" + ((p1l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
             }
             if (p2u > 0) {
                 out("<p>There " + ((p2u == 1) ? "is" : "are") + " " + p2u + " ambiguit" + ((p2u == 1) ? "y" : "ies") + " on the second reconstructed sequence left!</p>");
-                successfullyDeconvoluted = false;
+//                successfullyDeconvoluted = false;
             }
             if (p2l > 0) {
                 out("<p>" + p2l + " ambiguit" + ((p2l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
