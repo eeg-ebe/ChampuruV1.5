@@ -436,6 +436,13 @@ function removeColorFinal() {
     document.getElementById('reconstructed1').innerText = txt1;
     document.getElementById('reconstructed2').innerText = txt2;
 }
+function downloadPlot(id) {
+    var content = document.getElementById(id).outerHTML;
+    var b64 = window.btoa(content);
+    var link = "<a id='downloadLink' href-lang='image/svg+xm' href='data:image/svg+xm;base64,\n" + b64 + "' title='plot.svg' style='display:none' download='plot.svg'>Download</a>";
+    document.getElementById("hiddenDiv").innerHTML = link;
+    document.getElementById('downloadLink').click();
+}
 function downloadFasta(full) {
     var txt1 = document.getElementById('reconstructed1').innerText;
     var txt2 = document.getElementById('reconstructed2').innerText;

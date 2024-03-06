@@ -41,7 +41,7 @@ class ScoreListVisualizer
 
     public function genScorePlot():String {
         var result:List<String> = new List<String>();
-        result.add("<svg id='scorePlot' class='plot middle' width='600' height='400'>");
+        result.add("<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='scorePlot' class='plot middle' width='600' height='400'>");
         result.add("<rect width='600' height='400' style='fill:white' />");
         result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Score</text>");
         result.add("<text x='300' y='395' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>Offset</text>");
@@ -61,7 +61,7 @@ class ScoreListVisualizer
     public function genScorePlotHist(distribution:GumbelDistribution):String {
         var d:Float = high - low;
         var result:List<String> = new List<String>();
-        result.add("<svg id='scorePlotHist' class='plot middle' width='600' height='400'>");
+        result.add("<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='scorePlotHist' class='plot middle' width='600' height='400'>");
         result.add("<rect width='600' height='400' style='fill:white' />");
         result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Frequency</text>");
         result.add("<text x='025' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 20.5 195)'>Probability</text>");

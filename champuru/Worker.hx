@@ -162,6 +162,7 @@ class Worker
             out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
         }
         out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button><button onclick='document.getElementById(\"downloadScoreTable\").click();'>Download score table</button></span>");
+        out("<span class='middle'><button onclick='downloadPlot(\"scorePlot\")'>Download dot plot</button><button onclick='downloadPlot(\"scorePlotHist\")'>Download histogram</button></span>");
         out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
         out("</fieldset>");
         out("<br>");

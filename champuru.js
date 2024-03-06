@@ -307,6 +307,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		champuru_Worker.out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
 	}
 	champuru_Worker.out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button><button onclick='document.getElementById(\"downloadScoreTable\").click();'>Download score table</button></span>");
+	champuru_Worker.out("<span class='middle'><button onclick='downloadPlot(\"scorePlot\")'>Download dot plot</button><button onclick='downloadPlot(\"scorePlotHist\")'>Download histogram</button></span>");
 	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
 	champuru_Worker.out("</fieldset>");
 	champuru_Worker.out("<br>");
@@ -636,7 +637,7 @@ champuru_Worker.onMessage = function(e) {
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:426:",e);
+		console.log("champuru/Worker.hx:427:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };
@@ -2489,7 +2490,7 @@ champuru_score_ScoreListVisualizer.__name__ = true;
 champuru_score_ScoreListVisualizer.prototype = {
 	genScorePlot: function() {
 		var result = new haxe_ds_List();
-		result.add("<svg id='scorePlot' class='plot middle' width='600' height='400'>");
+		result.add("<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='scorePlot' class='plot middle' width='600' height='400'>");
 		result.add("<rect width='600' height='400' style='fill:white' />");
 		result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Score</text>");
 		result.add("<text x='300' y='395' text-anchor='middle' style='font-family: monospace; text-size: 12.5px'>Offset</text>");
@@ -2512,7 +2513,7 @@ champuru_score_ScoreListVisualizer.prototype = {
 	,genScorePlotHist: function(distribution) {
 		var d = this.high - this.low;
 		var result = new haxe_ds_List();
-		result.add("<svg id='scorePlotHist' class='plot middle' width='600' height='400'>");
+		result.add("<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='scorePlotHist' class='plot middle' width='600' height='400'>");
 		result.add("<rect width='600' height='400' style='fill:white' />");
 		result.add("<text x='010' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 7.5 195)'>Frequency</text>");
 		result.add("<text x='025' y='200' text-anchor='middle' style='font-family: monospace; text-size: 12.5px' transform='rotate(270 20.5 195)'>Probability</text>");
