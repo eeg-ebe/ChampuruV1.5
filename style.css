@@ -195,17 +195,20 @@ legend {
 .descTable .odd {
     background-color: white;
 }
+.scoreTable .hiddenLine {
+    display: none;
+}
 .scoreTable .even {
     background-color: #eee;
 }
 .scoreTable .odd {
-    background-color: #white;
+    background-color: white;
 }
 .offsetTable .even {
     background-color: #eee;
 }
 .offsetTable .odd {
-    background-color: #white;
+    background-color: white;
 }
 .center {
     margin: 0 auto !important;

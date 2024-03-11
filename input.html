@@ -441,6 +441,58 @@ function removeColorFinal() {
     document.getElementById('reconstructed1').innerText = txt1;
     document.getElementById('reconstructed2').innerText = txt2;
 }
+function showMore() {
+    var i = 1, j = 0;
+    var endReached = false;
+    while (true) {
+        var ele = document.getElementById('scoreTableLine' + i);
+        if (ele == null) {
+            endReached = true;
+            break;
+        }
+        if (ele.classList.contains("hiddenLine")) {
+            ele.classList.remove("hiddenLine");
+            j++;
+        }
+        if (j >= 5) {
+            var ele2 = document.getElementById('scoreTableLine' + (i + 1));
+            if (ele2 == null) {
+                endReached = true;
+            }
+            break;
+        }
+        i++;
+    }
+    if (endReached) {
+        document.getElementById("showMoreButton").style.display = "none";
+    } else {
+        document.getElementById("showMoreButton").style.display = "initial";
+    }
+    document.getElementById("showLessButton").style.display = "initial";
+}
+function showLess() {
+    var i = 1;
+    while (true) {
+        var ele = document.getElementById('scoreTableLine' + i);
+        if (ele == null || ele.classList.contains("hiddenLine")) {
+            for (var j = 1; j <= 5; j++) {
+                if (i - j >= 1) {
+                    var ele2 = document.getElementById('scoreTableLine' + (i - j));
+                    ele2.classList.add("hiddenLine");
+                }
+            }
+            break;
+        }
+        i++;
+    }
+    document.getElementById("showMoreButton").style.display = "initial";
+    var ele = document.getElementById('scoreTableLine1');
+    if (ele == null || ele.classList.contains("hiddenLine")) {
+        document.getElementById("showLessButton").style.display = "none";
+    } else {
+        document.getElementById("showLessButton").style.display = "initial";
+    }
+}
 function downloadPlot(id) {
     var content = document.getElementById(id).outerHTML;
     var b64 = window.btoa(content);

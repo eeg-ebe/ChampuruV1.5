@@ -277,7 +277,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	while(_g < sortedScores.length) {
 		var score = sortedScores[_g];
 		++_g;
-		champuru_Worker.out("<tr class='" + (i % 2 == 0 ? "odd" : "even") + "' onmouseover='highlight(\"c" + score.index + "\")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
+		champuru_Worker.out("<tr id='scoreTableLine" + i + "' class='" + (i % 2 == 0 ? "odd" : "even") + (i >= 6 ? " hiddenLine" : "") + "' onmouseover='highlight(\"c" + score.index + "\")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
 		var z = (score.score - distribution.mMu) / distribution.mBeta;
 		var number = 1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z))) * Math.pow(10,3);
 		var s = -(score.score - distribution.mMu) / distribution.mBeta;
@@ -285,10 +285,8 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		champuru_Worker.out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" + score.matches + "</td><td>" + score.mismatches + "</td><td>" + ("" + Math.round(number) / Math.pow(10,3)) + "</td><td>" + ("" + Math.round(number1) / Math.pow(10,3)) + "</td>");
 		champuru_Worker.out("</tr>");
 		++i;
-		if(i >= 6) {
-			break;
-		}
 	}
+	champuru_Worker.out("<tr id='scoreTableLine'><td colspan='7' style='text-align: center;'><button id='showMoreButton' onclick='showMore();'>Show more</button><button id='showLessButton' onclick='showLess();'>Show less</button></td></tr>");
 	champuru_Worker.out("</table>");
 	champuru_Worker.out("<p>Here is a plot of the shift calculation result:</p>");
 	champuru_Worker.out(scorePlot);
