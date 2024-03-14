@@ -277,7 +277,7 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	while(_g < sortedScores.length) {
 		var score = sortedScores[_g];
 		++_g;
-		champuru_Worker.out("<tr id='scoreTableLine" + i + "' class='" + (i % 2 == 0 ? "odd" : "even") + (i >= 6 ? " hiddenLine" : "") + "' onmouseover='highlight(\"c" + score.index + "\")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
+		champuru_Worker.out("<tr id='scoreTableLine" + i + "' class='" + (i % 2 == 0 ? "odd" : "even") + (i >= 6 ? " hiddenLine" : "") + "' onmouseover='highlight(\"c" + score.index + "\", " + score.score + ")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
 		var z = (score.score - distribution.mMu) / distribution.mBeta;
 		var number = 1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z))) * Math.pow(10,3);
 		var s = -(score.score - distribution.mMu) / distribution.mBeta;
@@ -2525,46 +2525,23 @@ champuru_score_ScoreListVisualizer.prototype = {
 		var i = 0;
 		var this1 = new Array(28);
 		var v = this1;
-		v[0] = 0;
-		v[1] = 0;
-		v[2] = 0;
-		v[3] = 0;
-		v[4] = 0;
-		v[5] = 0;
-		v[6] = 0;
-		v[7] = 0;
-		v[8] = 0;
-		v[9] = 0;
-		v[10] = 0;
-		v[11] = 0;
-		v[12] = 0;
-		v[13] = 0;
-		v[14] = 0;
-		v[15] = 0;
-		v[16] = 0;
-		v[17] = 0;
-		v[18] = 0;
-		v[19] = 0;
-		v[20] = 0;
-		v[21] = 0;
-		v[22] = 0;
-		v[23] = 0;
-		v[24] = 0;
-		v[25] = 0;
-		v[26] = 0;
-		v[27] = 0;
+		var this1 = new Array(29);
+		var from = this1;
+		var _g = 0;
+		while(_g < 28) {
+			var i = _g++;
+			v[i] = 0;
+			from[i] = this.low + i * hd;
+		}
+		from[28] = Math.ceil(this.high + 0.1);
 		var _g = 0;
 		var _g1 = this.sortedScores;
 		while(_g < _g1.length) {
 			var score = _g1[_g];
 			++_g;
-			var scoreP = (score.score - this.low) / d;
-			var b = scoreP * 28;
-			var i = Math.floor(b);
-			if(i >= 28) {
-				i = 27;
-			}
-			v[i] += 1;
+			var pointer = 0;
+			while(!(from[pointer] <= score.score && score.score < from[pointer + 1])) ++pointer;
+			v[pointer] += 1;
 		}
 		var highest = 0;
 		var _g = 0;
@@ -2586,18 +2563,18 @@ champuru_score_ScoreListVisualizer.prototype = {
 			var x = 30 + i * 20;
 			var h = val * 350;
 			var y = 365 - h;
-			var from = Math.round((i * hd + this.low) * 10) / 10.0;
-			var to = Math.round(((i + 1) * hd + this.low) * 10) / 10.0;
+			var fromX = from[i];
+			var to = from[i + 1];
 			var percentage = Math.round(v[i] / this.sortedScores.length * 1000) / 10.0;
-			var z = (from - distribution.mMu) / distribution.mBeta;
+			var z = (fromX - distribution.mMu) / distribution.mBeta;
 			var pval1 = Math.round(1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z))) * 1000) / 1000;
 			var z1 = (to - distribution.mMu) / distribution.mBeta;
 			var pval2 = Math.round(1.0 / distribution.mBeta * Math.exp(-(z1 + Math.exp(-z1))) * 1000) / 1000;
-			var s = -(from - distribution.mMu) / distribution.mBeta;
+			var s = -(fromX - distribution.mMu) / distribution.mBeta;
 			var s1 = -(to - distribution.mMu) / distribution.mBeta;
 			var cdfVal = Math.round((1 - Math.exp(-Math.exp(s)) - (1 - Math.exp(-Math.exp(s1)))) * 1000) / 1000;
-			var alertMsg = "From: " + from + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)\\nProbability from: " + pval1 + "-" + pval2 + "\\nCDF: " + cdfVal;
-			result.add("<rect x='" + x + "' y='" + y + "' width='20' height='" + h + "' onclick='alert(\"" + alertMsg + "\");' />");
+			var alertMsg = "From: " + fromX + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)\\nProbability from: " + pval1 + "-" + pval2 + "\\nCDF: " + cdfVal;
+			result.add("<rect id='histBox" + i + "' from='" + fromX + "' to='" + to + "' x='" + x + "' y='" + y + "' width='20' height='" + h + "' onclick='alert(\"" + alertMsg + "\");' />");
 		}
 		result.add("</g>");
 		var highestPVal = 0;
@@ -2646,10 +2623,10 @@ champuru_score_ScoreListVisualizer.prototype = {
 		var lastX = -1;
 		var lastY = -1;
 		var lastY2 = -1;
-		var _g5_head = listOfPoints.h;
-		while(_g5_head != null) {
-			var val = _g5_head.item;
-			_g5_head = _g5_head.next;
+		var _g6_head = listOfPoints.h;
+		while(_g6_head != null) {
+			var val = _g6_head.item;
+			_g6_head = _g6_head.next;
 			var obj = val;
 			var val1 = obj.x;
 			var pval = obj.y;

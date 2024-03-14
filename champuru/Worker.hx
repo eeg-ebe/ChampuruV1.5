@@ -136,7 +136,7 @@ class Worker
         out("</tr>");
         var i:Int = 1;
         for (score in sortedScores) {
-            out("<tr id='scoreTableLine" + i + "' class='" + ((i % 2 == 0) ? "odd" : "even") + ((i >= 6) ? " hiddenLine" : "") + "' onmouseover='highlight(\"c" + score.index + "\")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
+            out("<tr id='scoreTableLine" + i + "' class='" + ((i % 2 == 0) ? "odd" : "even") + ((i >= 6) ? " hiddenLine" : "") + "' onmouseover='highlight(\"c" + score.index + "\", " + score.score + ")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
             out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" +  score.matches + "</td><td>" + score.mismatches + "</td><td>" + formatFloat(distribution.getProbabilityForScore(score.score)) + "</td><td>" + formatFloat(distribution.getProbabilityForHigherScore(score.score)) + "</td>");
             out("</tr>");
             i++;

@@ -521,7 +521,7 @@ function downloadFasta(full) {
 function download() {
     downloadFasta(true);
 }
-function highlight(id) {
+function highlight(id, score) {
     var circle = document.getElementById(id);
     var x = circle.getAttribute("cx");
     var y = circle.getAttribute("cy");
@@ -535,11 +535,45 @@ function highlight(id) {
     newElement.setAttribute("fill", "none");
     newElement.setAttribute("r", "5");
     svg.appendChild(newElement);
+    var x = 0, y = 0, width = 0, height = 0;
+    for (var i = 0; i < 28; i++) {
+        var box = document.getElementById("histBox" + i);
+        if (box != null) {
+            var from = box.getAttribute("from");
+            var to = box.getAttribute("to");
+            if (from <= score && score < to) {
+                x = parseInt(box.getAttribute("x")) - 2;
+                y = parseInt(box.getAttribute("y")) - 2;
+                width = parseInt(box.getAttribute("width")) + 4;
+                height = parseInt(box.getAttribute("height")) + 4;
+                break;
+            }
+        }
+    }
+    if (x != 0 && y != 0 && width != 0 && height != 0) {
+        console.log("x: " + x + " y: " + y + " w: " + width + " h: " + height);
+        var svg2 = document.getElementById("scorePlotHist");
+        var newElement2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        newElement2.setAttribute("id", "addedBox");
+        newElement2.setAttribute("x", x);
+        newElement2.setAttribute("y", y);
+        newElement2.setAttribute("width", width);
+        newElement2.setAttribute("height", height);
+        newElement2.setAttribute("stroke", "red");
+        newElement2.setAttribute("stroke-width", "2");
+        newElement2.setAttribute("fill", "none");
+        svg2.appendChild(newElement2);
+    }
 }
 function removeHighlight(id) {
     var svg = document.getElementById("scorePlot");
     var circle = document.getElementById("addedCircle");
     svg.removeChild(circle);
+    var svg2 = document.getElementById("scorePlotHist");
+    var box = document.getElementById("addedBox");
+    if (box != null) {
+        svg2.removeChild(box);
+    }
 }
 function toClipboard(id, everything=true) {
     var text = document.getElementById(id).innerText;

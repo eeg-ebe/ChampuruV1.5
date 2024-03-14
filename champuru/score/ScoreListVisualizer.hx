@@ -75,18 +75,19 @@ class ScoreListVisualizer
         result.add("<text x='590' y='380' text-anchor='end' style='font-family: monospace; text-size: 12.5px'>" + Math.ceil(high) + "</text>");
         var hd:Float = d / 28;
         var i:Int = 0;
-        var v:Vector<Int> = new Vector<Int>(28);
+        var v:Vector<Int> = new Vector<Int>(28); // 0...27
+        var from:Vector<Float> = new Vector<Float>(29);
         for (i in 0...28) {
             v[i] = 0;
+            from[i] = low + i * hd;
         }
+        from[28] = Math.ceil(high + 0.1);
         for (score in sortedScores) {
-            var scoreP:Float = ((score.score - low) / d);
-            var b:Float = scoreP * 28;
-            var i:Int = Math.floor(b);
-            if (i >= 28) {
-                i = 27;
+            var pointer:Int = 0;
+            while (! (from[pointer] <= score.score && score.score < from[pointer + 1])) {
+                pointer++;
             }
-            v[i]++;
+            v[pointer]++;
         }
         var highest:Int = 0;
         for (val in v) {
@@ -101,14 +102,14 @@ class ScoreListVisualizer
             var x:Float = 30 + i * 20;
             var h:Float = val * 350;
             var y:Float = 365 - h;
-            var from:Float = Math.round((i * hd + low) * 10) / 10.0;
-            var to:Float = Math.round(((i + 1) * hd + low) * 10) / 10.0;
+            var fromX:Float = from[i];
+            var to:Float = from[i + 1];
             var percentage:Float = (Math.round(v[i] / sortedScores.length * 1000) / 10.0);
-            var pval1:Float = Math.round(distribution.getProbabilityForScore(from) * 1000) / 1000;
+            var pval1:Float = Math.round(distribution.getProbabilityForScore(fromX) * 1000) / 1000;
             var pval2:Float = Math.round(distribution.getProbabilityForScore(to) * 1000) / 1000;
-            var cdfVal:Float = Math.round((distribution.getProbabilityForHigherScore(from) - distribution.getProbabilityForHigherScore(to)) * 1000) / 1000;
-            var alertMsg:String = "From: " + from + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)\\nProbability from: " + pval1 + "-" + pval2 + "\\nCDF: " + cdfVal;
-            result.add("<rect x='" + x + "' y='" + y + "' width='20' height='" + h + "' onclick='alert(\"" + alertMsg + "\");' />");
+            var cdfVal:Float = Math.round((distribution.getProbabilityForHigherScore(fromX) - distribution.getProbabilityForHigherScore(to)) * 1000) / 1000;
+            var alertMsg:String = "From: " + fromX + "\\nTo: " + to + "\\nCount: " + v[i] + " (" + percentage + "%)\\nProbability from: " + pval1 + "-" + pval2 + "\\nCDF: " + cdfVal;
+            result.add("<rect id='histBox" + i + "' from='" + fromX + "' to='" + to + "' x='" + x + "' y='" + y + "' width='20' height='" + h + "' onclick='alert(\"" + alertMsg + "\");' />");
         }
         result.add("</g>");
         
