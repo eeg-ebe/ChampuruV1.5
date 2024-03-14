@@ -49,8 +49,15 @@ class Worker
 {
     static var mMsgs:List<String> = new List<String>();
 
-    public static function out(s:String) {
+    public static inline function out(s:String) {
+        #if js
         mMsgs.add(s);
+        #end
+    }
+    public static inline function out2(s:String) {
+        #if sys
+        Sys.println(s);
+        #end
     }
     
     public static inline function timeToStr(f:Float):String {
@@ -134,11 +141,16 @@ class Worker
         out("<tr class='header'>");
         out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td><td>P(score)</td><td>P(higher score)</td>");
         out("</tr>");
+        out2("Best scores:");
+        out2("#\tIndex\tScore\tMatches\tMismatches\tP(score)\tP(higher score)");
         var i:Int = 1;
         for (score in sortedScores) {
             out("<tr id='scoreTableLine" + i + "' class='" + ((i % 2 == 0) ? "odd" : "even") + ((i >= 6) ? " hiddenLine" : "") + "' onmouseover='highlight(\"c" + score.index + "\", " + score.score + ")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
             out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" +  score.matches + "</td><td>" + score.mismatches + "</td><td>" + formatFloat(distribution.getProbabilityForScore(score.score)) + "</td><td>" + formatFloat(distribution.getProbabilityForHigherScore(score.score)) + "</td>");
             out("</tr>");
+            if (i <= 5) {
+                out2("" + i + "\t" + score.index + "\t" + score.score + "\t" + score.matches + "\t" + score.mismatches + "\t" + formatFloat(distribution.getProbabilityForScore(score.score)) + "\t" + formatFloat(distribution.getProbabilityForHigherScore(score.score)));
+            }
             i++;
         }
         out("<tr id='scoreTableLine'><td colspan='7' style='text-align: center;'><button id='showMoreButton' onclick='showMore();'>Show more</button><button id='showLessButton' onclick='showLess();'>Show less</button></td></tr>");
@@ -161,6 +173,7 @@ class Worker
         } else {
             out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
         }
+        out2("Using offsets " + score1 + " and " + score2 + " for calculation.");
         out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button><button onclick='document.getElementById(\"downloadScoreTable\").click();'>Download score table</button></span>");
         out("<span class='middle'><button onclick='downloadPlot(\"scorePlot\")'>Download dot plot</button><button onclick='downloadPlot(\"scorePlotHist\")'>Download histogram</button></span>");
         out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
@@ -174,32 +187,41 @@ class Worker
         
         out("<fieldset>");
         out("<legend>Step 2 - Consensus sequence calculation</legend>");
+        out2("Consensus sequence calculation:");
         out("<p>First consensus sequence: <span id='consensus1' class='sequence'>");
         out(o1.toString());
+        out2("" + o1.toString());
         out("</span></p>");
         out("<p>Second consensus sequence: <span id='consensus2' class='sequence'>");
         out(o2.toString());
+        out2("" + o2.toString());
         out("</span></p>");
         var problems:Int = o1.countGaps() + o2.countGaps();
         var remainingAmbFwd:Int = o1.countPolymorphisms();
         var remainingAmbRev:Int = o2.countPolymorphisms();
         if (problems == 1) {
             out("<p>There is 1 incompatible position (indicated with an underscore), please check the input sequences.</p>");
+            out2("There is 1 incompatible position (indicated with an underscore), please check the input sequences.");
         } else if (problems > 1) {
             out("<p>There are " + problems + " incompatible positions (indicated with underscores), please check the input sequences.</p>");
+            out2("There are " + problems + " incompatible positions (indicated with underscores), please check the input sequences.");
         }
         if (problems > 0) {
             out("<span class='middle'><button onclick='colorConsensusByIncompatiblePositions()'>Color underscores</button><button onclick='removeColor()'>Remove color</button></span>");
         }
         if (remainingAmbFwd == 1) {
             out("<p>There is 1 ambiguity in the first consensus sequence.</p>");
+            out2("There is 1 ambiguity in the first consensus sequence.");
         } else if (remainingAmbFwd > 1) {
             out("<p>There are " + remainingAmbFwd + " ambiguities in the first consensus sequence.</p>");
+            out2("There are " + remainingAmbFwd + " ambiguities in the first consensus sequence.");
         }
         if (remainingAmbRev == 1) {
             out("<p>There is 1 ambiguity in the second consensus sequence.</p>");
+            out2("There is 1 ambiguity in the second consensus sequence.");
         } else if (remainingAmbRev > 1) {
             out("<p>There are " + remainingAmbRev + " ambiguities in the second consensus sequence.</p>");
+            out2("There are " + remainingAmbRev + " ambiguities in the second consensus sequence.");
         }
         if (remainingAmbFwd + remainingAmbRev > 0) {
             out("<span class='middle'><button onclick='colorConsensusByAmbPositions()'>Color ambiguities</button><button onclick='removeColor()'>Remove color</button></span>");
@@ -219,11 +241,14 @@ class Worker
         var result = SequenceReconstructor.reconstruct(o1, o2);
         out("<fieldset>");
         out("<legend>Step 3 - Sequence reconstruction</legend>");
+        out2("Sequence reconstruction:");
         out("<p>First reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed1\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed1\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed1' class='sequence'>");
         out(result.seq1.toString());
+        out2("" + result.seq1.toString());
         out("</span></p>");
         out("<p>Second reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed2\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed2\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed2' class='sequence'>");
         out(result.seq2.toString());
+        out2("" + result.seq2.toString());
         out("</span></p>");
 //        out("<span class='middle'><button onclick='download()'>Download</button></span>");
         out("<div class='timelegend'>Calculation took " + timeToStr(Timer.stamp() - timestamp) + "ms</div>");
@@ -234,15 +259,18 @@ class Worker
         var timestamp:Float = Timer.stamp();
         out("<fieldset>");
         out("<legend>Step 4 - Checking sequences</legend>");
+        out2("Checking sequences:");
         var successfullyDeconvoluted:Bool = true;
         // problems
         problems = result.seq1.countGaps() + result.seq2.countGaps();
         if (problems == 0) {
         } else if (problems == 1) {
             out("<p>There is 1 problematic position!</p>");
+            out2("There is 1 problematic position!");
             successfullyDeconvoluted = false;
         } else if (problems > 1) {
             out("<p>There are " + problems + " problematic positions!</p>");
+            out2("There are " + problems + " problematic positions!");
             successfullyDeconvoluted = false;
         }
         if (problems > 0) {
@@ -260,17 +288,21 @@ class Worker
         } else {
             if (p1u > 0) {
                 out("<p>There " + ((p1u == 1) ? "is" : "are") + " " + p1u + " ambiguit" + ((p1u == 1) ? "y" : "ies") + " on the first reconstructed sequence left!</p>");
+                out2("There " + ((p1u == 1) ? "is" : "are") + " " + p1u + " ambiguit" + ((p1u == 1) ? "y" : "ies") + " on the first reconstructed sequence left!");
 //                successfullyDeconvoluted = false;
             }
             if (p1l > 0) {
                 out("<p>" + p1l + " ambiguit" + ((p1l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+                out2(p1l + " ambiguit" + ((p1l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.");
             }
             if (p2u > 0) {
                 out("<p>There " + ((p2u == 1) ? "is" : "are") + " " + p2u + " ambiguit" + ((p2u == 1) ? "y" : "ies") + " on the second reconstructed sequence left!</p>");
+                out2("There " + ((p2u == 1) ? "is" : "are") + " " + p2u + " ambiguit" + ((p2u == 1) ? "y" : "ies") + " on the second reconstructed sequence left!");
 //                successfullyDeconvoluted = false;
             }
             if (p2l > 0) {
                 out("<p>" + p2l + " ambiguit" + ((p2l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+                out(p2l + " ambiguit" + ((p2l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.");
             }
         }
         if (p1 + p2 > 0) {
@@ -285,12 +317,14 @@ class Worker
             out("<p>");
             if (checkerResult.pF.length > 0) {
                 out("Check position" + ((checkerResult.pF.length == 1) ? "" : "s") + " on forward (and/or the facing positions on the reverse): <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
+                out2("Check position" + ((checkerResult.pF.length == 1) ? "" : "s") + " on forward (and/or the facing positions on the reverse): <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
             }
             if (checkerResult.pF.length > 0 && checkerResult.pR.length > 0) {
                 out("<br>");
             }
             if (checkerResult.pR.length > 0) {
                 out("Check position" + ((checkerResult.pR.length == 1) ? "" : "s") + " on reverse (and/or the facing positions on the forward): <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
+                out2("Check position" + ((checkerResult.pR.length == 1) ? "" : "s") + " on reverse (and/or the facing positions on the forward): <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
             }
             out("</p>");
             successfullyDeconvoluted = false;
@@ -302,15 +336,22 @@ class Worker
         if (successfullyDeconvoluted && p1u + p2u == 0) {
             if (p1l + p2l == 0) {
                 out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted.</p>");
+                out2("The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted.");
             } else if (p1l > 0 && p2l > 0) {
                 out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + p1l + " ambiguit" + ((p1l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap and " + p2l + " ambiguit" + ((p2l == 1) ? "y" : "ies") + " remain in the second reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+                out2("The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + p1l + " ambiguit" + ((p1l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap and " + p2l + " ambiguit" + ((p2l == 1) ? "y" : "ies") + " remain in the second reconstructed sequence in places where the two chromatograms do not overlap.");
             } else {
                 out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + (p1l + p2l) + " ambiguit" + (((p1l + p2l) == 1) ? "y" : "ies") + " remain in the " + ((p1l > 0) ? "first" : "second") + " reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+                out2("The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + (p1l + p2l) + " ambiguit" + (((p1l + p2l) == 1) ? "y" : "ies") + " remain in the " + ((p1l > 0) ? "first" : "second") + " reconstructed sequence in places where the two chromatograms do not overlap.");
             }
         }
         // Check that the output is similar to the output of the "original" Champuru program
-        var firstSequenceIsSame:Bool = result.seq1.toString().indexOf(perlReimplementationOutput.sequence1) != -1 || result.seq1.toString().indexOf(perlReimplementationOutput.sequence2) != -1;
-        var secondSequenceIsSame:Bool = result.seq2.toString().indexOf(perlReimplementationOutput.sequence1) != -1 || result.seq2.toString().indexOf(perlReimplementationOutput.sequence2) != -1;
+        var firstSequenceIsSame:Bool = false;
+        var secondSequenceIsSame:Bool = false;
+        if (perlReimplementationOutput.sequence1 != null && perlReimplementationOutput.sequence2 != null) {
+            result.seq1.toString().indexOf(perlReimplementationOutput.sequence1) != -1 || result.seq1.toString().indexOf(perlReimplementationOutput.sequence2) != -1;
+            result.seq2.toString().indexOf(perlReimplementationOutput.sequence1) != -1 || result.seq2.toString().indexOf(perlReimplementationOutput.sequence2) != -1;
+        }
         if (!firstSequenceIsSame || !secondSequenceIsSame) {
             var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
             var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
@@ -433,6 +474,22 @@ class Worker
     public static function main() {
         workerScope = untyped self;
         workerScope.onmessage = onMessage;
+    }
+    #else
+    public static function main():Void {
+        var inp:haxe.ds.Vector<String> = new haxe.ds.Vector(Sys.args().length);
+        var i:Int = 0;
+        for (arg in Sys.args()) {
+            inp[i++] = arg;
+        }
+        var fwd:String = inp[0];
+        var rev:String = inp[1];
+        var scoreCalculationMethod:Int = 1;
+        var i:Int = -1;
+        var j:Int = -1;
+        var use:Bool = false;
+        var searchForAlternativeSolutions:Bool = false;
+        var result = generateHtml(fwd, rev, scoreCalculationMethod, i, j, use, searchForAlternativeSolutions); // ""; //doChampuru(fwd, rev, scoreCalculationMethod, i, j, use);
     }
     #end
 }

@@ -125,6 +125,8 @@ champuru_Worker.__name__ = true;
 champuru_Worker.out = function(s) {
 	champuru_Worker.mMsgs.add(s);
 };
+champuru_Worker.out2 = function(s) {
+};
 champuru_Worker.timeToStr = function(f) {
 	return "" + Math.round(f * 1000);
 };
@@ -134,35 +136,35 @@ champuru_Worker.formatFloat = function(f) {
 };
 champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,jOffset,useThisOffsets,searchForAlternativeSolutions) {
 	champuru_Worker.mMsgs.clear();
-	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>Input</legend>");
-	champuru_Worker.out("<p>Forward sequence of length " + fwd.length + ": <span id='input1' class='sequence'>");
-	champuru_Worker.out(fwd);
-	champuru_Worker.out("</p><p>Reverse sequence of length " + rev.length + ": <span id='input2' class='sequence'>");
-	champuru_Worker.out(rev);
-	champuru_Worker.out("</p>");
-	champuru_Worker.out("<p>Score calculation method: " + scoreCalculationMethod + "</p>");
+	champuru_Worker.mMsgs.add("<fieldset>");
+	champuru_Worker.mMsgs.add("<legend>Input</legend>");
+	champuru_Worker.mMsgs.add("<p>Forward sequence of length " + fwd.length + ": <span id='input1' class='sequence'>");
+	champuru_Worker.mMsgs.add(fwd);
+	champuru_Worker.mMsgs.add("</p><p>Reverse sequence of length " + rev.length + ": <span id='input2' class='sequence'>");
+	champuru_Worker.mMsgs.add(rev);
+	champuru_Worker.mMsgs.add("</p>");
+	champuru_Worker.mMsgs.add("<p>Score calculation method: " + scoreCalculationMethod + "</p>");
 	if(useThisOffsets) {
-		champuru_Worker.out("<p>Offsets to use: " + iOffset + " and " + jOffset + ".</p>");
+		champuru_Worker.mMsgs.add("<p>Offsets to use: " + iOffset + " and " + jOffset + ".</p>");
 	} else {
-		champuru_Worker.out("<p>Calculate offsets and use best offsets.</p>");
+		champuru_Worker.mMsgs.add("<p>Calculate offsets and use best offsets.</p>");
 	}
-	champuru_Worker.out("</fieldset>");
-	champuru_Worker.out("<br>");
-	champuru_Worker.out("<fieldset>");
+	champuru_Worker.mMsgs.add("</fieldset>");
+	champuru_Worker.mMsgs.add("<br>");
+	champuru_Worker.mMsgs.add("<fieldset>");
 	var timestamp = HxOverrides.now() / 1000;
-	champuru_Worker.out("<legend>Output of the original Champuru 1.0 program</legend>");
-	champuru_Worker.out("<span id='champuruOutput' style='font-family: monospace; word-break: break-all; display: none;'>");
+	champuru_Worker.mMsgs.add("<legend>Output of the original Champuru 1.0 program</legend>");
+	champuru_Worker.mMsgs.add("<span id='champuruOutput' style='font-family: monospace; word-break: break-all; display: none;'>");
 	var perlReimplementationOutput = champuru_perl_PerlChampuruReimplementation.runChampuru(fwd,rev,false);
 	var output = perlReimplementationOutput.getOutput();
 	output = StringTools.htmlEscape(output);
 	output = StringTools.replace(output,"\n","<br/>");
-	champuru_Worker.out(output);
-	champuru_Worker.out("</span>");
-	champuru_Worker.out("<span class='middle'><button id='showLink' onclick='document.getElementById(\"champuruOutput\").style.display = \"block\";document.getElementById(\"showLink\").style.display = \"none\";'>Show output</button></span>");
-	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
-	champuru_Worker.out("</fieldset>");
-	champuru_Worker.out("<br>");
+	champuru_Worker.mMsgs.add(output);
+	champuru_Worker.mMsgs.add("</span>");
+	champuru_Worker.mMsgs.add("<span class='middle'><button id='showLink' onclick='document.getElementById(\"champuruOutput\").style.display = \"block\";document.getElementById(\"showLink\").style.display = \"none\";'>Show output</button></span>");
+	champuru_Worker.mMsgs.add("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
+	champuru_Worker.mMsgs.add("</fieldset>");
+	champuru_Worker.mMsgs.add("<br>");
 	var s1 = champuru_base_NucleotideSequence.fromString(fwd);
 	var s2 = champuru_base_NucleotideSequence.fromString(rev);
 	var timestamp = HxOverrides.now() / 1000;
@@ -263,36 +265,36 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var vis = new champuru_score_ScoreListVisualizer(scores,sortedScores);
 	var scorePlot = vis.genScorePlot();
 	var histPlot = vis.genScorePlotHist(distribution);
-	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>Step 1 - Alignment score calculation</legend>");
-	champuru_Worker.out("<p>The following table <a style='display:none' id='downloadScoreTable' href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
-	champuru_Worker.out(sortedScoresStringB64);
-	champuru_Worker.out("' title='table.tsv' download='table.tsv'>Download</a>lists the best compatibility scores and their positions:</p>");
-	champuru_Worker.out("<table class='scoreTable center'>");
-	champuru_Worker.out("<tr class='header'>");
-	champuru_Worker.out("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td><td>P(score)</td><td>P(higher score)</td>");
-	champuru_Worker.out("</tr>");
+	champuru_Worker.mMsgs.add("<fieldset>");
+	champuru_Worker.mMsgs.add("<legend>Step 1 - Alignment score calculation</legend>");
+	champuru_Worker.mMsgs.add("<p>The following table <a style='display:none' id='downloadScoreTable' href-lang='text/tsv' title='table.tsv' href='data:text/tsv;base64,\n");
+	champuru_Worker.mMsgs.add(sortedScoresStringB64);
+	champuru_Worker.mMsgs.add("' title='table.tsv' download='table.tsv'>Download</a>lists the best compatibility scores and their positions:</p>");
+	champuru_Worker.mMsgs.add("<table class='scoreTable center'>");
+	champuru_Worker.mMsgs.add("<tr class='header'>");
+	champuru_Worker.mMsgs.add("<td>#</td><td>Offset</td><td>Score</td><td>Matches</td><td>Mismatches</td><td>P(score)</td><td>P(higher score)</td>");
+	champuru_Worker.mMsgs.add("</tr>");
 	var i = 1;
 	var _g = 0;
 	while(_g < sortedScores.length) {
 		var score = sortedScores[_g];
 		++_g;
-		champuru_Worker.out("<tr id='scoreTableLine" + i + "' class='" + (i % 2 == 0 ? "odd" : "even") + (i >= 6 ? " hiddenLine" : "") + "' onmouseover='highlight(\"c" + score.index + "\", " + score.score + ")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
+		champuru_Worker.mMsgs.add("<tr id='scoreTableLine" + i + "' class='" + (i % 2 == 0 ? "odd" : "even") + (i >= 6 ? " hiddenLine" : "") + "' onmouseover='highlight(\"c" + score.index + "\", " + score.score + ")' onmouseout='removeHighlight(\"c" + score.index + "\")'>");
 		var z = (score.score - distribution.mMu) / distribution.mBeta;
 		var number = 1.0 / distribution.mBeta * Math.exp(-(z + Math.exp(-z))) * Math.pow(10,3);
 		var s = -(score.score - distribution.mMu) / distribution.mBeta;
 		var number1 = (1 - Math.exp(-Math.exp(s))) * Math.pow(10,3);
-		champuru_Worker.out("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" + score.matches + "</td><td>" + score.mismatches + "</td><td>" + ("" + Math.round(number) / Math.pow(10,3)) + "</td><td>" + ("" + Math.round(number1) / Math.pow(10,3)) + "</td>");
-		champuru_Worker.out("</tr>");
-		++i;
+		champuru_Worker.mMsgs.add("<td>" + i + "</td><td>" + score.index + "</td><td>" + score.score + "</td><td>" + score.matches + "</td><td>" + score.mismatches + "</td><td>" + ("" + Math.round(number) / Math.pow(10,3)) + "</td><td>" + ("" + Math.round(number1) / Math.pow(10,3)) + "</td>");
+		champuru_Worker.mMsgs.add("</tr>");
+		var tmp = i++ <= 5;
 	}
-	champuru_Worker.out("<tr id='scoreTableLine'><td colspan='7' style='text-align: center;'><button id='showMoreButton' onclick='showMore();'>Show more</button><button id='showLessButton' onclick='showLess();'>Show less</button></td></tr>");
-	champuru_Worker.out("</table>");
-	champuru_Worker.out("<p>Here is a plot of the shift calculation result:</p>");
-	champuru_Worker.out(scorePlot);
-	champuru_Worker.out("<p>Warning: Close points may be overlapping!</p>");
-	champuru_Worker.out("<p>And as histogram:</p>");
-	champuru_Worker.out(histPlot);
+	champuru_Worker.mMsgs.add("<tr id='scoreTableLine'><td colspan='7' style='text-align: center;'><button id='showMoreButton' onclick='showMore();'>Show more</button><button id='showLessButton' onclick='showLess();'>Show less</button></td></tr>");
+	champuru_Worker.mMsgs.add("</table>");
+	champuru_Worker.mMsgs.add("<p>Here is a plot of the shift calculation result:</p>");
+	champuru_Worker.mMsgs.add(scorePlot);
+	champuru_Worker.mMsgs.add("<p>Warning: Close points may be overlapping!</p>");
+	champuru_Worker.mMsgs.add("<p>And as histogram:</p>");
+	champuru_Worker.mMsgs.add(histPlot);
 	var score1 = sortedScores[0].index;
 	var score2 = sortedScores[1].index;
 	if(useThisOffsets) {
@@ -300,21 +302,21 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		score2 = jOffset;
 	}
 	if(useThisOffsets) {
-		champuru_Worker.out("<p>User requested to use the offsets " + iOffset + " and " + jOffset + " for calculation.</p>");
+		champuru_Worker.mMsgs.add("<p>User requested to use the offsets " + iOffset + " and " + jOffset + " for calculation.</p>");
 	} else {
-		champuru_Worker.out("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
+		champuru_Worker.mMsgs.add("<p>Using offsets " + score1 + " and " + score2 + " for calculation.</p>");
 	}
-	champuru_Worker.out("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button><button onclick='document.getElementById(\"downloadScoreTable\").click();'>Download score table</button></span>");
-	champuru_Worker.out("<span class='middle'><button onclick='downloadPlot(\"scorePlot\")'>Download dot plot</button><button onclick='downloadPlot(\"scorePlotHist\")'>Download histogram</button></span>");
-	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
-	champuru_Worker.out("</fieldset>");
-	champuru_Worker.out("<br>");
+	champuru_Worker.mMsgs.add("<span class='middle'><button onclick='rerunAnalysisWithDifferentOffsets(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ")'>Use different offsets</button><button onclick='document.getElementById(\"downloadScoreTable\").click();'>Download score table</button></span>");
+	champuru_Worker.mMsgs.add("<span class='middle'><button onclick='downloadPlot(\"scorePlot\")'>Download dot plot</button><button onclick='downloadPlot(\"scorePlotHist\")'>Download histogram</button></span>");
+	champuru_Worker.mMsgs.add("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
+	champuru_Worker.mMsgs.add("</fieldset>");
+	champuru_Worker.mMsgs.add("<br>");
 	var timestamp = HxOverrides.now() / 1000;
 	var o1 = new champuru_consensus_OverlapSolver(score1,s1,s2).solve();
 	var o2 = new champuru_consensus_OverlapSolver(score2,s1,s2).solve();
-	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>Step 2 - Consensus sequence calculation</legend>");
-	champuru_Worker.out("<p>First consensus sequence: <span id='consensus1' class='sequence'>");
+	champuru_Worker.mMsgs.add("<fieldset>");
+	champuru_Worker.mMsgs.add("<legend>Step 2 - Consensus sequence calculation</legend>");
+	champuru_Worker.mMsgs.add("<p>First consensus sequence: <span id='consensus1' class='sequence'>");
 	var result = new haxe_ds_List();
 	var _g = 0;
 	var _g1 = o1.mLength;
@@ -324,9 +326,20 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var s = c.toIUPACCode();
 		result.add(s);
 	}
-	champuru_Worker.out(result.join(""));
-	champuru_Worker.out("</span></p>");
-	champuru_Worker.out("<p>Second consensus sequence: <span id='consensus2' class='sequence'>");
+	var s = result.join("");
+	champuru_Worker.mMsgs.add(s);
+	var result = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = o1.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = o1.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result.add(s);
+	}
+	var s = "" + result.join("");
+	champuru_Worker.mMsgs.add("</span></p>");
+	champuru_Worker.mMsgs.add("<p>Second consensus sequence: <span id='consensus2' class='sequence'>");
 	var result = new haxe_ds_List();
 	var _g = 0;
 	var _g1 = o2.mLength;
@@ -336,43 +349,54 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var s = c.toIUPACCode();
 		result.add(s);
 	}
-	champuru_Worker.out(result.join(""));
-	champuru_Worker.out("</span></p>");
+	var s = result.join("");
+	champuru_Worker.mMsgs.add(s);
+	var result = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = o2.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = o2.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result.add(s);
+	}
+	var s = "" + result.join("");
+	champuru_Worker.mMsgs.add("</span></p>");
 	var problems = o1.countGaps() + o2.countGaps();
 	var remainingAmbFwd = o1.countPolymorphisms();
 	var remainingAmbRev = o2.countPolymorphisms();
 	if(problems == 1) {
-		champuru_Worker.out("<p>There is 1 incompatible position (indicated with an underscore), please check the input sequences.</p>");
+		champuru_Worker.mMsgs.add("<p>There is 1 incompatible position (indicated with an underscore), please check the input sequences.</p>");
 	} else if(problems > 1) {
-		champuru_Worker.out("<p>There are " + problems + " incompatible positions (indicated with underscores), please check the input sequences.</p>");
+		champuru_Worker.mMsgs.add("<p>There are " + problems + " incompatible positions (indicated with underscores), please check the input sequences.</p>");
 	}
 	if(problems > 0) {
-		champuru_Worker.out("<span class='middle'><button onclick='colorConsensusByIncompatiblePositions()'>Color underscores</button><button onclick='removeColor()'>Remove color</button></span>");
+		champuru_Worker.mMsgs.add("<span class='middle'><button onclick='colorConsensusByIncompatiblePositions()'>Color underscores</button><button onclick='removeColor()'>Remove color</button></span>");
 	}
 	if(remainingAmbFwd == 1) {
-		champuru_Worker.out("<p>There is 1 ambiguity in the first consensus sequence.</p>");
+		champuru_Worker.mMsgs.add("<p>There is 1 ambiguity in the first consensus sequence.</p>");
 	} else if(remainingAmbFwd > 1) {
-		champuru_Worker.out("<p>There are " + remainingAmbFwd + " ambiguities in the first consensus sequence.</p>");
+		champuru_Worker.mMsgs.add("<p>There are " + remainingAmbFwd + " ambiguities in the first consensus sequence.</p>");
 	}
 	if(remainingAmbRev == 1) {
-		champuru_Worker.out("<p>There is 1 ambiguity in the second consensus sequence.</p>");
+		champuru_Worker.mMsgs.add("<p>There is 1 ambiguity in the second consensus sequence.</p>");
 	} else if(remainingAmbRev > 1) {
-		champuru_Worker.out("<p>There are " + remainingAmbRev + " ambiguities in the second consensus sequence.</p>");
+		champuru_Worker.mMsgs.add("<p>There are " + remainingAmbRev + " ambiguities in the second consensus sequence.</p>");
 	}
 	if(remainingAmbFwd + remainingAmbRev > 0) {
-		champuru_Worker.out("<span class='middle'><button onclick='colorConsensusByAmbPositions()'>Color ambiguities</button><button onclick='removeColor()'>Remove color</button></span>");
+		champuru_Worker.mMsgs.add("<span class='middle'><button onclick='colorConsensusByAmbPositions()'>Color ambiguities</button><button onclick='removeColor()'>Remove color</button></span>");
 	}
-	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
-	champuru_Worker.out("</fieldset>");
-	champuru_Worker.out("<br>");
+	champuru_Worker.mMsgs.add("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
+	champuru_Worker.mMsgs.add("</fieldset>");
+	champuru_Worker.mMsgs.add("<br>");
 	if(problems > 0) {
 		return { result : champuru_Worker.mMsgs.join("")};
 	}
 	var timestamp = HxOverrides.now() / 1000;
 	var result = champuru_reconstruction_SequenceReconstructor.reconstruct(o1,o2);
-	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>Step 3 - Sequence reconstruction</legend>");
-	champuru_Worker.out("<p>First reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed1\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed1\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed1' class='sequence'>");
+	champuru_Worker.mMsgs.add("<fieldset>");
+	champuru_Worker.mMsgs.add("<legend>Step 3 - Sequence reconstruction</legend>");
+	champuru_Worker.mMsgs.add("<p>First reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed1\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed1\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed1' class='sequence'>");
 	var _this = result.seq1;
 	var result1 = new haxe_ds_List();
 	var _g = 0;
@@ -383,9 +407,21 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var s = c.toIUPACCode();
 		result1.add(s);
 	}
-	champuru_Worker.out(result1.join(""));
-	champuru_Worker.out("</span></p>");
-	champuru_Worker.out("<p>Second reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed2\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed2\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed2' class='sequence'>");
+	var s = result1.join("");
+	champuru_Worker.mMsgs.add(s);
+	var _this = result.seq1;
+	var result1 = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = _this.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = _this.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result1.add(s);
+	}
+	var s = "" + result1.join("");
+	champuru_Worker.mMsgs.add("</span></p>");
+	champuru_Worker.mMsgs.add("<p>Second reconstructed sequence [<a href='#' onclick='return toClipboard(\"reconstructed2\")'>Copy all bases to clipboard</a>] [<a href='#' onclick='return toClipboard(\"reconstructed2\", false)'>Copy only overlap between the two chromatograms (in capital letters) to clipboard</a>]: <span id='reconstructed2' class='sequence'>");
 	var _this = result.seq2;
 	var result1 = new haxe_ds_List();
 	var _g = 0;
@@ -396,27 +432,39 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var s = c.toIUPACCode();
 		result1.add(s);
 	}
-	champuru_Worker.out(result1.join(""));
-	champuru_Worker.out("</span></p>");
-	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
-	champuru_Worker.out("</fieldset>");
-	champuru_Worker.out("<br>");
+	var s = result1.join("");
+	champuru_Worker.mMsgs.add(s);
+	var _this = result.seq2;
+	var result1 = new haxe_ds_List();
+	var _g = 0;
+	var _g1 = _this.mLength;
+	while(_g < _g1) {
+		var i = _g++;
+		var c = _this.mSequence.h[i];
+		var s = c.toIUPACCode();
+		result1.add(s);
+	}
+	var s = "" + result1.join("");
+	champuru_Worker.mMsgs.add("</span></p>");
+	champuru_Worker.mMsgs.add("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
+	champuru_Worker.mMsgs.add("</fieldset>");
+	champuru_Worker.mMsgs.add("<br>");
 	var timestamp = HxOverrides.now() / 1000;
-	champuru_Worker.out("<fieldset>");
-	champuru_Worker.out("<legend>Step 4 - Checking sequences</legend>");
+	champuru_Worker.mMsgs.add("<fieldset>");
+	champuru_Worker.mMsgs.add("<legend>Step 4 - Checking sequences</legend>");
 	var successfullyDeconvoluted = true;
 	problems = result.seq1.countGaps() + result.seq2.countGaps();
 	if(problems != 0) {
 		if(problems == 1) {
-			champuru_Worker.out("<p>There is 1 problematic position!</p>");
+			champuru_Worker.mMsgs.add("<p>There is 1 problematic position!</p>");
 			successfullyDeconvoluted = false;
 		} else if(problems > 1) {
-			champuru_Worker.out("<p>There are " + problems + " problematic positions!</p>");
+			champuru_Worker.mMsgs.add("<p>There are " + problems + " problematic positions!</p>");
 			successfullyDeconvoluted = false;
 		}
 	}
 	if(problems > 0) {
-		champuru_Worker.out("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+		champuru_Worker.mMsgs.add("<span class='middle'><button onclick='colorProblems()'>Color problems</button><button onclick='removeColorFinal()'>Remove color</button></span>");
 	}
 	var p1 = result.seq1.countPolymorphisms();
 	var p2 = result.seq2.countPolymorphisms();
@@ -426,50 +474,56 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 	var p2l = p2 - p2u;
 	if(p1u + p2u != 0) {
 		if(p1u > 0) {
-			champuru_Worker.out("<p>There " + (p1u == 1 ? "is" : "are") + " " + p1u + " ambiguit" + (p1u == 1 ? "y" : "ies") + " on the first reconstructed sequence left!</p>");
+			champuru_Worker.mMsgs.add("<p>There " + (p1u == 1 ? "is" : "are") + " " + p1u + " ambiguit" + (p1u == 1 ? "y" : "ies") + " on the first reconstructed sequence left!</p>");
 		}
 		if(p1l > 0) {
-			champuru_Worker.out("<p>" + p1l + " ambiguit" + (p1l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+			champuru_Worker.mMsgs.add("<p>" + p1l + " ambiguit" + (p1l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
 		}
 		if(p2u > 0) {
-			champuru_Worker.out("<p>There " + (p2u == 1 ? "is" : "are") + " " + p2u + " ambiguit" + (p2u == 1 ? "y" : "ies") + " on the second reconstructed sequence left!</p>");
+			champuru_Worker.mMsgs.add("<p>There " + (p2u == 1 ? "is" : "are") + " " + p2u + " ambiguit" + (p2u == 1 ? "y" : "ies") + " on the second reconstructed sequence left!</p>");
 		}
 		if(p2l > 0) {
-			champuru_Worker.out("<p>" + p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+			champuru_Worker.mMsgs.add("<p>" + p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+			champuru_Worker.mMsgs.add(p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.");
 		}
 	}
 	if(p1 + p2 > 0) {
-		champuru_Worker.out("<span class='middle'><button onclick='colorFinalByAmbPositions()'>Color ambiguities</button><button onclick='removeColorFinal()'>Remove color</button></span>");
-		champuru_Worker.out("<br>");
+		champuru_Worker.mMsgs.add("<span class='middle'><button onclick='colorFinalByAmbPositions()'>Color ambiguities</button><button onclick='removeColorFinal()'>Remove color</button></span>");
+		champuru_Worker.mMsgs.add("<br>");
 	}
 	var seqChecker = new champuru_reconstruction_SequenceChecker(s1,s2);
 	seqChecker.setOffsets(score1,score2);
 	var checkerResult = seqChecker.check(result.seq1,result.seq2);
 	if(checkerResult.pF.length + checkerResult.pR.length >= 1) {
-		champuru_Worker.out("<p>");
+		champuru_Worker.mMsgs.add("<p>");
 		if(checkerResult.pF.length > 0) {
-			champuru_Worker.out("Check position" + (checkerResult.pF.length == 1 ? "" : "s") + " on forward (and/or the facing positions on the reverse): <span class='sequence'>" + checkerResult.pF.join(",") + "</span>");
+			var s = "Check position" + (checkerResult.pF.length == 1 ? "" : "s") + " on forward (and/or the facing positions on the reverse): <span class='sequence'>" + checkerResult.pF.join(",") + "</span>";
+			champuru_Worker.mMsgs.add(s);
+			var s = "Check position" + (checkerResult.pF.length == 1 ? "" : "s") + " on forward (and/or the facing positions on the reverse): <span class='sequence'>" + checkerResult.pF.join(",") + "</span>";
 		}
 		if(checkerResult.pF.length > 0 && checkerResult.pR.length > 0) {
-			champuru_Worker.out("<br>");
+			champuru_Worker.mMsgs.add("<br>");
 		}
 		if(checkerResult.pR.length > 0) {
-			champuru_Worker.out("Check position" + (checkerResult.pR.length == 1 ? "" : "s") + " on reverse (and/or the facing positions on the forward): <span class='sequence'>" + checkerResult.pR.join(",") + "</span>");
+			var s = "Check position" + (checkerResult.pR.length == 1 ? "" : "s") + " on reverse (and/or the facing positions on the forward): <span class='sequence'>" + checkerResult.pR.join(",") + "</span>";
+			champuru_Worker.mMsgs.add(s);
+			var s = "Check position" + (checkerResult.pR.length == 1 ? "" : "s") + " on reverse (and/or the facing positions on the forward): <span class='sequence'>" + checkerResult.pR.join(",") + "</span>";
 		}
-		champuru_Worker.out("</p>");
+		champuru_Worker.mMsgs.add("</p>");
 		successfullyDeconvoluted = false;
 	}
 	if(checkerResult.pF.length + checkerResult.pR.length > 0) {
-		champuru_Worker.out("<span class='middle'><button onclick='colorFinalByPositions(\"" + checkerResult.pF.join(",") + "\", \"" + checkerResult.pR.join(",") + "\", \"" + checkerResult.pFHighlight.join(",") + "\", \"" + checkerResult.pRHighlight.join(",") + "\");'>Color positions</button><button onclick='removeColorFinal()'>Remove color</button></span>");
-		champuru_Worker.out("<br>");
+		var s = "<span class='middle'><button onclick='colorFinalByPositions(\"" + checkerResult.pF.join(",") + "\", \"" + checkerResult.pR.join(",") + "\", \"" + checkerResult.pFHighlight.join(",") + "\", \"" + checkerResult.pRHighlight.join(",") + "\");'>Color positions</button><button onclick='removeColorFinal()'>Remove color</button></span>";
+		champuru_Worker.mMsgs.add(s);
+		champuru_Worker.mMsgs.add("<br>");
 	}
 	if(successfullyDeconvoluted && p1u + p2u == 0) {
 		if(p1l + p2l == 0) {
-			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted.</p>");
+			champuru_Worker.mMsgs.add("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted.</p>");
 		} else if(p1l > 0 && p2l > 0) {
-			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + p1l + " ambiguit" + (p1l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap and " + p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the second reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+			champuru_Worker.mMsgs.add("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + p1l + " ambiguit" + (p1l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap and " + p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the second reconstructed sequence in places where the two chromatograms do not overlap.</p>");
 		} else {
-			champuru_Worker.out("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + (p1l + p2l) + " ambiguit" + (p1l + p2l == 1 ? "y" : "ies") + " remain in the " + (p1l > 0 ? "first" : "second") + " reconstructed sequence in places where the two chromatograms do not overlap.</p>");
+			champuru_Worker.mMsgs.add("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + (p1l + p2l) + " ambiguit" + (p1l + p2l == 1 ? "y" : "ies") + " remain in the " + (p1l > 0 ? "first" : "second") + " reconstructed sequence in places where the two chromatograms do not overlap.</p>");
 		}
 	}
 	var firstSequenceIsSame;
@@ -528,18 +582,18 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
 		var idx2Same = perlReimplementationOutput.index2 == score1 || perlReimplementationOutput.index2 == score2;
 		if(idx1Same && idx2Same) {
-			champuru_Worker.out("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program although the same offsets have been used. If you find this in a real life example please send your chromatograms to <a href='mailto: jflot@ulb.be'>jflot@ulb.be</a>.</p>");
+			champuru_Worker.mMsgs.add("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program although the same offsets have been used. If you find this in a real life example please send your chromatograms to <a href='mailto: jflot@ulb.be'>jflot@ulb.be</a>.</p>");
 		} else {
-			champuru_Worker.out("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program because different offsets have been used.<p>");
+			champuru_Worker.mMsgs.add("<p>The output from the (reimplemented) original Champuru program mismatches with the output from this program because different offsets have been used.<p>");
 		}
 	}
-	champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
-	champuru_Worker.out("</fieldset>");
-	champuru_Worker.out("<br>");
+	champuru_Worker.mMsgs.add("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
+	champuru_Worker.mMsgs.add("</fieldset>");
+	champuru_Worker.mMsgs.add("<br>");
 	if(searchForAlternativeSolutions) {
 		var timestamp = HxOverrides.now() / 1000;
-		champuru_Worker.out("<fieldset>");
-		champuru_Worker.out("<legend>Step 5 - Analyzing further offset pairs</legend>");
+		champuru_Worker.mMsgs.add("<fieldset>");
+		champuru_Worker.mMsgs.add("<legend>Step 5 - Analyzing further offset pairs</legend>");
 		var possibleMatches = new haxe_ds_List();
 		var i = 0;
 		var _g = 0;
@@ -590,33 +644,33 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		scores.sort(function(a,b) {
 			return a.score - b.score;
 		});
-		champuru_Worker.out("<table class='offsetTable center'>");
-		champuru_Worker.out("<tr class='header'>");
-		champuru_Worker.out("<td>#</td><td>Nr. of issues</td><td>Offset 1</td><td>Offset 2</td><td>Use</td>");
-		champuru_Worker.out("</tr>");
+		champuru_Worker.mMsgs.add("<table class='offsetTable center'>");
+		champuru_Worker.mMsgs.add("<tr class='header'>");
+		champuru_Worker.mMsgs.add("<td>#</td><td>Nr. of issues</td><td>Offset 1</td><td>Offset 2</td><td>Use</td>");
+		champuru_Worker.mMsgs.add("</tr>");
 		var i = 1;
 		var _g = 0;
 		while(_g < scores.length) {
 			var score = scores[_g];
 			++_g;
-			champuru_Worker.out("<tr class='" + (i % 2 == 0 ? "odd" : "even") + "'>");
-			champuru_Worker.out("<td>" + i + "</td><td>" + score.score + "</td><td>" + score.idx1 + "</td><td>" + score.idx2 + "</td><td><a href='#' onclick='rerunAnalysisWithDifferentOffsets3(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ", " + score.idx1 + ", " + score.idx2 + ", true); return false;'>Calculate</a></td>");
-			champuru_Worker.out("</tr>");
+			champuru_Worker.mMsgs.add("<tr class='" + (i % 2 == 0 ? "odd" : "even") + "'>");
+			champuru_Worker.mMsgs.add("<td>" + i + "</td><td>" + score.score + "</td><td>" + score.idx1 + "</td><td>" + score.idx2 + "</td><td><a href='#' onclick='rerunAnalysisWithDifferentOffsets3(\"" + fwd + "\", \"" + rev + "\", " + scoreCalculationMethod + ", " + score.idx1 + ", " + score.idx2 + ", true); return false;'>Calculate</a></td>");
+			champuru_Worker.mMsgs.add("</tr>");
 			++i;
 			if(i > 5) {
 				break;
 			}
 		}
-		champuru_Worker.out("</table>");
-		champuru_Worker.out("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
-		champuru_Worker.out("</fieldset>");
-		champuru_Worker.out("<br>");
+		champuru_Worker.mMsgs.add("</table>");
+		champuru_Worker.mMsgs.add("<div class='timelegend'>Calculation took " + ("" + Math.round((HxOverrides.now() / 1000 - timestamp) * 1000)) + "ms</div>");
+		champuru_Worker.mMsgs.add("</fieldset>");
+		champuru_Worker.mMsgs.add("<br>");
 	}
 	if(problems == 0 && successfullyDeconvoluted) {
-		champuru_Worker.out("<fieldset>");
-		champuru_Worker.out("<legend>Download area</legend>");
-		champuru_Worker.out("<span class='middle'><button onclick='downloadFasta(true)'>Download FASTA (all bases)</button><button onclick='downloadFasta(false)'>Download FASTA (only overlap)</button></span><br>");
-		champuru_Worker.out("</fieldset>");
+		champuru_Worker.mMsgs.add("<fieldset>");
+		champuru_Worker.mMsgs.add("<legend>Download area</legend>");
+		champuru_Worker.mMsgs.add("<span class='middle'><button onclick='downloadFasta(true)'>Download FASTA (all bases)</button><button onclick='downloadFasta(false)'>Download FASTA (only overlap)</button></span><br>");
+		champuru_Worker.mMsgs.add("</fieldset>");
 	}
 	return { result : champuru_Worker.mMsgs.join("")};
 };
@@ -633,7 +687,7 @@ champuru_Worker.onMessage = function(e) {
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:427:",e);
+		console.log("champuru/Worker.hx:464:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };
