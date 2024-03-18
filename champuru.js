@@ -484,7 +484,6 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 		}
 		if(p2l > 0) {
 			champuru_Worker.mMsgs.add("<p>" + p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
-			champuru_Worker.mMsgs.add(p2l + " ambiguit" + (p2l == 1 ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.");
 		}
 	}
 	if(p1 + p2 > 0) {
@@ -526,18 +525,9 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 			champuru_Worker.mMsgs.add("<p>The bases overlapping in the forward and reverse chromatograms have been successfully deconvoluted. However " + (p1l + p2l) + " ambiguit" + (p1l + p2l == 1 ? "y" : "ies") + " remain in the " + (p1l > 0 ? "first" : "second") + " reconstructed sequence in places where the two chromatograms do not overlap.</p>");
 		}
 	}
-	var firstSequenceIsSame;
-	var _this = result.seq1;
-	var result1 = new haxe_ds_List();
-	var _g = 0;
-	var _g1 = _this.mLength;
-	while(_g < _g1) {
-		var i = _g++;
-		var c = _this.mSequence.h[i];
-		var s = c.toIUPACCode();
-		result1.add(s);
-	}
-	if(result1.join("").indexOf(perlReimplementationOutput.sequence1) == -1) {
+	var firstSequenceIsSame = false;
+	var secondSequenceIsSame = false;
+	if(perlReimplementationOutput.sequence1 != null && perlReimplementationOutput.sequence2 != null) {
 		var _this = result.seq1;
 		var result1 = new haxe_ds_List();
 		var _g = 0;
@@ -548,35 +538,42 @@ champuru_Worker.generateHtml = function(fwd,rev,scoreCalculationMethod,iOffset,j
 			var s = c.toIUPACCode();
 			result1.add(s);
 		}
-		firstSequenceIsSame = result1.join("").indexOf(perlReimplementationOutput.sequence2) != -1;
-	} else {
-		firstSequenceIsSame = true;
-	}
-	var secondSequenceIsSame;
-	var _this = result.seq2;
-	var result1 = new haxe_ds_List();
-	var _g = 0;
-	var _g1 = _this.mLength;
-	while(_g < _g1) {
-		var i = _g++;
-		var c = _this.mSequence.h[i];
-		var s = c.toIUPACCode();
-		result1.add(s);
-	}
-	if(result1.join("").indexOf(perlReimplementationOutput.sequence1) == -1) {
+		if(result1.join("").indexOf(perlReimplementationOutput.sequence1) == -1) {
+			var _this = result.seq1;
+			var result1 = new haxe_ds_List();
+			var _g = 0;
+			var _g1 = _this.mLength;
+			while(_g < _g1) {
+				var i = _g++;
+				var c = _this.mSequence.h[i];
+				var s = c.toIUPACCode();
+				result1.add(s);
+			}
+			var tmp = result1.join("");
+		}
 		var _this = result.seq2;
-		var result = new haxe_ds_List();
+		var result1 = new haxe_ds_List();
 		var _g = 0;
 		var _g1 = _this.mLength;
 		while(_g < _g1) {
 			var i = _g++;
 			var c = _this.mSequence.h[i];
 			var s = c.toIUPACCode();
-			result.add(s);
+			result1.add(s);
 		}
-		secondSequenceIsSame = result.join("").indexOf(perlReimplementationOutput.sequence2) != -1;
-	} else {
-		secondSequenceIsSame = true;
+		if(result1.join("").indexOf(perlReimplementationOutput.sequence1) == -1) {
+			var _this = result.seq2;
+			var result = new haxe_ds_List();
+			var _g = 0;
+			var _g1 = _this.mLength;
+			while(_g < _g1) {
+				var i = _g++;
+				var c = _this.mSequence.h[i];
+				var s = c.toIUPACCode();
+				result.add(s);
+			}
+			var tmp = result.join("");
+		}
 	}
 	if(!firstSequenceIsSame || !secondSequenceIsSame) {
 		var idx1Same = perlReimplementationOutput.index1 == score1 || perlReimplementationOutput.index1 == score2;
@@ -687,7 +684,7 @@ champuru_Worker.onMessage = function(e) {
 		champuru_Worker.workerScope.postMessage(result);
 	} catch( _g ) {
 		var e = haxe_Exception.caught(_g);
-		console.log("champuru/Worker.hx:464:",e);
+		console.log("champuru/Worker.hx:468:",e);
 		champuru_Worker.workerScope.postMessage({ result : "The following error occurred: " + Std.string(e)});
 	}
 };

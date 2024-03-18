@@ -302,7 +302,7 @@ class Worker
             }
             if (p2l > 0) {
                 out("<p>" + p2l + " ambiguit" + ((p2l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.</p>");
-                out(p2l + " ambiguit" + ((p2l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.");
+                out2(p2l + " ambiguit" + ((p2l == 1) ? "y" : "ies") + " remain in the first reconstructed sequence in places where the two chromatograms do not overlap.");
             }
         }
         if (p1 + p2 > 0) {
