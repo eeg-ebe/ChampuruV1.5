@@ -476,18 +476,66 @@ class Worker
         workerScope.onmessage = onMessage;
     }
     #else
-    public static function main():Void {
+    
+    public static function printUsageAndExit(additionalMessage:String):Void {
+        Sys.println("Champuru (command-line version)\n");
+        if (additionalMessage != null) {
+            Sys.println(additionalMessage);
+        }
+        Sys.println("Usage: python champuru.py -f <forward sequence> -r <reverse sequence> [-m <method as int>] [-o1 <offset1 as int> -o2 <offset as int>]");
+        Sys.exit(1);
+    }
+    public static function parseArgs() {
         var inp:haxe.ds.Vector<String> = new haxe.ds.Vector(Sys.args().length);
         var i:Int = 0;
         for (arg in Sys.args()) {
             inp[i++] = arg;
         }
-        var fwd:String = inp[0];
-        var rev:String = inp[1];
-        var scoreCalculationMethod:Int = 1;
-        var i:Int = -1;
-        var j:Int = -1;
-        var use:Bool = false;
+        var forward:Null<String> = null;
+        var reverse:Null<String> = null;
+        var method:Int = 1;
+        var offset1:Int = -1;
+        var offset2:Int = -1;
+        var useDifferentOffset:Bool = false;
+        var i:Int = 0;
+        while (i < inp.length) {
+            var arg:String = inp[i];
+            if (arg == "-f" || arg == "--forward") {
+                forward = inp[++i];
+            } else if (arg == "-r" || arg == "--reverse") {
+                reverse = inp[++i];
+            } else if (arg == "-m" || arg == "--method") {
+                method = Std.parseInt(inp[++i]);
+            } else if (arg == "-o1" || arg == "--offset1") {
+                offset1 = Std.parseInt(inp[++i]);
+                useDifferentOffset = true;
+            } else if (arg == "-o2" || arg == "--offset2") {
+                offset2 = Std.parseInt(inp[++i]);
+                useDifferentOffset = true;
+            }
+            i++;
+        }
+        return {
+            forward : forward,
+            reverse : reverse,
+            method : method,
+            offset1 : offset1,
+            offset2 : offset2,
+            useDifferentOffset : useDifferentOffset
+        };
+    }
+    
+    public static function main():Void {
+        var args = parseArgs();
+        var fwd:String = args.forward;
+        var rev:String = args.reverse;
+        if (fwd == null || rev == null) {
+            printUsageAndExit("Missing required commandline arguments (-f / -r)!\n");
+        }
+        var scoreCalculationMethod:Int = args.method;
+        var i:Int = args.offset1;
+        var j:Int = args.offset2;
+        var use:Bool = args.useDifferentOffset;
         var searchForAlternativeSolutions:Bool = false;
         var result = generateHtml(fwd, rev, scoreCalculationMethod, i, j, use, searchForAlternativeSolutions); // ""; //doChampuru(fwd, rev, scoreCalculationMethod, i, j, use);
     }
